@@ -343,6 +343,10 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   // billing:transport-route:* (Module 9 — bill_transport_route)
   { code: "billing:transport-route:view", module: "billing", description: "View transport routes", isWrite: false },
   { code: "billing:transport-route:manage", module: "billing", description: "Create/update/activate/deactivate a transport route", isWrite: true },
+  { code: "billing:transport-route:bill", module: "billing", description: "Bill a transport route's fee to selected students", isWrite: true },
+  // billing:transport-expense:* (Module 9 — bill_transport_expense)
+  { code: "billing:transport-expense:view", module: "billing", description: "View bus expenses logged against transport routes", isWrite: false },
+  { code: "billing:transport-expense:manage", module: "billing", description: "Log a bus expense against a transport route", isWrite: true },
   // billing:fee-structure:* (Module 9 — bill_fee_structure/bill_fee_structure_line)
   { code: "billing:fee-structure:view", module: "billing", description: "View fee structures and their lines", isWrite: false },
   { code: "billing:fee-structure:manage", module: "billing", description: "Create/update a DRAFT fee structure and its lines", isWrite: true },

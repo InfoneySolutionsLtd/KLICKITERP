@@ -23,21 +23,19 @@ import { unwrapApiResult } from "@/lib/api-error";
  * `executeReplenishment()` alone — 5 distinct permissions across one
  * controller, more granular than Part 1's own Categories/Vouchers split.
  *
- * **A genuinely different codegen finding from Part 1's own two files**:
- * checked directly against `packages/contracts/src/generated/openapi-types.ts`
- * (not assumed) — `CreateFloatDto`/`UpdateFloatCeilingDto`/`SpendDto` all
- * generate CLEANLY, with NO request-body gap at all. `petty-cash.dto.ts`'s own
- * class fields carry no explicit `T | null` unions (unlike
+ * **A genuinely different codegen finding from Part 1's own two files, TRUE
+ * AS ORIGINALLY WRITTEN, no longer true for `SpendDto` after a later
+ * regeneration (see `PettyCashSpendRequestBody`'s own doc comment below for
+ * the cross-module `SpendDto` name collision that changed this)**:
+ * `CreateFloatDto`/`UpdateFloatCeilingDto` still generate CLEANLY, with no
+ * request-body gap — `petty-cash.dto.ts`'s own class fields for those two
+ * carry no explicit `T | null` unions (unlike
  * `UpdateCategoryDto.parentId`/`UpdateVoucherDto.costCenterId` in Part 1) and
  * no `@ApiPropertyOptional({ default: ... })` decorators on booleans (unlike
- * `CreateCategoryDto.budgetRequired`/`.isActive`) — every field is either a
- * plain required `string`/`uuid` or a plain `@IsOptional() @IsUUID()` with no
- * union type annotation (`SpendDto.receiptFileId`), so NestJS/Swagger's
- * reflection succeeds every time and the generated types match
- * `@klickit/contracts`' zod-inferred DTOs exactly. **No local
- * `*RequestBody` mirror/cast interfaces exist in this file** — a real,
- * confirmed absence of the standing gap-class every other `*.api.ts` file in
- * this codebase has needed at least one of, not an oversight.
+ * `CreateCategoryDto.budgetRequired`/`.isActive`), so NestJS/Swagger's
+ * reflection succeeds and the generated types match `@klickit/contracts`'
+ * zod-inferred DTOs exactly for those two. `SpendDto` is the one exception,
+ * for the unrelated cross-module collision reason documented below.
  *
  * Response-side, the same familiar gap DOES appear (needs no fix, same
  * reasoning Part 1's own files document): `PettyCashVoucherResponseDto.receiptFileId`/
@@ -74,6 +72,36 @@ export type ReplenishmentStatus = "PENDING_APPROVAL" | "APPROVED" | "PAID";
 
 export const REPLENISHMENT_STATUSES: readonly ReplenishmentStatus[] = ["PENDING_APPROVAL", "APPROVED", "PAID"];
 
+/**
+ * **New gap, found while regenerating contracts for the Transport Routes
+ * enhancement (2026-08-24), unrelated to that feature**: `petty-cash.dto.ts`
+ * and `domains/wallet/api/dto/wallet-transaction.dto.ts` both declare an
+ * unqualified `export class SpendDto` — a genuine, pre-existing cross-module
+ * DTO class-name collision `@nestjs/swagger` silently resolves by letting
+ * whichever module's class happens to register last win the single shared
+ * `components.schemas.SpendDto` slot (confirmed directly against the
+ * regenerated `openapi.json`: `SpendDto` is now `{amount, servicePointId
+ * (required), items?, idempotencyKey?}` — Wallet's own shape, not this
+ * domain's `{categoryId, amount, receiptFileId?}`). Which domain wins is not
+ * something either domain's own code controls, so it can silently flip
+ * between regenerations — `features/wallet/api/wallets.api.ts`'s own doc
+ * comment documents this exact collision from the OPPOSITE direction (found
+ * when Expenses' shape was the winner) and the same prior decision applies
+ * here: fixed on the frontend, NOT by renaming either server-side `SpendDto`
+ * class (out of scope, a cross-module rename for a cosmetic collision).
+ * `PettyCashSpendRequestBody` mirrors the CURRENTLY generated (wrong, for
+ * this endpoint) shape purely so `apiClient.POST`'s inferred body type
+ * accepts the cast; the real `dto: SpendDto` (this domain's own correct
+ * `{categoryId, amount, receiptFileId?}` shape) is what's actually sent over
+ * the wire.
+ */
+interface PettyCashSpendRequestBody {
+  amount: string;
+  servicePointId: string;
+  items?: Record<string, never>;
+  idempotencyKey?: string;
+}
+
 export async function createFloat(dto: CreateFloatDto): Promise<FloatResponseDto> {
   return unwrapApiResult<FloatResponseDto>(await apiClient.POST("/api/v1/expenses/petty-cash/floats", { body: dto }));
 }
@@ -101,7 +129,10 @@ export async function updateFloatCeiling(id: string, dto: UpdateFloatCeilingDto)
  */
 export async function spend(floatId: string, dto: SpendDto): Promise<PettyCashVoucherResponseDto> {
   return unwrapApiResult<PettyCashVoucherResponseDto>(
-    await apiClient.POST("/api/v1/expenses/petty-cash/floats/{id}/spend", { params: { path: { id: floatId } }, body: dto }),
+    await apiClient.POST("/api/v1/expenses/petty-cash/floats/{id}/spend", {
+      params: { path: { id: floatId } },
+      body: dto as unknown as PettyCashSpendRequestBody,
+    }),
   );
 }
 

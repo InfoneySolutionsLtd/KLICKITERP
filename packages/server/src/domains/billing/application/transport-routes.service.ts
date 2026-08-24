@@ -7,11 +7,13 @@ import { BillTransportRouteRepository } from "../infrastructure/bill-transport-r
 export interface CreateTransportRouteInput {
   name: string;
   amount: Money;
+  bus?: string | null;
 }
 
 export interface UpdateTransportRouteInput {
   name?: string;
   amount?: Money;
+  bus?: string | null;
 }
 
 /** CRUD for `bill_transport_route` — straightforward per the task brief. */
@@ -26,6 +28,7 @@ export class TransportRoutesService {
     return this.transportRouteRepository.create({
       name: input.name,
       amount: input.amount,
+      bus: input.bus ?? null,
       isActive: true,
       createdBy: actorId,
       updatedBy: actorId,
@@ -44,6 +47,7 @@ export class TransportRoutesService {
     const route = await this.transportRouteRepository.findByIdOrFail(id);
     if (changes.name !== undefined) route.name = changes.name;
     if (changes.amount !== undefined) route.amount = changes.amount;
+    if (changes.bus !== undefined) route.bus = changes.bus;
     route.updatedBy = actorId;
     return this.transportRouteRepository.save(route);
   }

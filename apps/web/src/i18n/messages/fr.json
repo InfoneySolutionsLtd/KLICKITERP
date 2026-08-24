@@ -84,6 +84,12 @@
       "billingUpcomingInvoices": "Upcoming Invoices",
       "billingCollectFees": "Collect Fees",
       "billingReceipts": "Receipts",
+      "billingLateFeePolicies": "Politiques de pénalités de retard",
+      "billingLateFeeBatches": "Lots de pénalités de retard",
+      "billingConcessionSchemes": "Régimes de concession",
+      "billingSponsors": "Sponsors",
+      "billingTransportRoutes": "Itinéraires de transport",
+      "billingBulkBilling": "Facturation en masse",
       "payments": "Payments",
       "approvals": "Approvals",
       "settings": "Settings",
@@ -271,6 +277,12 @@
       },
       "feeGroup": "Fee group",
       "selectFeeGroup": "None",
+      "sponsor": "Sponsor",
+      "selectSponsor": "Aucun",
+      "noSponsorsFound": "Aucun sponsor trouvé.",
+      "transportRoute": "Itinéraire de transport",
+      "selectTransportRoute": "Aucun",
+      "noTransportRoutesFound": "Aucun itinéraire de transport trouvé.",
       "submitCreate": "Enroll student",
       "submitEdit": "Save changes",
       "submitting": "Saving…",
@@ -309,6 +321,8 @@
       "guardianNewCreated": "New guardian created and linked.",
       "guardianLinkedExisting": "Linked to existing guardian {fullName} — looks like a sibling!",
       "billingTitle": "Billing",
+      "sponsorAwardsTitle": "Bourses des sponsors",
+      "optionalItemsTitle": "Éléments optionnels",
       "receiptsTitle": "Receipts",
       "creditBalanceTitle": "Solde créditeur",
       "creditBalance": {
@@ -323,6 +337,9 @@
         "creating": "Creating…",
         "createButton": "Create wallet"
       },
+      "debitNotesTitle": "Notes de débit",
+      "refundVouchersTitle": "Bons de remboursement",
+      "concessionsTitle": "Concessions",
       "deleteStudentDialog": {
         "title": "Delete student?",
         "description": "This will permanently delete {name}. This cannot be undone.",
@@ -590,13 +607,7 @@
         "priorityInvalid": "Priority must be a non-negative number.",
         "submit": "Save",
         "submitting": "Saving…",
-        "genericError": "Something went wrong. Please try again.",
-        "selectGlAccount": "Select a GL income account",
-        "searchGlAccount": "Search by code or name…",
-        "loadingAccounts": "Loading accounts…",
-        "noAccountsFound": "No income accounts found — configure the Chart of Accounts first.",
-        "glAccountUuidPlaceholder": "GL account ID (UUID)",
-        "glAccountLoadFailedHint": "Couldn't load GL accounts — enter the account ID manually. This usually means your role doesn't have permission to view the Chart of Accounts."
+        "genericError": "Something went wrong. Please try again."
       }
     },
     "feeStructures": {
@@ -840,6 +851,8 @@
         "genericError": "Something went wrong. Please try again.",
         "glNotConfiguredTitle": "GL not configured",
         "glNotConfiguredDescription": "This invoice can't be posted because a required GL control account isn't configured. Contact your administrator.",
+        "creditNotesTitle": "Notes de crédit",
+        "concessionsTitle": "Concessions",
         "voidDialog": {
           "trigger": "Void",
           "title": "Void this invoice?",
@@ -955,6 +968,724 @@
     "feeCategoryChipPicker": {
       "filterPlaceholder": "Filter fee categories…",
       "noMatches": "No fee categories match your filter."
+    },
+    "lateFeePolicies": {
+      "list": {
+        "pageTitle": "Politiques de pénalités de retard",
+        "pageSubtitle": "Configurez comment les factures en retard accumulent des pénalités — montant fixe, pourcentage du solde, ou un barème par paliers selon les jours de retard.",
+        "newPolicy": "Nouvelle politique",
+        "listTitle": "Politiques",
+        "listDescription": "Chaque politique définit son propre mode de calcul et son délai de grâce ; assignez-en une à un lot de pénalités de retard pour l'exécuter réellement.",
+        "columns": {
+          "name": "Nom",
+          "mode": "Mode",
+          "graceDays": "Jours de grâce",
+          "requiresApproval": "Approbation requise",
+          "status": "Statut"
+        }
+      },
+      "dialog": {
+        "titleCreate": "Nouvelle politique de pénalité de retard",
+        "titleEdit": "Modifier la politique de pénalité de retard",
+        "description": "Définit comment une facture en retard accumule une pénalité une fois son délai de grâce dépassé.",
+        "name": "Nom",
+        "mode": "Mode",
+        "graceDays": "Jours de grâce",
+        "graceDaysHint": "Nombre de jours après la date d'échéance d'une facture avant qu'elle ne soit considérée en retard aux fins de la pénalité.",
+        "requiresApproval": "Nécessite une approbation avant qu'un lot puisse être comptabilisé",
+        "nameRequired": "Le nom est requis.",
+        "graceDaysInvalid": "Les jours de grâce doivent être un nombre non négatif.",
+        "amountRequired": "Un montant fixe est requis.",
+        "rateRequired": "Un taux est requis.",
+        "tiersRequired": "Ajoutez au moins un palier.",
+        "tierAmountOrRateRequired": "Chaque palier nécessite soit un montant, soit un taux.",
+        "submit": "Enregistrer",
+        "submitting": "Enregistrement…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "modeValues": {
+        "FLAT": "Montant fixe",
+        "PERCENT": "Pourcentage du solde",
+        "TIERED": "Par paliers selon les jours de retard"
+      },
+      "paramsForm": {
+        "flatAmount": "Montant fixe",
+        "flatAmountHint": "Facturé une seule fois par facture en retard, quel que soit le solde.",
+        "percentRate": "Taux",
+        "percentRateHint": "Une fraction décimale du solde de la facture — par ex. 0,05 pour 5 %, pas un nombre entier.",
+        "tiersLabel": "Paliers",
+        "tiersHint": "Le premier palier dont la plage de jours contient le nombre de jours de retard de la facture s'applique. Chaque palier nécessite soit un montant, soit un taux.",
+        "minDaysOverdue": "Jours de retard min.",
+        "maxDaysOverdue": "Jours de retard max.",
+        "tierAmount": "Montant",
+        "tierRate": "Taux",
+        "openEnded": "Illimité",
+        "removeTier": "Supprimer le palier",
+        "addTier": "Ajouter un palier"
+      },
+      "detail": {
+        "backToList": "Retour aux politiques de pénalités de retard",
+        "deactivate": "Désactiver",
+        "activate": "Activer",
+        "statusToggleError": "Impossible de mettre à jour le statut de cette politique. Veuillez réessayer.",
+        "graceDaysLabel": "Jours de grâce",
+        "graceDaysValue": "{count} jours",
+        "requiresApprovalLabel": "Approbation requise",
+        "paramsLabel": "Règles de calcul",
+        "minDaysOverdue": "Jours de retard min.",
+        "maxDaysOverdue": "Jours de retard max.",
+        "tierAmount": "Montant",
+        "tierRate": "Taux",
+        "openEnded": "Illimité",
+        "noTiers": "Aucun palier configuré."
+      }
+    },
+    "lateFeeBatches": {
+      "list": {
+        "pageTitle": "Lots de pénalités de retard",
+        "pageSubtitle": "Exécutez une politique de pénalité de retard sur sa population en retard, puis examinez, approuvez et comptabilisez les lots résultants.",
+        "listTitle": "Lots",
+        "listDescription": "Chaque lot correspond à une exécution de la politique sélectionnée — choisissez une politique ci-dessus pour voir ses lots, ou lancez-en un nouveau.",
+        "policyLabel": "Politique",
+        "selectPolicyPlaceholder": "Sélectionnez une politique…",
+        "selectPolicyPrompt": "Sélectionnez une politique ci-dessus pour voir ses lots de pénalités de retard.",
+        "columns": {
+          "runDate": "Date d'exécution",
+          "status": "Statut",
+          "totalAssessed": "Total évalué",
+          "studentCount": "Élèves"
+        }
+      },
+      "runDialog": {
+        "trigger": "Exécuter les pénalités maintenant",
+        "title": "Exécuter les pénalités de retard maintenant",
+        "description": "Exécute la politique sélectionnée sur chaque facture en retard à la date choisie, en regroupant le résultat dans un nouveau lot. Aucune exécution planifiée/automatique n'existe — il s'agit d'une action manuelle et ponctuelle que vous déclenchez vous-même.",
+        "manualActionHint": "Cette exécution a lieu immédiatement sur la population réelle en retard — aucun planificateur ni tâche nocturne n'existe encore, donc rien ne se relancera de lui-même.",
+        "runDateLabel": "Date d'exécution",
+        "runButton": "Exécuter maintenant",
+        "running": "Exécution…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "statusValues": {
+        "DRAFT": "Brouillon",
+        "PENDING_APPROVAL": "En attente d'approbation",
+        "POSTED": "Comptabilisé"
+      },
+      "statusActions": {
+        "post": "Comptabiliser",
+        "posting": "Comptabilisation…",
+        "emptyDraftHint": "Rien n'a été évalué lors de cette exécution — aucune facture en retard n'a généré de pénalité à la date d'exécution. Comptabiliser marquera simplement ce lot comme terminé ; aucune facture ne sera générée.",
+        "emptyDraftHintRequiresApproval": "Cette politique nécessite une approbation avant la comptabilisation d'un lot, mais rien n'a été évalué lors de cette exécution — aucune facture en retard n'a généré de pénalité à la date d'exécution, il n'a donc pas eu besoin de passer en attente d'approbation. Comptabiliser marquera simplement ce lot comme terminé ; aucune facture ne sera générée.",
+        "approveTrigger": "Approuver",
+        "approveConfirmTitle": "Approuver ce lot ?",
+        "approveConfirmDescription": "L'approbation comptabilise ce lot immédiatement — une facture de pénalité de retard est générée et comptabilisée par élève/trimestre selon le résumé ci-dessous. Cette action ne peut pas être annulée depuis ici.",
+        "approveConfirmButton": "Approuver et comptabiliser",
+        "approving": "Approbation…",
+        "sendBackToDraftTrigger": "Renvoyer au brouillon",
+        "sendBackToDraftConfirmTitle": "Renvoyer ce lot au brouillon ?",
+        "sendBackToDraftConfirmDescription": "Ce lot reviendra au statut Brouillon sans rien comptabiliser. Il n'existe pas d'état « rejeté » distinct — vous pourrez le comptabiliser plus tard si vous changez d'avis, ou le laisser tel quel.",
+        "sendBackToDraftConfirmButton": "Renvoyer au brouillon",
+        "sendingBackToDraft": "Renvoi au brouillon…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "summaryTable": {
+        "empty": "Rien n'a été évalué lors de cette exécution — aucune facture en retard n'a généré de pénalité à la date d'exécution.",
+        "totalAssessedLabel": "Total évalué",
+        "studentCountLabel": "Élèves",
+        "termLabel": "Trimestre",
+        "invoiceIdColumn": "Facture",
+        "daysOverdueColumn": "Jours de retard",
+        "amountColumn": "Montant"
+      },
+      "detail": {
+        "backToList": "Retour aux lots de pénalités de retard",
+        "batchTitle": "Lot — {runDate}",
+        "policyLabel": "Politique",
+        "summaryTitle": "Résumé"
+      }
+    },
+    "concessionSchemes": {
+      "pageTitle": "Régimes de concession",
+      "pageSubtitle": "Configurez les régimes d'exonération, de remise, de bourse d'études et de bourse sociale contre lesquels une concession peut être demandée.",
+      "newScheme": "Nouveau régime",
+      "listTitle": "Régimes",
+      "table": {
+        "name": "Nom",
+        "kind": "Type",
+        "calc": "Calcul",
+        "value": "Valeur",
+        "status": "Statut"
+      },
+      "dialog": {
+        "titleCreate": "Nouveau régime de concession",
+        "titleEdit": "Modifier le régime de concession",
+        "description": "Définit comment une concession relevant de ce régime est calculée et quel compte de charges (GL) l'absorbe.",
+        "name": "Nom",
+        "kind": "Type",
+        "calc": "Calcul",
+        "valuePercent": "Valeur (%)",
+        "valueFixed": "Valeur (montant fixe)",
+        "categoryScope": "Portée des catégories de frais",
+        "categoryScopeHint": "Laissez toutes les catégories non sélectionnées pour autoriser ce régime sur n'importe quelle catégorie de frais.",
+        "glAccount": "Compte de charges (GL)",
+        "allowsStacking": "Autorise le cumul avec d'autres concessions",
+        "nameRequired": "Le nom est requis.",
+        "valueRequired": "Une valeur est requise.",
+        "glAccountRequired": "Un compte de charges (GL) est requis.",
+        "submit": "Enregistrer",
+        "submitting": "Enregistrement…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "kindValues": {
+        "WAIVER": "Exonération",
+        "DISCOUNT": "Remise",
+        "SCHOLARSHIP": "Bourse d'études",
+        "BURSARY": "Bourse sociale"
+      },
+      "calcValues": {
+        "PERCENT": "Pourcentage",
+        "FIXED": "Montant fixe"
+      },
+      "detail": {
+        "backToList": "Retour aux régimes de concession",
+        "activate": "Activer",
+        "deactivate": "Désactiver",
+        "kindLabel": "Type",
+        "calcLabel": "Calcul",
+        "valueLabel": "Valeur",
+        "categoryScopeLabel": "Portée des catégories de frais",
+        "categoryScopeAll": "Toute catégorie de frais",
+        "allowsStackingLabel": "Autorise le cumul",
+        "glAccountLabel": "Compte de charges (GL)"
+      }
+    },
+    "sponsors": {
+      "pageTitle": "Sponsors",
+      "pageSubtitle": "Gérez les sponsors tiers pouvant financer les frais d'un élève, via des bourses de sponsoring.",
+      "newSponsor": "Nouveau sponsor",
+      "listTitle": "Sponsors",
+      "table": {
+        "name": "Nom",
+        "agreementFile": "Contrat",
+        "hasAgreement": "Disponible",
+        "allowsCashConversion": "Autorise la conversion en espèces"
+      },
+      "dialog": {
+        "titleCreate": "Nouveau sponsor",
+        "titleEdit": "Modifier le sponsor",
+        "description": "Un sponsor est permanent une fois créé — aucune action de suppression ou de désactivation n'existe pour cet enregistrement.",
+        "name": "Nom",
+        "contacts": "Contacts",
+        "addContactRow": "Ajouter une ligne",
+        "contactsHint": "Paires libres libellé/valeur — par ex. « Téléphone » / « +254 700 000000 » — enregistrées telles que saisies.",
+        "contactKeyPlaceholder": "Libellé (ex. Téléphone)",
+        "contactValuePlaceholder": "Valeur",
+        "agreementFile": "Document contractuel",
+        "allowsCashConversion": "Autorise la conversion en espèces",
+        "nameRequired": "Le nom est requis.",
+        "submit": "Enregistrer",
+        "submitting": "Enregistrement…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "detail": {
+        "backToList": "Retour aux sponsors",
+        "contactsLabel": "Contacts",
+        "noContacts": "Aucune coordonnée enregistrée.",
+        "agreementLabel": "Document contractuel",
+        "noAgreement": "Aucun document contractuel enregistré.",
+        "loadingAgreement": "Chargement du document…",
+        "agreementLoadError": "Impossible de charger le document contractuel.",
+        "openAgreement": "Ouvrir le contrat",
+        "allowsCashConversionLabel": "Autorise la conversion en espèces"
+      }
+    },
+    "transportRoutes": {
+      "pageTitle": "Itinéraires de transport",
+      "pageSubtitle": "Gérez les itinéraires de transport auxquels les élèves peuvent être affectés.",
+      "newRoute": "Nouvel itinéraire",
+      "listTitle": "Itinéraires",
+      "table": {
+        "name": "Nom",
+        "amount": "Montant",
+        "status": "Statut"
+      },
+      "dialog": {
+        "titleCreate": "Nouvel itinéraire de transport",
+        "titleEdit": "Modifier l'itinéraire de transport",
+        "description": "Un itinéraire auquel un élève peut être affecté et facturé.",
+        "name": "Nom",
+        "amount": "Montant",
+        "amountHint": "Le montant forfaitaire facturé par élève lorsque cet itinéraire est facturé via Facturer le transport.",
+        "nameRequired": "Le nom est requis.",
+        "amountRequired": "Un montant est requis.",
+        "submit": "Enregistrer",
+        "submitting": "Enregistrement…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+        "bus": "Bus",
+        "busPlaceholder": "ex. KAA 001X",
+        "busHint": "Facultatif — le véhicule desservant cet itinéraire, utilisé dans le récapitulatif revenus/dépenses ci-dessous."
+      },
+      "detail": {
+        "backToList": "Retour aux itinéraires de transport",
+        "activate": "Activer",
+        "deactivate": "Désactiver",
+        "amountLabel": "Montant",
+        "billTransportHint": "Le montant de cet itinéraire n'est pas facturé automatiquement du simple fait d'y affecter des élèves.",
+        "billTransportLink": "Utilisez Facturer le transport pour générer des factures pour les élèves sélectionnés.",
+        "busLabel": "Bus",
+        "busNotSet": "Non défini"
+      },
+      "billTransport": "Facturer le transport",
+      "billForm": {
+        "pageTitle": "Facturer le transport",
+        "pageSubtitle": "Générer des factures de frais de transport pour les élèves d'un itinéraire.",
+        "backToList": "Retour aux itinéraires de transport",
+        "formTitle": "Facturer un itinéraire de transport",
+        "academicYearTerm": "Année académique et trimestre",
+        "selectYear": "Sélectionner l'année académique",
+        "selectTerm": "Sélectionner le trimestre",
+        "class": "Classe",
+        "selectClass": "Sélectionner la classe",
+        "route": "Itinéraire",
+        "selectRoute": "Sélectionner l'itinéraire",
+        "routeAmountHint": "Chaque élève sélectionné sera facturé {amount} pour cet itinéraire.",
+        "students": "Élèves",
+        "studentSearchPlaceholder": "Rechercher par nom ou n° d'admission…",
+        "selectAll": "Tout sélectionner",
+        "selectedCount": "{count} sélectionné(s)",
+        "noStudentsMatchSearch": "Aucun élève ne correspond à votre recherche.",
+        "selectClassAndRouteFirst": "Sélectionnez une classe et un itinéraire pour voir ses élèves.",
+        "onThisRouteTag": "(sur cet itinéraire)",
+        "collectFromWallet": "Prélever le montant du portefeuille de l'élève",
+        "collectFromWalletNotice": "Le solde actuel complet du portefeuille de l'élève sera appliqué à la ou aux factures générées.",
+        "applyCreditBalance": "Appliquer le solde créditeur disponible",
+        "applyCreditBalanceNotice": "Le solde créditeur actuel complet de l'élève sera appliqué à la ou aux factures générées.",
+        "termRequired": "Un trimestre est requis.",
+        "classRequired": "Une classe est requise.",
+        "routeRequired": "Un itinéraire est requis.",
+        "studentsRequired": "Sélectionnez au moins un élève.",
+        "generating": "Génération…",
+        "collecting": "Prélèvement des portefeuilles…",
+        "applyingCredit": "Application du solde créditeur…",
+        "submit": "Générer la facture",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+        "resultTitle": "Résultat",
+        "resultSucceeded": "{invoices} facture(s) générée(s) pour {students} élève(s).",
+        "resultFailedTitle": "Échecs",
+        "walletResultTitle": "Prélèvement du portefeuille",
+        "walletSettled": "Réglé : {count}",
+        "walletPartialShortfall": "Solde restant : {count}",
+        "walletNeedsApproval": "Nécessite une approbation : {count}",
+        "walletInsufficientBalance": "Solde insuffisant : {count}",
+        "walletNoWallet": "Aucun portefeuille : {count}",
+        "walletFailed": "Échoué : {count}",
+        "viewReceiptLink": "Voir le reçu",
+        "walletOutcome": {
+          "settled": "Réglé depuis le portefeuille : {amount}",
+          "partialShortfall": "{amount} de la facture reste impayé après le prélèvement",
+          "needsApproval": "Dépasse le seuil d'approbation des transferts de portefeuille — approbation requise",
+          "insufficientBalance": "Solde du portefeuille insuffisant",
+          "noWallet": "L'élève n'a pas de portefeuille provisionné",
+          "failed": "Le transfert du portefeuille a échoué"
+        },
+        "creditBalanceResultTitle": "Application du solde créditeur",
+        "creditBalanceSettled": "Réglé : {count}",
+        "creditBalancePartialShortfall": "Solde restant : {count}",
+        "creditBalanceFailed": "Échoué : {count}",
+        "creditBalanceOutcome": {
+          "settled": "Appliqué depuis le solde créditeur : {amount}",
+          "partialShortfall": "{amount} de la facture reste impayé après application du solde créditeur",
+          "failed": "L'application du solde créditeur a échoué"
+        }
+      },
+      "expenses": {
+        "title": "Dépenses du bus",
+        "logDialog": {
+          "trigger": "Enregistrer une dépense de bus",
+          "title": "Enregistrer une dépense de bus",
+          "description": "Crée un bon de dépense en BROUILLON (carburant, réparations, ou autre coût) lié à cet itinéraire.",
+          "logging": "Enregistrement…",
+          "logButton": "Enregistrer la dépense",
+          "genericError": "Une erreur s'est produite. Veuillez réessayer."
+        }
+      },
+      "summary": {
+        "title": "Revenus vs dépenses",
+        "income": "Revenus (frais de transport facturés)",
+        "expense": "Dépenses (dépenses de bus)",
+        "net": "Net"
+      }
+    },
+    "sponsorAwards": {
+      "table": {
+        "sponsor": "Sponsor",
+        "term": "Trimestre",
+        "amount": "Montant de la bourse",
+        "appliedAmount": "Déjà appliqué",
+        "remaining": "Solde restant",
+        "appliesAutomaticallyNote": "Les bourses s'appliquent automatiquement lors de la prochaine émission d'une facture pour cet élève et ce trimestre — aucune action manuelle « appliquer » n'existe dans ce tableau."
+      },
+      "dialog": {
+        "trigger": "Nouvelle bourse",
+        "title": "Nouvelle bourse de sponsor",
+        "description": "Réserve un financement du sponsor pour cet élève pour un trimestre. La bourse s'applique automatiquement aux factures futures — aucune autre action n'est requise ici.",
+        "sponsor": "Sponsor",
+        "sponsorPlaceholder": "Sélectionner un sponsor",
+        "sponsorSearchPlaceholder": "Rechercher des sponsors…",
+        "sponsorEmptyText": "Aucun sponsor trouvé.",
+        "term": "Trimestre",
+        "yearPlaceholder": "Année scolaire",
+        "termPlaceholder": "Trimestre",
+        "amount": "Montant de la bourse",
+        "categoryScope": "Limiter à certaines catégories de frais (facultatif)",
+        "categoryScopeHint": "Ne rien sélectionner pour permettre à cette bourse de s'appliquer à n'importe quelle catégorie de frais sur les factures de cet élève pour le trimestre.",
+        "appliesAutomaticallyHint": "Cette bourse s'applique automatiquement lors de la prochaine émission d'une facture pour cet élève et ce trimestre — il n'y a pas d'étape « appliquer » distincte.",
+        "sponsorRequired": "Sélectionnez un sponsor.",
+        "termRequired": "Sélectionnez un trimestre.",
+        "amountRequired": "Un montant de bourse est requis.",
+        "submit": "Créer la bourse",
+        "submitting": "Enregistrement…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      }
+    },
+    "optionalItems": {
+      "yearPlaceholder": "Année scolaire",
+      "termPlaceholder": "Trimestre",
+      "selectTermFirst": "Sélectionnez un trimestre pour voir les inscriptions aux éléments optionnels de cet élève.",
+      "addItem": "Ajouter un élément optionnel",
+      "timingHint": "L'inscription doit avoir lieu avant la génération de la facture de ce trimestre pour avoir un effet — ajouter un élément après la facturation n'a aucun effet rétroactif.",
+      "usingStructureDefault": "Utilise le montant par défaut de la structure de frais",
+      "overrideAmount": "Montant remplacé : {amount}",
+      "dialog": {
+        "title": "Ajouter un élément optionnel",
+        "description": "Inscrit cet élève à un élément optionnel d'une catégorie de frais pour le trimestre sélectionné.",
+        "feeCategory": "Catégorie de frais",
+        "feeCategoryPlaceholder": "Sélectionner une catégorie de frais",
+        "feeCategorySearchPlaceholder": "Rechercher des catégories de frais…",
+        "feeCategoryEmptyText": "Aucune catégorie de frais trouvée.",
+        "feeCategoryRequired": "Sélectionnez une catégorie de frais.",
+        "amountOverride": "Montant de remplacement (facultatif)",
+        "amountOverrideHint": "Laisser vide pour utiliser le montant par défaut de la structure de frais pour cette catégorie.",
+        "duplicateError": "Cet élève est déjà inscrit à cet élément optionnel pour ce trimestre.",
+        "submit": "Ajouter l'élément",
+        "submitting": "Enregistrement…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "removeDialog": {
+        "trigger": "Retirer",
+        "title": "Retirer cet élément optionnel ?",
+        "description": "Retire {name} des inscriptions aux éléments optionnels de cet élève pour ce trimestre. Si la facture de ce trimestre a déjà été générée, cela n'a aucun effet sur elle — l'élément a déjà été facturé ou ignoré lors de la génération.",
+        "removing": "Retrait…",
+        "genericError": "Impossible de retirer cet élément. Veuillez réessayer."
+      }
+    },
+    "common": {
+      "glAccountPicker": {
+        "selectGlAccount": "Sélectionner un compte GL",
+        "searchGlAccount": "Rechercher par code ou nom…",
+        "loadingAccounts": "Chargement des comptes…",
+        "noAccountsFound": "Aucun compte trouvé — configurez d'abord le plan comptable.",
+        "glAccountUuidPlaceholder": "Identifiant du compte GL (UUID)",
+        "glAccountLoadFailedHint": "Impossible de charger les comptes GL — saisissez l'identifiant du compte manuellement. Cela signifie généralement que votre rôle n'a pas accès au plan comptable."
+      },
+      "agreementFilePicker": {
+        "upload": "Téléverser",
+        "uploading": "Téléversement…",
+        "replace": "Remplacer",
+        "remove": "Retirer",
+        "uploadError": "Impossible de téléverser ce fichier. Veuillez réessayer.",
+        "documentLabel": "Document contractuel",
+        "loadingPreview": "Chargement…",
+        "previewError": "Impossible de charger ce document.",
+        "openInNewTab": "Ouvrir dans un nouvel onglet"
+      }
+    },
+    "documentLineEditor": {
+      "category": "Catégorie de frais",
+      "selectCategory": "Sélectionner une catégorie de frais",
+      "searchCategory": "Rechercher des catégories de frais…",
+      "description": "Description",
+      "descriptionOptionalHint": "Facultatif — utilise par défaut le nom de la catégorie de frais",
+      "amount": "Montant",
+      "maxHint": "Jusqu'à {amount} (le montant de la ligne de facture d'origine)",
+      "addLine": "Ajouter une ligne",
+      "removeLine": "Supprimer la ligne"
+    },
+    "creditNotes": {
+      "table": {
+        "number": "N° de note de crédit",
+        "reason": "Motif",
+        "status": "Statut",
+        "total": "Total"
+      },
+      "dialog": {
+        "trigger": "Nouvelle note de crédit",
+        "title": "Nouvelle note de crédit",
+        "description": "Corrige une facture émise pour laquelle un paiement a déjà été appliqué, en créditant une ou plusieurs de ses lignes d'origine.",
+        "reason": "Motif",
+        "reasonRequired": "Un motif est requis.",
+        "categoryRequired": "Sélectionnez une catégorie de frais pour chaque ligne.",
+        "amountRequired": "Saisissez un montant pour chaque ligne.",
+        "noInvoiceLinesHint": "Cette facture n'a aucune ligne à créditer.",
+        "submitting": "Création…",
+        "submit": "Créer la note de crédit",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "statusValues": {
+        "DRAFT": "Brouillon",
+        "PENDING_APPROVAL": "En attente d'approbation",
+        "APPROVED": "Approuvée",
+        "POSTED": "Comptabilisée"
+      },
+      "statusActions": {
+        "submitTrigger": "Soumettre pour approbation",
+        "submitting": "Soumission…",
+        "approveTrigger": "Approuver",
+        "approveConfirmTitle": "Approuver cette note de crédit ?",
+        "approveConfirmDescription": "Ceci approuve la note de crédit {number}, permettant qu'elle soit comptabilisée.",
+        "approving": "Approbation…",
+        "approveConfirmButton": "Approuver",
+        "rejectTrigger": "Rejeter",
+        "rejectConfirmTitle": "Renvoyer cette note de crédit au brouillon ?",
+        "rejectConfirmDescription": "La note de crédit {number} n'a pas d'état « Rejetée » permanent — ceci la renvoie au statut Brouillon, où elle peut être modifiée puis resoumise.",
+        "rejecting": "Renvoi…",
+        "rejectConfirmButton": "Renvoyer au brouillon",
+        "postTrigger": "Comptabiliser",
+        "postConfirmTitle": "Comptabiliser cette note de crédit ?",
+        "postConfirmDescription": "Ceci comptabilise la note de crédit {number} dans le grand livre.",
+        "postInvoiceEffectNote": "La comptabilisation réduit directement le montant payé et le solde de la facture visée — le même effet qu'aurait un véritable remboursement.",
+        "posting": "Comptabilisation…",
+        "postConfirmButton": "Comptabiliser",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      }
+    },
+    "debitNotes": {
+      "table": {
+        "number": "N° de note de débit",
+        "term": "Trimestre",
+        "reason": "Motif",
+        "status": "Statut",
+        "total": "Total"
+      },
+      "dialog": {
+        "trigger": "Nouvelle note de débit",
+        "title": "Nouvelle note de débit",
+        "description": "Crée une nouvelle charge directement contre cet élève. Sa comptabilisation génère et comptabilise une véritable nouvelle facture — les mêmes risques de conflit que toute autre comptabilisation de facture s'appliquent ; ce n'est pas un simple ajustement.",
+        "term": "Trimestre",
+        "selectYear": "Sélectionner l'année scolaire",
+        "selectTerm": "Sélectionner le trimestre",
+        "termRequired": "Un trimestre est requis.",
+        "reason": "Motif",
+        "reasonRequired": "Un motif est requis.",
+        "categoryRequired": "Sélectionnez une catégorie de frais pour chaque ligne.",
+        "amountRequired": "Saisissez un montant pour chaque ligne.",
+        "lineDescriptionRequired": "Une description est requise pour chaque ligne.",
+        "submitting": "Création…",
+        "submit": "Créer la note de débit",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "statusValues": {
+        "DRAFT": "Brouillon",
+        "POSTED": "Comptabilisée"
+      },
+      "statusActions": {
+        "postTrigger": "Comptabiliser",
+        "postConfirmTitle": "Comptabiliser cette note de débit ?",
+        "postConfirmDescription": "Ceci comptabilise la note de débit {number}.",
+        "postInvoiceEffectNote": "La comptabilisation génère et comptabilise une véritable nouvelle facture pour cet élève — exactement les mêmes risques de conflit (p. ex. un conflit de double facturation) que toute autre comptabilisation de facture ; ce n'est pas un simple ajustement.",
+        "posting": "Comptabilisation…",
+        "postConfirmButton": "Comptabiliser",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      }
+    },
+    "concessions": {
+      "table": {
+        "kind": "Type",
+        "target": "Régime / bourse de sponsor",
+        "amount": "Montant",
+        "reason": "Motif",
+        "status": "Statut",
+        "sponsorAwardLabel": "Bourse de sponsor : {sponsor}"
+      },
+      "dialog": {
+        "trigger": "Demander une concession",
+        "title": "Demander une concession",
+        "description": "Demande une exonération, une remise, une bourse d'études ou une bourse contre une facture. Cette demande démarre en attente d'approbation — rien n'est comptabilisé tant qu'elle n'est pas approuvée.",
+        "invoice": "Facture",
+        "invoicePlaceholder": "Sélectionner une facture",
+        "invoiceSearchPlaceholder": "Rechercher des factures…",
+        "invoiceEmptyText": "Cet élève n'a aucune facture comptabilisée ou partiellement payée à cibler.",
+        "invoiceHint": "Seules les factures de cet élève déjà comptabilisées ou partiellement payées sont proposées ici.",
+        "invoiceRequired": "Sélectionnez une facture.",
+        "balanceSuffix": "solde",
+        "kind": "Type",
+        "kindValues": {
+          "WAIVER": "Exonération",
+          "DISCOUNT": "Remise",
+          "SCHOLARSHIP": "Bourse d'études",
+          "BURSARY": "Bourse"
+        },
+        "targetMode": "Financé par",
+        "targetModeScheme": "Régime de concession",
+        "targetModeSponsorAward": "Bourse de sponsor",
+        "scheme": "Régime de concession",
+        "schemePlaceholder": "Sélectionner un régime",
+        "schemeSearchPlaceholder": "Rechercher des régimes…",
+        "schemeEmptyText": "Aucun régime de concession actif trouvé.",
+        "schemeRequired": "Sélectionnez un régime de concession.",
+        "sponsorAward": "Bourse de sponsor",
+        "sponsorAwardPlaceholder": "Sélectionner une bourse de sponsor",
+        "sponsorAwardSearchPlaceholder": "Rechercher des bourses de sponsor…",
+        "sponsorAwardEmptyText": "Cet élève n'a aucune bourse de sponsor.",
+        "sponsorAwardRequired": "Sélectionnez une bourse de sponsor.",
+        "sponsorAwardItemLabel": "{sponsor} — {remaining} restant",
+        "amount": "Montant",
+        "amountRequired": "Un montant est requis.",
+        "reason": "Motif",
+        "reasonRequired": "Un motif est requis.",
+        "submit": "Demander la concession",
+        "submitting": "Envoi…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "statusValues": {
+        "PENDING_APPROVAL": "En attente d'approbation",
+        "APPROVED": "Approuvée",
+        "REJECTED": "Rejetée",
+        "POSTED": "Comptabilisée"
+      },
+      "statusActions": {
+        "approveTrigger": "Approuver",
+        "approveConfirmTitle": "Approuver cette concession ?",
+        "approveConfirmDescription": "Ceci approuve la concession. Si la facture ciblée est déjà comptabilisée, elle pourra ensuite être comptabilisée séparément ; si la facture est encore un brouillon, la concession sera intégrée automatiquement lors de sa propre comptabilisation.",
+        "approving": "Approbation…",
+        "approveConfirmButton": "Approuver",
+        "rejectTrigger": "Rejeter",
+        "rejectConfirmTitle": "Rejeter cette concession ?",
+        "rejectConfirmDescription": "Ceci rejette définitivement la concession. Elle ne peut pas être resoumise — une nouvelle demande devrait être créée à la place.",
+        "rejecting": "Rejet…",
+        "rejectConfirmButton": "Rejeter",
+        "postStandaloneTrigger": "Comptabiliser séparément",
+        "postStandaloneConfirmTitle": "Comptabiliser cette concession séparément ?",
+        "postStandaloneConfirmDescription": "Ceci comptabilise la concession directement contre la facture {number}, déjà comptabilisée.",
+        "postStandaloneBlocksVoidNote": "Ceci bloque définitivement l'action d'annulation de cette facture — une fois qu'un ajustement comme celui-ci est appliqué, utilisez plutôt une note de crédit pour toute correction ultérieure.",
+        "postingStandalone": "Comptabilisation…",
+        "postStandaloneConfirmButton": "Comptabiliser séparément",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "autoFoldNote": "Cette facture est encore un brouillon. Une concession approuvée qui la cible n'est pas comptabilisée séparément — elle sera intégrée automatiquement lors de la prochaine comptabilisation de cette facture, sans action séparée possible ou nécessaire d'ici là."
+    },
+    "refundVouchers": {
+      "table": {
+        "number": "N° de bon",
+        "status": "Statut",
+        "amount": "Montant",
+        "method": "Méthode",
+        "journal": "Journal GL",
+        "journalPosted": "Comptabilisé",
+        "journalNotPosted": "Pas encore comptabilisé"
+      },
+      "methodValues": {
+        "CASH": "Espèces",
+        "BANK": "Virement bancaire",
+        "MPESA_B2C": "M-Pesa B2C"
+      },
+      "dialog": {
+        "trigger": "Nouveau bon de remboursement",
+        "title": "Nouveau bon de remboursement",
+        "description": "Demande un remboursement payé à partir du solde créditeur propre à cet élève — un remboursement ne peut jamais créer une créance négative.",
+        "amount": "Montant",
+        "amountRequired": "Un montant est requis.",
+        "creditBalanceHint": "Solde créditeur disponible : {balance}. Le serveur applique ceci comme un plafond strict à la création du bon.",
+        "creditBalanceLoading": "Chargement du solde créditeur de cet élève…",
+        "creditBalanceExceededHint": "Ceci dépasse le solde créditeur actuel de l'élève — le serveur le refusera.",
+        "method": "Méthode de paiement",
+        "payee": "Détails du bénéficiaire",
+        "addPayeeRow": "Ajouter un détail",
+        "payeeHint": "Détails libres sur la personne qui recevra ce remboursement (p. ex. nom, téléphone, numéro de compte) — facultatif.",
+        "payeeKeyPlaceholder": "Libellé (p. ex. Téléphone)",
+        "payeeValuePlaceholder": "Valeur",
+        "submitting": "Création…",
+        "submit": "Créer le bon de remboursement",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "statusValues": {
+        "DRAFT": "Brouillon",
+        "PENDING_APPROVAL": "En attente d'approbation",
+        "APPROVED": "Approuvé",
+        "APPROVED_UNPAID": "Approuvé — non payé",
+        "PAID": "Payé",
+        "CANCELLED": "Annulé"
+      },
+      "statusActions": {
+        "submitTrigger": "Soumettre pour approbation",
+        "submitting": "Soumission…",
+        "approveTrigger": "Approuver",
+        "approveConfirmTitle": "Approuver ce bon de remboursement ?",
+        "approveConfirmDescription": "Ceci approuve le bon de remboursement {number}.",
+        "approveEffectNote": "Approuver (ceci comptabilisera aussi l'écriture GL et passera directement à Non payé) — il n'existe pas d'étape intermédiaire « approuvé mais pas encore comptabilisé ».",
+        "approving": "Approbation…",
+        "approveConfirmButton": "Approuver",
+        "rejectTrigger": "Rejeter",
+        "rejectConfirmTitle": "Rejeter ce bon de remboursement ?",
+        "rejectConfirmDescription": "Ceci annule directement le bon de remboursement {number} — aucune activité GL ne se produit, et ceci est irréversible.",
+        "rejecting": "Rejet…",
+        "rejectConfirmButton": "Rejeter",
+        "markPaidTrigger": "Marquer payé",
+        "markPaidConfirmTitle": "Marquer ce bon de remboursement comme payé ?",
+        "markPaidConfirmDescription": "Confirme que le bon {number} a bien été payé à l'élève.",
+        "b2cTransactionId": "ID de transaction M-Pesa B2C (facultatif)",
+        "b2cTransactionIdPlaceholder": "p. ex. l'ID de transaction du paiement B2C",
+        "b2cHint": "Cette application n'envoie pas elle-même le paiement M-Pesa.",
+        "b2cHintLink": "Utilisez la page M-Pesa B2C pour envoyer le paiement, puis collez ici l'ID de transaction obtenu.",
+        "markingPaid": "Marquage comme payé…",
+        "markPaidConfirmButton": "Marquer payé",
+        "cancelTrigger": "Annuler",
+        "cancelConfirmTitle": "Annuler ce bon de remboursement ?",
+        "cancelConfirmDescription": "Ceci annule le bon de remboursement {number}. Ceci est irréversible.",
+        "cancelAfterApprovalWarning": "Ce bon a déjà été approuvé et son journal GL comptabilisé (débitant le solde de l'élève, créditant le compte de paiement) — l'annuler maintenant NE contre-passera PAS ce journal. Une écriture de compensation devra être passée manuellement si nécessaire.",
+        "cancelling": "Annulation…",
+        "cancelConfirmButton": "Annuler le bon",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      }
+    },
+    "bulkBilling": {
+      "title": "Facturation en masse",
+      "subtitle": "Générer et comptabiliser des factures pour de nombreux élèves à la fois, selon leur propre structure de frais publiée.",
+      "form": {
+        "formTitle": "Générer les factures",
+        "termLabel": "Année scolaire et trimestre",
+        "selectYear": "Sélectionner l'année scolaire",
+        "selectTerm": "Sélectionner le trimestre",
+        "classesLabel": "Classes (facultatif)",
+        "selectClasses": "Sélectionner des classes…",
+        "classesHint": "Laisser vide pour inclure toutes les classes de l'école. Sélectionner une ou plusieurs classes limite cette exécution à ces classes uniquement.",
+        "streamsLabel": "Sections (facultatif)",
+        "selectStreams": "Sélectionner des sections…",
+        "streamsHint": "Limite cette exécution à ces sections uniquement, parmi les classes sélectionnées ci-dessus.",
+        "streamsDisabledHint": "Sélectionnez au moins une classe pour filtrer par section.",
+        "termRequiredError": "Une année scolaire et un trimestre sont requis.",
+        "submit": "Générer les factures",
+        "generating": "Génération en cours…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "confirmDialog": {
+        "normalTitle": "Générer les factures pour ce périmètre ?",
+        "normalBody": "Ceci génère et comptabilise une facture pour chaque élève actif dans les {classCount} classe(s) et {streamCount} section(s) sélectionnées disposant d'une structure de frais publiée pour ce trimestre. Cette action est irréversible.",
+        "dangerTitle": "Ceci facturera toute l'école",
+        "dangerBody": "Vous n'avez sélectionné aucune classe ni section. Ceci va générer et comptabiliser une facture pour TOUS LES ÉLÈVES ACTIFS DE L'ÉCOLE disposant d'une structure de frais publiée pour ce trimestre — il n'y a pas d'annulation possible, et aucune étape de confirmation n'existe côté serveur. Cette fenêtre est la seule protection.",
+        "dangerAlertTitle": "Aucune annulation, aucune seconde confirmation",
+        "dangerAlertBody": "Une fois confirmé, les factures commencent à être générées et comptabilisées immédiatement, élève par élève, pour toute l'école. Un élève déjà facturé pour ce trimestre échoue simplement et est ignoré — tous les autres sont facturés. Cette action ne peut pas être annulée une fois lancée, et si vous fermez cet onglet ou quittez la page, il n'existe aucun moyen de consulter le résultat par la suite.",
+        "typeToConfirmLabel": "Tapez {word} pour confirmer",
+        "confirmButton": "Générer les factures"
+      },
+      "inFlightNoticeTitle": "Ne quittez pas cette page",
+      "inFlightNotice": "Cette exécution est encore en cours. Ne fermez pas cet onglet et ne quittez pas la page — cela peut prendre du temps pour une population importante, et il n'existe aucun moyen de consulter le résultat par la suite si vous quittez.",
+      "result": {
+        "title": "Résultat",
+        "succeededCount": "{count} facture(s) générée(s) et comptabilisée(s) avec succès.",
+        "failedCount": "{count} élève(s) en échec.",
+        "failuresListTitle": "Échecs"
+      }
     }
   },
   "payments": {

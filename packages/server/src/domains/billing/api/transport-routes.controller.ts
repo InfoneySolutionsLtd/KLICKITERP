@@ -3,18 +3,29 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { RequirePermission } from "../../../shared/rbac/require-permission.decorator";
 import { Money } from "../../../shared/money/money";
 import { TransportRoutesService } from "../application/transport-routes.service";
+import { TransportExpenseService } from "../application/transport-expense.service";
 import { BillTransportRouteEntity } from "../domain/bill-transport-route.entity";
 import { CreateTransportRouteDto, TransportRouteResponseDto, UpdateTransportRouteDto } from "./dto/transport-route.dto";
+import { TransportRouteSummaryDto } from "./dto/transport-expense.dto";
 import { AuthenticatedRequest } from "./request-context";
 
 function toView(entity: BillTransportRouteEntity): TransportRouteResponseDto {
-  return { id: entity.id, name: entity.name, amount: entity.amount.toDecimalString(), isActive: entity.isActive };
+  return {
+    id: entity.id,
+    name: entity.name,
+    amount: entity.amount.toDecimalString(),
+    bus: entity.bus,
+    isActive: entity.isActive,
+  };
 }
 
 @ApiTags("billing-transport-routes")
 @Controller("billing/transport-routes")
 export class TransportRoutesController {
-  constructor(private readonly service: TransportRoutesService) {}
+  constructor(
+    private readonly service: TransportRoutesService,
+    private readonly expenseService: TransportExpenseService,
+  ) {}
 
   @Post()
   @RequirePermission("billing:transport-route:manage")
@@ -22,7 +33,10 @@ export class TransportRoutesController {
   @ApiResponse({ status: 201, type: TransportRouteResponseDto })
   async create(@Body() dto: CreateTransportRouteDto, @Req() req: AuthenticatedRequest): Promise<TransportRouteResponseDto> {
     return toView(
-      await this.service.create({ name: dto.name, amount: Money.fromDecimalString(dto.amount) }, req.user?.sub ?? null),
+      await this.service.create(
+        { name: dto.name, amount: Money.fromDecimalString(dto.amount), bus: dto.bus ?? null },
+        req.user?.sub ?? null,
+      ),
     );
   }
 
@@ -54,7 +68,11 @@ export class TransportRoutesController {
     return toView(
       await this.service.update(
         id,
-        { name: dto.name, amount: dto.amount !== undefined ? Money.fromDecimalString(dto.amount) : undefined },
+        {
+          name: dto.name,
+          amount: dto.amount !== undefined ? Money.fromDecimalString(dto.amount) : undefined,
+          bus: dto.bus,
+        },
         req.user?.sub ?? null,
       ),
     );
@@ -74,5 +92,14 @@ export class TransportRoutesController {
   @ApiResponse({ status: 200, type: TransportRouteResponseDto })
   async activate(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<TransportRouteResponseDto> {
     return toView(await this.service.activate(id, req.user?.sub ?? null));
+  }
+
+  @Get(":id/summary")
+  @RequirePermission("billing:transport-expense:view")
+  @ApiOperation({ summary: "Income (billed transport fees) vs. expense (logged bus expenses) totals for a route" })
+  @ApiResponse({ status: 200, type: TransportRouteSummaryDto })
+  async summary(@Param("id") id: string): Promise<TransportRouteSummaryDto> {
+    const { totalIncome, totalExpense } = await this.expenseService.getSummary(id);
+    return { routeId: id, totalIncome, totalExpense };
   }
 }

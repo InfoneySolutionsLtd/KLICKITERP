@@ -2533,6 +2533,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/billing/transport-routes/{id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Income (billed transport fees) vs. expense (logged bus expenses) totals for a route */
+        get: operations["TransportRoutesController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/transport-routes/bill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bill a transport route's flat fee to selected students for a term */
+        post: operations["TransportBillingController_bill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/transport-routes/{routeId}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List bus expenses logged against a transport route */
+        get: operations["TransportExpensesController_list"];
+        put?: never;
+        /** Log a bus expense (a real exp_voucher) against a transport route */
+        post: operations["TransportExpensesController_logExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/billing/fee-structures": {
         parameters: {
             query?: never;
@@ -3517,6 +3569,493 @@ export interface paths {
         get: operations["DocumentVerificationController_verify"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List categories, optionally filtered by parentId (pass 'null' for root categories) */
+        get: operations["CategoriesController_list"];
+        put?: never;
+        /** Create an expense category (BR-EXP-01: requires a valid, active, postable EXPENSE-class gl_expense_account_id) */
+        post: operations["CategoriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a category by id */
+        get: operations["CategoriesController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a category */
+        patch: operations["CategoriesController_update"];
+        trace?: never;
+    };
+    "/api/v1/expenses/vouchers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List vouchers, optionally filtered by status */
+        get: operations["VouchersController_list"];
+        put?: never;
+        /** Create a DRAFT expense voucher */
+        post: operations["VouchersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/vouchers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a voucher by id */
+        get: operations["VouchersController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a DRAFT voucher */
+        patch: operations["VouchersController_update"];
+        trace?: never;
+    };
+    "/api/v1/expenses/vouchers/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a DRAFT voucher for approval (BR-EXP-03 attachment check + informational budget check) */
+        post: operations["VouchersController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/vouchers/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record APPROVED for a PENDING_APPROVAL voucher (interim manual-trigger pattern) */
+        post: operations["VouchersController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/vouchers/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record a rejection for a PENDING_APPROVAL voucher (maps to CANCELLED — exp_voucher has no dedicated REJECTED status) */
+        post: operations["VouchersController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/vouchers/{id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pay an APPROVED voucher (realizes P-25, allocates the real EXP_VOUCHER number) */
+        post: operations["VouchersController_pay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/floats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List petty cash floats */
+        get: operations["PettyCashController_listFloats"];
+        put?: never;
+        /** Create a petty cash float for a custodian (one per custodian, balance starts fully funded at ceiling — see PettyCashService's doc comment) */
+        post: operations["PettyCashController_createFloat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/floats/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a float by id */
+        get: operations["PettyCashController_findFloat"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/floats/{id}/ceiling": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a float's ceiling (cannot go below the current balance) */
+        patch: operations["PettyCashController_updateCeiling"];
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/floats/{id}/spend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Spend against a float (BR-EXP-02 balance-floor check; no per-voucher approval or GL posting — see PettyCashService's doc comment) */
+        post: operations["PettyCashController_spend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/floats/{id}/vouchers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a float's petty cash vouchers */
+        get: operations["PettyCashController_listVouchers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/floats/{id}/replenishments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a float's replenishment requests */
+        get: operations["PettyCashController_listReplenishments"];
+        put?: never;
+        /** Request a replenishment (collects unclaimed APPROVED vouchers since the last replenishment, submits for approval) */
+        post: operations["PettyCashController_requestReplenishment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/replenishments/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record APPROVED for a PENDING_APPROVAL replenishment */
+        post: operations["PettyCashController_approveReplenishment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/replenishments/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject a PENDING_APPROVAL replenishment (the row is deleted — see PettyCashService's doc comment; the same vouchers can be resubmitted later) */
+        post: operations["PettyCashController_rejectReplenishment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/petty-cash/replenishments/{id}/execute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Execute an APPROVED replenishment (realizes P-26, restores the float balance toward its ceiling, capped) */
+        post: operations["PettyCashController_executeReplenishment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List claims, optionally filtered by staffUserId and/or status */
+        get: operations["ClaimsController_list"];
+        put?: never;
+        /** Create a DRAFT expense claim (staffUserId = the caller, unless the caller is filing on someone else's behalf) */
+        post: operations["ClaimsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a claim by id */
+        get: operations["ClaimsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/{id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a claim's lines */
+        get: operations["ClaimsController_listLines"];
+        put?: never;
+        /** Add a line to a DRAFT claim */
+        post: operations["ClaimsController_addLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/lines/{lineId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a line from a DRAFT claim */
+        delete: operations["ClaimsController_removeLine"];
+        options?: never;
+        head?: never;
+        /** Update a line on a DRAFT claim */
+        patch: operations["ClaimsController_updateLine"];
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a DRAFT claim for approval (EXPENSE_CLAIMS chain) */
+        post: operations["ClaimsController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record APPROVED for a PENDING_APPROVAL claim (interim manual-trigger pattern) */
+        post: operations["ClaimsController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record REJECTED for a PENDING_APPROVAL claim */
+        post: operations["ClaimsController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/claims/{id}/reimburse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reimburse an APPROVED claim — DIRECT posts real cash (method required); PAYROLL posts an accrual to Staff Reimbursements Payable (2040), settled later by Module 15 */
+        post: operations["ClaimsController_reimburse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/recurring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List recurring templates */
+        get: operations["RecurringController_list"];
+        put?: never;
+        /** Create a recurring expense voucher template */
+        post: operations["RecurringController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/recurring/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a recurring template by id */
+        get: operations["RecurringController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a recurring template */
+        patch: operations["RecurringController_update"];
+        trace?: never;
+    };
+    "/api/v1/expenses/recurring/run-due": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** MANUAL trigger — materializes a DRAFT exp_voucher for every active template whose next_run_on has arrived, advances next_run_on per schedule_cron */
+        post: operations["RecurringController_runDue"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5315,10 +5854,10 @@ export interface paths {
             cookie?: never;
         };
         /** List categories, optionally filtered by parent (omit for all, empty string for root-level) */
-        get: operations["CategoriesController_list"];
+        get: operations["CategoriesController_list__inventory"];
         put?: never;
         /** Create a category */
-        post: operations["CategoriesController_create"];
+        post: operations["CategoriesController_create__inventory"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5333,14 +5872,14 @@ export interface paths {
             cookie?: never;
         };
         /** Get a category by id */
-        get: operations["CategoriesController_findOne"];
+        get: operations["CategoriesController_findOne__inventory"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /** Update a category */
-        patch: operations["CategoriesController_update"];
+        patch: operations["CategoriesController_update__inventory"];
         trace?: never;
     };
     "/api/v1/inventory/stores": {
@@ -5739,493 +6278,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/expenses/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List categories, optionally filtered by parentId (pass 'null' for root categories) */
-        get: operations["CategoriesController_list__expenses"];
-        put?: never;
-        /** Create an expense category (BR-EXP-01: requires a valid, active, postable EXPENSE-class gl_expense_account_id) */
-        post: operations["CategoriesController_create__expenses"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/categories/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a category by id */
-        get: operations["CategoriesController_findOne__expenses"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update a category */
-        patch: operations["CategoriesController_update__expenses"];
-        trace?: never;
-    };
-    "/api/v1/expenses/vouchers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List vouchers, optionally filtered by status */
-        get: operations["VouchersController_list"];
-        put?: never;
-        /** Create a DRAFT expense voucher */
-        post: operations["VouchersController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/vouchers/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a voucher by id */
-        get: operations["VouchersController_findOne"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update a DRAFT voucher */
-        patch: operations["VouchersController_update"];
-        trace?: never;
-    };
-    "/api/v1/expenses/vouchers/{id}/submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Submit a DRAFT voucher for approval (BR-EXP-03 attachment check + informational budget check) */
-        post: operations["VouchersController_submit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/vouchers/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Manually record APPROVED for a PENDING_APPROVAL voucher (interim manual-trigger pattern) */
-        post: operations["VouchersController_approve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/vouchers/{id}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Manually record a rejection for a PENDING_APPROVAL voucher (maps to CANCELLED — exp_voucher has no dedicated REJECTED status) */
-        post: operations["VouchersController_reject"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/vouchers/{id}/pay": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Pay an APPROVED voucher (realizes P-25, allocates the real EXP_VOUCHER number) */
-        post: operations["VouchersController_pay"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/floats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List petty cash floats */
-        get: operations["PettyCashController_listFloats"];
-        put?: never;
-        /** Create a petty cash float for a custodian (one per custodian, balance starts fully funded at ceiling — see PettyCashService's doc comment) */
-        post: operations["PettyCashController_createFloat"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/floats/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a float by id */
-        get: operations["PettyCashController_findFloat"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/floats/{id}/ceiling": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update a float's ceiling (cannot go below the current balance) */
-        patch: operations["PettyCashController_updateCeiling"];
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/floats/{id}/spend": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Spend against a float (BR-EXP-02 balance-floor check; no per-voucher approval or GL posting — see PettyCashService's doc comment) */
-        post: operations["PettyCashController_spend"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/floats/{id}/vouchers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List a float's petty cash vouchers */
-        get: operations["PettyCashController_listVouchers"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/floats/{id}/replenishments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List a float's replenishment requests */
-        get: operations["PettyCashController_listReplenishments"];
-        put?: never;
-        /** Request a replenishment (collects unclaimed APPROVED vouchers since the last replenishment, submits for approval) */
-        post: operations["PettyCashController_requestReplenishment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/replenishments/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Manually record APPROVED for a PENDING_APPROVAL replenishment */
-        post: operations["PettyCashController_approveReplenishment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/replenishments/{id}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reject a PENDING_APPROVAL replenishment (the row is deleted — see PettyCashService's doc comment; the same vouchers can be resubmitted later) */
-        post: operations["PettyCashController_rejectReplenishment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/petty-cash/replenishments/{id}/execute": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Execute an APPROVED replenishment (realizes P-26, restores the float balance toward its ceiling, capped) */
-        post: operations["PettyCashController_executeReplenishment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List claims, optionally filtered by staffUserId and/or status */
-        get: operations["ClaimsController_list"];
-        put?: never;
-        /** Create a DRAFT expense claim (staffUserId = the caller, unless the caller is filing on someone else's behalf) */
-        post: operations["ClaimsController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a claim by id */
-        get: operations["ClaimsController_findOne"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/{id}/lines": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List a claim's lines */
-        get: operations["ClaimsController_listLines"];
-        put?: never;
-        /** Add a line to a DRAFT claim */
-        post: operations["ClaimsController_addLine"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/lines/{lineId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Remove a line from a DRAFT claim */
-        delete: operations["ClaimsController_removeLine"];
-        options?: never;
-        head?: never;
-        /** Update a line on a DRAFT claim */
-        patch: operations["ClaimsController_updateLine"];
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/{id}/submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Submit a DRAFT claim for approval (EXPENSE_CLAIMS chain) */
-        post: operations["ClaimsController_submit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Manually record APPROVED for a PENDING_APPROVAL claim (interim manual-trigger pattern) */
-        post: operations["ClaimsController_approve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/{id}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Manually record REJECTED for a PENDING_APPROVAL claim */
-        post: operations["ClaimsController_reject"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/claims/{id}/reimburse": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reimburse an APPROVED claim — DIRECT posts real cash (method required); PAYROLL posts an accrual to Staff Reimbursements Payable (2040), settled later by Module 15 */
-        post: operations["ClaimsController_reimburse"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/recurring": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List recurring templates */
-        get: operations["RecurringController_list"];
-        put?: never;
-        /** Create a recurring expense voucher template */
-        post: operations["RecurringController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/recurring/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a recurring template by id */
-        get: operations["RecurringController_findOne"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update a recurring template */
-        patch: operations["RecurringController_update"];
-        trace?: never;
-    };
-    "/api/v1/expenses/recurring/run-due": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** MANUAL trigger — materializes a DRAFT exp_voucher for every active template whose next_run_on has arrived, advances next_run_on per schedule_cron */
-        post: operations["RecurringController_runDue"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/payroll/employees": {
         parameters: {
             query?: never;
@@ -6303,7 +6355,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a pyrl_employee by id with REAL plaintext pay_details/bank_name/branch/account — gated behind payroll:employee:manage, not :view (FR-PYRL-012.1) */
+        /** Get a pyrl_employee by id with REAL plaintext national_id/kra_pin/pay_details/bank_name/branch/account — gated behind payroll:employee:manage, not :view (FR-PYRL-012.1) */
         get: operations["EmployeesController_findOneDecrypted"];
         put?: never;
         post?: never;
@@ -10545,6 +10597,8 @@ export interface components {
             name: string;
             /** @description Decimal string */
             amount: string;
+            /** @description Free-text identifier for the vehicle serving this route (e.g. plate number) */
+            bus?: string | null;
         };
         TransportRouteResponseDto: {
             /** Format: uuid */
@@ -10552,12 +10606,74 @@ export interface components {
             name: string;
             /** @description Decimal string */
             amount: string;
+            bus: Record<string, never> | null;
             isActive: boolean;
         };
         UpdateTransportRouteDto: {
             name?: string;
             /** @description Decimal string */
             amount?: string;
+            bus?: string | null;
+        };
+        TransportRouteSummaryDto: {
+            /** Format: uuid */
+            routeId: string;
+            /** @description Decimal string — sum of all transport fee invoice lines billed for this route */
+            totalIncome: string;
+            /** @description Decimal string — sum of all voucher amounts logged as expenses against this route */
+            totalExpense: string;
+        };
+        BillTransportRouteDto: {
+            /** Format: uuid */
+            routeId: string;
+            /** Format: uuid */
+            termId: string;
+            studentIds: string[];
+            /**
+             * Format: date
+             * @description Defaults to today
+             */
+            issueDate?: string;
+        };
+        BillTransportSuccessDto: {
+            /** Format: uuid */
+            studentId: string;
+            invoiceIds: string[];
+        };
+        BillTransportFailureDto: {
+            /** Format: uuid */
+            studentId: string;
+            error: string;
+        };
+        BillTransportResultDto: {
+            succeeded: components["schemas"]["BillTransportSuccessDto"][];
+            failed: components["schemas"]["BillTransportFailureDto"][];
+        };
+        LogTransportExpenseDto: {
+            /** @enum {string} */
+            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
+            /** @description Polymorphic payee identity, shape depends on payeeType */
+            payeeRef: Record<string, never>;
+            /** @description Decimal string */
+            amount: string;
+            /** @enum {string} */
+            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
+            narrative: string;
+        };
+        TransportExpenseResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            routeId: string;
+            /** Format: uuid */
+            voucherId: string;
+            voucherNumber: string;
+            /** @description Decimal string */
+            amount: string;
+            status: string;
+            narrative: string;
+            /** Format: date-time */
+            createdAt: string;
         };
         CreateFeeStructureDto: {
             /** Format: uuid */
@@ -11144,6 +11260,254 @@ export interface components {
              */
             issuedAt: string;
         };
+        CreateCategoryDto: {
+            name: string;
+            /** Format: uuid */
+            parentId?: string | null;
+        };
+        CategoryResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: uuid */
+            parentId: Record<string, never> | null;
+        };
+        UpdateCategoryDto: {
+            name?: string;
+            /** Format: uuid */
+            parentId?: Record<string, never> | null;
+        };
+        CreateVoucherDto: {
+            /** @enum {string} */
+            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
+            /** @description Polymorphic payee identity, shape depends on payeeType */
+            payeeRef: Record<string, never>;
+            /** Format: uuid */
+            categoryId: string;
+            /** Format: uuid */
+            costCenterId?: string | null;
+            /** @description Decimal string */
+            amount: string;
+            /** @enum {string} */
+            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
+            narrative: string;
+        };
+        VoucherResponseDto: {
+            /** Format: uuid */
+            id: string;
+            number: string;
+            /** @enum {string} */
+            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
+            payeeRef: Record<string, never>;
+            /** Format: uuid */
+            categoryId: string;
+            /** Format: uuid */
+            costCenterId: Record<string, never> | null;
+            /** @description Decimal string */
+            amount: string;
+            /** @enum {string} */
+            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
+            narrative: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "PAID" | "CANCELLED";
+            /** Format: uuid */
+            approvalRef: Record<string, never> | null;
+            /** Format: uuid */
+            journalId: Record<string, never> | null;
+        };
+        UpdateVoucherDto: {
+            /** @enum {string} */
+            payeeType?: "SUPPLIER" | "STAFF" | "OTHER";
+            payeeRef?: Record<string, never>;
+            /** Format: uuid */
+            categoryId?: string;
+            /** Format: uuid */
+            costCenterId?: Record<string, never> | null;
+            /** @description Decimal string */
+            amount?: string;
+            /** @enum {string} */
+            method?: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
+            narrative?: string;
+        };
+        CreateFloatDto: {
+            /** Format: uuid */
+            custodianUserId: string;
+            /** @description Decimal string */
+            ceiling: string;
+        };
+        FloatResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            custodianUserId: string;
+            /** @description Decimal string */
+            ceiling: string;
+            /** @description Decimal string */
+            balance: string;
+        };
+        UpdateFloatCeilingDto: {
+            /** @description Decimal string */
+            ceiling: string;
+        };
+        SpendDto: {
+            amount: string;
+            /** Format: uuid */
+            servicePointId: string;
+            items?: Record<string, never>;
+            idempotencyKey?: string;
+        };
+        PettyCashVoucherResponseDto: {
+            /** Format: uuid */
+            id: string;
+            number: string;
+            /** Format: uuid */
+            floatId: string;
+            /** Format: uuid */
+            categoryId: string;
+            /** @description Decimal string */
+            amount: string;
+            /** Format: uuid */
+            receiptFileId: Record<string, never> | null;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "CANCELLED";
+            /** Format: uuid */
+            journalId: Record<string, never> | null;
+        };
+        ReplenishmentResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            floatId: string;
+            /** @description Decimal string */
+            amount: string;
+            voucherIds: string[];
+            /** @enum {string} */
+            status: "PENDING_APPROVAL" | "APPROVED" | "PAID";
+            /** Format: uuid */
+            approvalRef: Record<string, never> | null;
+            /** Format: uuid */
+            journalId: Record<string, never> | null;
+        };
+        CreateClaimDto: {
+            /** Format: uuid */
+            staffUserId: string;
+            /** @enum {string} */
+            reimburseVia: "PAYROLL" | "DIRECT";
+        };
+        ClaimResponseDto: {
+            /** Format: uuid */
+            id: string;
+            number: string;
+            /** Format: uuid */
+            staffUserId: string;
+            /** @description Decimal string */
+            total: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REIMBURSED" | "REJECTED" | "CANCELLED";
+            /** @enum {string} */
+            reimburseVia: "PAYROLL" | "DIRECT";
+            /** Format: uuid */
+            approvalRef: Record<string, never> | null;
+        };
+        ClaimLineResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            claimId: string;
+            lineNo: number;
+            /** Format: uuid */
+            categoryId: string;
+            description: string;
+            /** @description Decimal string */
+            amount: string;
+            /** Format: date */
+            expenseDate: string;
+            /** Format: uuid */
+            receiptFileId: Record<string, never> | null;
+        };
+        AddClaimLineDto: {
+            /** Format: uuid */
+            categoryId: string;
+            description: string;
+            /** @description Decimal string */
+            amount: string;
+            /** Format: date */
+            expenseDate: string;
+            /** Format: uuid */
+            receiptFileId?: string | null;
+        };
+        UpdateClaimLineDto: {
+            /** Format: uuid */
+            categoryId?: string;
+            description?: string;
+            /** @description Decimal string */
+            amount?: string;
+            /** Format: date */
+            expenseDate?: string;
+            /** Format: uuid */
+            receiptFileId?: Record<string, never> | null;
+        };
+        ReimburseClaimDto: {
+            /**
+             * @description Required when reimburse_via=DIRECT
+             * @enum {string}
+             */
+            method?: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
+        };
+        RecurringTemplateDto: {
+            /** @enum {string} */
+            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
+            payeeRef: Record<string, never>;
+            /** Format: uuid */
+            categoryId: string;
+            /** Format: uuid */
+            costCenterId?: Record<string, never> | null;
+            /** @description Decimal string */
+            amount: string;
+            /** @enum {string} */
+            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
+            narrative: string;
+        };
+        CreateRecurringDto: {
+            template: components["schemas"]["RecurringTemplateDto"];
+            /** @description 5-field cron subset: 'minute hour day-of-month month day-of-week', exact-value-or-'*' only, e.g. '0 0 1 * *' for monthly */
+            scheduleCron: string;
+            /** Format: date */
+            nextRunOn: string;
+        };
+        RecurringResponseDto: {
+            /** Format: uuid */
+            id: string;
+            template: components["schemas"]["RecurringTemplateDto"];
+            scheduleCron: string;
+            /** Format: date */
+            nextRunOn: string;
+            /** Format: uuid */
+            lastVoucherId: Record<string, never> | null;
+            isActive: boolean;
+        };
+        UpdateRecurringDto: {
+            template?: components["schemas"]["RecurringTemplateDto"];
+            scheduleCron?: string;
+            /** Format: date */
+            nextRunOn?: string;
+            isActive?: boolean;
+        };
+        RunDueDto: {
+            /**
+             * Format: date
+             * @description Defaults to today (server UTC date)
+             */
+            asOfDate?: string;
+        };
+        RunDueResultDto: {
+            /** Format: uuid */
+            recurringId: string;
+            /** Format: uuid */
+            voucherId: string;
+            /** Format: date */
+            nextRunOn: string;
+        };
         OpenSessionDto: {
             /** @description Till/register identifier */
             till: string;
@@ -11625,14 +11989,6 @@ export interface components {
             /** Format: date-time */
             at: string;
         };
-        SpendDto: {
-            /** Format: uuid */
-            categoryId: string;
-            /** @description Decimal string */
-            amount: string;
-            /** Format: uuid */
-            receiptFileId?: string | null;
-        };
         TransferToFeesDto: {
             amount: string;
             /** Format: uuid */
@@ -12049,6 +12405,11 @@ export interface components {
             rejectionReason?: string | null;
             /** @description Decimal string */
             unitCost: string;
+            /**
+             * Format: uuid
+             * @description Required when the underlying PO line's item_id is set (a stock item) — which inv_store the goods land in
+             */
+            storeId?: string;
         };
         ReceiveGrnDto: {
             /** Format: uuid */
@@ -12086,6 +12447,8 @@ export interface components {
             rejectionReason: Record<string, never> | null;
             /** @description Decimal string */
             unitCost: string;
+            /** Format: uuid */
+            storeId: Record<string, never> | null;
         };
         CaptureSupplierInvoiceLineDto: {
             /** Format: uuid */
@@ -12235,37 +12598,6 @@ export interface components {
             renewalAlertDays?: number;
             /** Format: uuid */
             documentFileId?: string | null;
-        };
-        CreateCategoryDto: {
-            name: string;
-            /** Format: uuid */
-            parentId?: string | null;
-            /** Format: uuid */
-            glExpenseAccountId: string;
-            /** @default false */
-            budgetRequired: boolean;
-            /** @default true */
-            isActive: boolean;
-        };
-        CategoryResponseDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: uuid */
-            parentId: Record<string, never> | null;
-            /** Format: uuid */
-            glExpenseAccountId: string;
-            budgetRequired: boolean;
-            isActive: boolean;
-        };
-        UpdateCategoryDto: {
-            name?: string;
-            /** Format: uuid */
-            parentId?: Record<string, never> | null;
-            /** Format: uuid */
-            glExpenseAccountId?: string;
-            budgetRequired?: boolean;
-            isActive?: boolean;
         };
         CreateStoreDto: {
             name: string;
@@ -12518,230 +12850,6 @@ export interface components {
         DecideStockTakeDto: {
             /** @enum {string} */
             decision: "APPROVE" | "RETURN";
-        };
-        CreateVoucherDto: {
-            /** @enum {string} */
-            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
-            /** @description Polymorphic payee identity, shape depends on payeeType */
-            payeeRef: Record<string, never>;
-            /** Format: uuid */
-            categoryId: string;
-            /** Format: uuid */
-            costCenterId?: string | null;
-            /** @description Decimal string */
-            amount: string;
-            /** @enum {string} */
-            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
-            narrative: string;
-        };
-        VoucherResponseDto: {
-            /** Format: uuid */
-            id: string;
-            number: string;
-            /** @enum {string} */
-            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
-            payeeRef: Record<string, never>;
-            /** Format: uuid */
-            categoryId: string;
-            /** Format: uuid */
-            costCenterId: Record<string, never> | null;
-            /** @description Decimal string */
-            amount: string;
-            /** @enum {string} */
-            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
-            narrative: string;
-            /** @enum {string} */
-            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "PAID" | "CANCELLED";
-            /** Format: uuid */
-            approvalRef: Record<string, never> | null;
-            /** Format: uuid */
-            journalId: Record<string, never> | null;
-        };
-        UpdateVoucherDto: {
-            /** @enum {string} */
-            payeeType?: "SUPPLIER" | "STAFF" | "OTHER";
-            payeeRef?: Record<string, never>;
-            /** Format: uuid */
-            categoryId?: string;
-            /** Format: uuid */
-            costCenterId?: Record<string, never> | null;
-            /** @description Decimal string */
-            amount?: string;
-            /** @enum {string} */
-            method?: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
-            narrative?: string;
-        };
-        CreateFloatDto: {
-            /** Format: uuid */
-            custodianUserId: string;
-            /** @description Decimal string */
-            ceiling: string;
-        };
-        FloatResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            custodianUserId: string;
-            /** @description Decimal string */
-            ceiling: string;
-            /** @description Decimal string */
-            balance: string;
-        };
-        UpdateFloatCeilingDto: {
-            /** @description Decimal string */
-            ceiling: string;
-        };
-        PettyCashVoucherResponseDto: {
-            /** Format: uuid */
-            id: string;
-            number: string;
-            /** Format: uuid */
-            floatId: string;
-            /** Format: uuid */
-            categoryId: string;
-            /** @description Decimal string */
-            amount: string;
-            /** Format: uuid */
-            receiptFileId: Record<string, never> | null;
-            /** @enum {string} */
-            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "CANCELLED";
-            /** Format: uuid */
-            journalId: Record<string, never> | null;
-        };
-        ReplenishmentResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            floatId: string;
-            /** @description Decimal string */
-            amount: string;
-            voucherIds: string[];
-            /** @enum {string} */
-            status: "PENDING_APPROVAL" | "APPROVED" | "PAID";
-            /** Format: uuid */
-            approvalRef: Record<string, never> | null;
-            /** Format: uuid */
-            journalId: Record<string, never> | null;
-        };
-        CreateClaimDto: {
-            /** Format: uuid */
-            staffUserId: string;
-            /** @enum {string} */
-            reimburseVia: "PAYROLL" | "DIRECT";
-        };
-        ClaimResponseDto: {
-            /** Format: uuid */
-            id: string;
-            number: string;
-            /** Format: uuid */
-            staffUserId: string;
-            /** @description Decimal string */
-            total: string;
-            /** @enum {string} */
-            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REIMBURSED" | "REJECTED" | "CANCELLED";
-            /** @enum {string} */
-            reimburseVia: "PAYROLL" | "DIRECT";
-            /** Format: uuid */
-            approvalRef: Record<string, never> | null;
-        };
-        ClaimLineResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            claimId: string;
-            lineNo: number;
-            /** Format: uuid */
-            categoryId: string;
-            description: string;
-            /** @description Decimal string */
-            amount: string;
-            /** Format: date */
-            expenseDate: string;
-            /** Format: uuid */
-            receiptFileId: Record<string, never> | null;
-        };
-        AddClaimLineDto: {
-            /** Format: uuid */
-            categoryId: string;
-            description: string;
-            /** @description Decimal string */
-            amount: string;
-            /** Format: date */
-            expenseDate: string;
-            /** Format: uuid */
-            receiptFileId?: string | null;
-        };
-        UpdateClaimLineDto: {
-            /** Format: uuid */
-            categoryId?: string;
-            description?: string;
-            /** @description Decimal string */
-            amount?: string;
-            /** Format: date */
-            expenseDate?: string;
-            /** Format: uuid */
-            receiptFileId?: Record<string, never> | null;
-        };
-        ReimburseClaimDto: {
-            /**
-             * @description Required when reimburse_via=DIRECT
-             * @enum {string}
-             */
-            method?: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
-        };
-        RecurringTemplateDto: {
-            /** @enum {string} */
-            payeeType: "SUPPLIER" | "STAFF" | "OTHER";
-            payeeRef: Record<string, never>;
-            /** Format: uuid */
-            categoryId: string;
-            /** Format: uuid */
-            costCenterId?: Record<string, never> | null;
-            /** @description Decimal string */
-            amount: string;
-            /** @enum {string} */
-            method: "CASH" | "BANK" | "PETTY_CASH" | "MPESA" | "CHEQUE";
-            narrative: string;
-        };
-        CreateRecurringDto: {
-            template: components["schemas"]["RecurringTemplateDto"];
-            /** @description 5-field cron subset: 'minute hour day-of-month month day-of-week', exact-value-or-'*' only, e.g. '0 0 1 * *' for monthly */
-            scheduleCron: string;
-            /** Format: date */
-            nextRunOn: string;
-        };
-        RecurringResponseDto: {
-            /** Format: uuid */
-            id: string;
-            template: components["schemas"]["RecurringTemplateDto"];
-            scheduleCron: string;
-            /** Format: date */
-            nextRunOn: string;
-            /** Format: uuid */
-            lastVoucherId: Record<string, never> | null;
-            isActive: boolean;
-        };
-        UpdateRecurringDto: {
-            template?: components["schemas"]["RecurringTemplateDto"];
-            scheduleCron?: string;
-            /** Format: date */
-            nextRunOn?: string;
-            isActive?: boolean;
-        };
-        RunDueDto: {
-            /**
-             * Format: date
-             * @description Defaults to today (server UTC date)
-             */
-            asOfDate?: string;
-        };
-        RunDueResultDto: {
-            /** Format: uuid */
-            recurringId: string;
-            /** Format: uuid */
-            voucherId: string;
-            /** Format: date */
-            nextRunOn: string;
         };
         CreatePyrlEmployeeDto: {
             staffNo: string;
@@ -18481,6 +18589,96 @@ export interface operations {
             };
         };
     };
+    TransportRoutesController_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransportRouteSummaryDto"];
+                };
+            };
+        };
+    };
+    TransportBillingController_bill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillTransportRouteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillTransportResultDto"];
+                };
+            };
+        };
+    };
+    TransportExpensesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                routeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransportExpenseResponseDto"][];
+                };
+            };
+        };
+    };
+    TransportExpensesController_logExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                routeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogTransportExpenseDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransportExpenseResponseDto"];
+                };
+            };
+        };
+    };
     FeeStructuresController_list: {
         parameters: {
             query: {
@@ -20138,6 +20336,864 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    CategoriesController_list: {
+        parameters: {
+            query: {
+                parentId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryResponseDto"][];
+                };
+            };
+        };
+    };
+    CategoriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryResponseDto"];
+                };
+            };
+        };
+    };
+    CategoriesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryResponseDto"];
+                };
+            };
+        };
+    };
+    CategoriesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_list: {
+        parameters: {
+            query: {
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"][];
+                };
+            };
+        };
+    };
+    VouchersController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVoucherDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateVoucherDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    VouchersController_pay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoucherResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_listFloats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FloatResponseDto"][];
+                };
+            };
+        };
+    };
+    PettyCashController_createFloat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFloatDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FloatResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_findFloat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FloatResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_updateCeiling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFloatCeilingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FloatResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_spend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpendDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PettyCashVoucherResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_listVouchers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PettyCashVoucherResponseDto"][];
+                };
+            };
+        };
+    };
+    PettyCashController_listReplenishments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplenishmentResponseDto"][];
+                };
+            };
+        };
+    };
+    PettyCashController_requestReplenishment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_approveReplenishment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_rejectReplenishment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
+                };
+            };
+        };
+    };
+    PettyCashController_executeReplenishment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_list: {
+        parameters: {
+            query: {
+                staffUserId: string;
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"][];
+                };
+            };
+        };
+    };
+    ClaimsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClaimDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_listLines: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimLineResponseDto"][];
+                };
+            };
+        };
+    };
+    ClaimsController_addLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddClaimLineDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimLineResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_removeLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ClaimsController_updateLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClaimLineDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimLineResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"];
+                };
+            };
+        };
+    };
+    ClaimsController_reimburse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReimburseClaimDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimResponseDto"];
+                };
+            };
+        };
+    };
+    RecurringController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecurringResponseDto"][];
+                };
+            };
+        };
+    };
+    RecurringController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRecurringDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecurringResponseDto"];
+                };
+            };
+        };
+    };
+    RecurringController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecurringResponseDto"];
+                };
+            };
+        };
+    };
+    RecurringController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRecurringDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecurringResponseDto"];
+                };
+            };
+        };
+    };
+    RecurringController_runDue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunDueDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunDueResultDto"][];
+                };
             };
         };
     };
@@ -22813,7 +23869,7 @@ export interface operations {
             };
         };
     };
-    CategoriesController_list: {
+    CategoriesController_list__inventory: {
         parameters: {
             query: {
                 parentId: string;
@@ -22834,7 +23890,7 @@ export interface operations {
             };
         };
     };
-    CategoriesController_create: {
+    CategoriesController_create__inventory: {
         parameters: {
             query?: never;
             header?: never;
@@ -22857,7 +23913,7 @@ export interface operations {
             };
         };
     };
-    CategoriesController_findOne: {
+    CategoriesController_findOne__inventory: {
         parameters: {
             query?: never;
             header?: never;
@@ -22878,7 +23934,7 @@ export interface operations {
             };
         };
     };
-    CategoriesController_update: {
+    CategoriesController_update__inventory: {
         parameters: {
             query?: never;
             header?: never;
@@ -23521,864 +24577,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StockTakeResponseDto"];
-                };
-            };
-        };
-    };
-    CategoriesController_list__expenses: {
-        parameters: {
-            query: {
-                parentId: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CategoryResponseDto"][];
-                };
-            };
-        };
-    };
-    CategoriesController_create__expenses: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateCategoryDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CategoryResponseDto"];
-                };
-            };
-        };
-    };
-    CategoriesController_findOne__expenses: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CategoryResponseDto"];
-                };
-            };
-        };
-    };
-    CategoriesController_update__expenses: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateCategoryDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CategoryResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_list: {
-        parameters: {
-            query: {
-                status: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"][];
-                };
-            };
-        };
-    };
-    VouchersController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateVoucherDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateVoucherDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_submit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_approve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_reject: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    VouchersController_pay: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VoucherResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_listFloats: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FloatResponseDto"][];
-                };
-            };
-        };
-    };
-    PettyCashController_createFloat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateFloatDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FloatResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_findFloat: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FloatResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_updateCeiling: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateFloatCeilingDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FloatResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_spend: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SpendDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PettyCashVoucherResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_listVouchers: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PettyCashVoucherResponseDto"][];
-                };
-            };
-        };
-    };
-    PettyCashController_listReplenishments: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReplenishmentResponseDto"][];
-                };
-            };
-        };
-    };
-    PettyCashController_requestReplenishment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_approveReplenishment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_rejectReplenishment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
-                };
-            };
-        };
-    };
-    PettyCashController_executeReplenishment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReplenishmentResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_list: {
-        parameters: {
-            query: {
-                staffUserId: string;
-                status: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"][];
-                };
-            };
-        };
-    };
-    ClaimsController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateClaimDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_listLines: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimLineResponseDto"][];
-                };
-            };
-        };
-    };
-    ClaimsController_addLine: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddClaimLineDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimLineResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_removeLine: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                lineId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ClaimsController_updateLine: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                lineId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateClaimLineDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimLineResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_submit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_approve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_reject: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"];
-                };
-            };
-        };
-    };
-    ClaimsController_reimburse: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReimburseClaimDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ClaimResponseDto"];
-                };
-            };
-        };
-    };
-    RecurringController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RecurringResponseDto"][];
-                };
-            };
-        };
-    };
-    RecurringController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateRecurringDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RecurringResponseDto"];
-                };
-            };
-        };
-    };
-    RecurringController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RecurringResponseDto"];
-                };
-            };
-        };
-    };
-    RecurringController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateRecurringDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RecurringResponseDto"];
-                };
-            };
-        };
-    };
-    RecurringController_runDue: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RunDueDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RunDueResultDto"][];
                 };
             };
         };

@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import type { InvoiceResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { formatMoney } from "@/lib/money";
 import { InvoiceLinesTable } from "@/features/billing/components/invoice-lines-table";
@@ -14,6 +15,12 @@ import { InvoiceStatusBadge } from "@/features/billing/components/status-badges"
 import { PostInvoiceButton } from "@/features/billing/components/post-invoice-button";
 import { VoidInvoiceButton } from "@/features/billing/components/void-invoice-button";
 import { useInvoice, useInvoiceLines } from "@/features/billing/hooks/use-invoices";
+import { CreateCreditNoteDialog } from "@/features/billing/components/create-credit-note-dialog";
+import { CreditNotesTable } from "@/features/billing/components/credit-notes-table";
+import { useCreditNotesByInvoice } from "@/features/billing/hooks/use-credit-notes";
+import { RequestConcessionDialog } from "@/features/billing/components/request-concession-dialog";
+import { ConcessionsTable } from "@/features/billing/components/concessions-table";
+import { useConcessionsByInvoice } from "@/features/billing/hooks/use-concessions";
 
 function ProfileRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -28,7 +35,10 @@ const VOIDABLE_STATUSES = ["POSTED", "PARTIALLY_PAID", "PAID"];
 
 function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
   const t = useTranslations("billing.invoices.detail");
+  const tConcessions = useTranslations("billing.concessions");
   const linesQuery = useInvoiceLines(invoice.id);
+  const creditNotesQuery = useCreditNotesByInvoice(invoice.id);
+  const concessionsQuery = useConcessionsByInvoice(invoice.id);
 
   return (
     <>
@@ -80,6 +90,57 @@ function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
         <CardContent>
           <QueryBoundary query={linesQuery} isEmpty={(d) => d.length === 0}>
             {(lines) => <InvoiceLinesTable lines={lines} />}
+          </QueryBoundary>
+        </CardContent>
+      </Card>
+
+      {/* Phase 6 Slice 22 Part 5 (Credit Notes) — the concrete answer to
+          `VoidInvoiceButton`'s own "Use a credit note instead" hint, shown
+          above once `paidAmount>0` blocks the Void button
+          (`void-invoice-button.tsx`'s `blockedHint` copy): a credit note is
+          how a POSTED invoice that already has payment applied gets
+          corrected instead of voided. `CreditNotesService.create()` only
+          accepts a POSTED/PARTIALLY_PAID/PAID target invoice (BR-BILL-09),
+          the same status set `VOIDABLE_STATUSES` above already tracks, so
+          the "New Credit Note" trigger reuses it rather than duplicating the
+          condition. */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base text-foreground">{t("creditNotesTitle")}</CardTitle>
+          {VOIDABLE_STATUSES.includes(invoice.status) && <CreateCreditNoteDialog invoiceId={invoice.id} />}
+        </CardHeader>
+        <CardContent>
+          <QueryBoundary query={creditNotesQuery} isEmpty={(d) => d.length === 0}>
+            {(notes) => <CreditNotesTable notes={notes} invoiceId={invoice.id} studentId={invoice.studentId} />}
+          </QueryBoundary>
+        </CardContent>
+      </Card>
+
+      {/* Part 4 (Billing sub-features batch) — Concessions, same
+          CardHeader/CardTitle/CardContent + header-action-dialog shape the
+          Credit Notes section above already uses. `RequestConcessionDialog`
+          is shown for any non-VOID invoice status — unlike Credit Notes,
+          `ConcessionsService.requestConcession()` doesn't require the target
+          invoice to already be POSTED/PARTIALLY_PAID/PAID: a concession
+          requested against a still-DRAFT invoice is a real, supported flow
+          that folds into that invoice's own upcoming post once approved
+          (see the informational note below), it just can't be POSTED
+          STANDALONE until the invoice itself has posted
+          (`PostStandaloneConcessionButton`'s own gate, rendered per row via
+          `<ConcessionsTable invoice={invoice} />` below). */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base text-foreground">{t("concessionsTitle")}</CardTitle>
+          {invoice.status !== "VOID" && <RequestConcessionDialog studentId={invoice.studentId} invoiceId={invoice.id} />}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {invoice.status === "DRAFT" && (
+            <Alert>
+              <AlertDescription>{tConcessions("autoFoldNote")}</AlertDescription>
+            </Alert>
+          )}
+          <QueryBoundary query={concessionsQuery} isEmpty={(d) => d.length === 0}>
+            {(concessions) => <ConcessionsTable concessions={concessions} studentId={invoice.studentId} invoice={invoice} />}
           </QueryBoundary>
         </CardContent>
       </Card>

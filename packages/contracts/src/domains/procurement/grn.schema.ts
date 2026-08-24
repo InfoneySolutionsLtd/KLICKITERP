@@ -16,6 +16,7 @@ export const ReceiveGrnLineDtoSchema = z.object({
     rejectedQty: z.string().regex(/^-?\d+(\.\d+)?$/).optional(),
     rejectionReason: z.string().optional(),
     unitCost: z.string().regex(/^-?\d+(\.\d+)?$/),
+    storeId: z.string().uuid().optional(),
 });
 export type ReceiveGrnLineDto = z.infer<typeof ReceiveGrnLineDtoSchema>;
 
@@ -46,5 +47,6 @@ export const GrnLineResponseDtoSchema = z.object({
     rejectedQty: z.string(),
     rejectionReason: z.string().nullable(),
     unitCost: z.string(),
+    storeId: z.string().nullable(),
 });
 export type GrnLineResponseDto = z.infer<typeof GrnLineResponseDtoSchema>;

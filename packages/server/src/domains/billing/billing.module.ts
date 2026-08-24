@@ -25,6 +25,8 @@ import { BillLateFeePolicyEntity } from "./domain/bill-late-fee-policy.entity";
 import { BillLateFeeBatchEntity } from "./domain/bill-late-fee-batch.entity";
 import { BillStudentCreditEntity } from "./domain/bill-student-credit.entity";
 import { BillStudentCreditEntryEntity } from "./domain/bill-student-credit-entry.entity";
+import { BillTransportBillingLineEntity } from "./domain/bill-transport-billing-line.entity";
+import { BillTransportExpenseEntity } from "./domain/bill-transport-expense.entity";
 // `StudentsModule` is imported here, AFTER every one of this file's own
 // domain-entity imports above (in particular `BillSponsorEntity`/
 // `BillTransportRouteEntity`, indirectly via `bill-sponsor.entity.ts`/
@@ -45,6 +47,12 @@ import { BillStudentCreditEntryEntity } from "./domain/bill-student-credit-entry
 // safe regardless of ordering since those are plain injectable classes, not
 // entity-decorator targets (see each file's own import comment).
 import { StudentsModule } from "../students";
+// `domains/expenses` — Transport Routes enhancement's Bus Expense feature.
+// One-directional exception (mirrors `domains/fixed-assets`' own identical
+// `ExpVoucherEntity` exception, see `module-deps.json`'s `domains/billing`
+// note) — `expenses` does not import `billing` back, so no ordering
+// constraint like the `StudentsModule` one above applies here.
+import { ExpensesModule } from "../expenses";
 import { BillFeeCategoryRepository } from "./infrastructure/bill-fee-category.repository";
 import { BillTransportRouteRepository } from "./infrastructure/bill-transport-route.repository";
 import { BillFeeStructureRepository } from "./infrastructure/bill-fee-structure.repository";
@@ -66,8 +74,12 @@ import { BillLateFeePolicyRepository } from "./infrastructure/bill-late-fee-poli
 import { BillLateFeeBatchRepository } from "./infrastructure/bill-late-fee-batch.repository";
 import { BillStudentCreditRepository } from "./infrastructure/bill-student-credit.repository";
 import { BillStudentCreditEntryRepository } from "./infrastructure/bill-student-credit-entry.repository";
+import { BillTransportBillingLineRepository } from "./infrastructure/bill-transport-billing-line.repository";
+import { BillTransportExpenseRepository } from "./infrastructure/bill-transport-expense.repository";
 import { FeeCategoriesService } from "./application/fee-categories.service";
 import { TransportRoutesService } from "./application/transport-routes.service";
+import { TransportBillingService } from "./application/transport-billing.service";
+import { TransportExpenseService } from "./application/transport-expense.service";
 import { FeeStructuresService } from "./application/fee-structures.service";
 import { StudentOptionalItemsService } from "./application/student-optional-items.service";
 import { ConcessionSchemesService } from "./application/concession-schemes.service";
@@ -85,6 +97,8 @@ import { LateFeeBatchesService } from "./application/late-fee-batches.service";
 import { StudentCreditService } from "./application/student-credit.service";
 import { FeeCategoriesController } from "./api/fee-categories.controller";
 import { TransportRoutesController } from "./api/transport-routes.controller";
+import { TransportBillingController } from "./api/transport-billing.controller";
+import { TransportExpensesController } from "./api/transport-expenses.controller";
 import { FeeStructuresController } from "./api/fee-structures.controller";
 import { StudentOptionalItemsController } from "./api/student-optional-items.controller";
 import { ConcessionSchemesController } from "./api/concession-schemes.controller";
@@ -143,16 +157,21 @@ import { StudentCreditController } from "./api/student-credit.controller";
       BillLateFeeBatchEntity,
       BillStudentCreditEntity,
       BillStudentCreditEntryEntity,
+      BillTransportBillingLineEntity,
+      BillTransportExpenseEntity,
     ]),
     AccountingModule,
     SettingsModule,
     ApprovalsModule,
     DocumentVerificationModule,
     StudentsModule,
+    ExpensesModule,
   ],
   controllers: [
     FeeCategoriesController,
     TransportRoutesController,
+    TransportBillingController,
+    TransportExpensesController,
     FeeStructuresController,
     StudentOptionalItemsController,
     ConcessionSchemesController,
@@ -191,8 +210,12 @@ import { StudentCreditController } from "./api/student-credit.controller";
     BillLateFeeBatchRepository,
     BillStudentCreditRepository,
     BillStudentCreditEntryRepository,
+    BillTransportBillingLineRepository,
+    BillTransportExpenseRepository,
     FeeCategoriesService,
     TransportRoutesService,
+    TransportBillingService,
+    TransportExpenseService,
     FeeStructuresService,
     StudentOptionalItemsService,
     ConcessionSchemesService,
@@ -231,8 +254,12 @@ import { StudentCreditController } from "./api/student-credit.controller";
     BillLateFeeBatchRepository,
     BillStudentCreditRepository,
     BillStudentCreditEntryRepository,
+    BillTransportBillingLineRepository,
+    BillTransportExpenseRepository,
     FeeCategoriesService,
     TransportRoutesService,
+    TransportBillingService,
+    TransportExpenseService,
     FeeStructuresService,
     StudentOptionalItemsService,
     ConcessionSchemesService,

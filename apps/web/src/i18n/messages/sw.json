@@ -84,6 +84,12 @@
       "billingUpcomingInvoices": "Upcoming Invoices",
       "billingCollectFees": "Collect Fees",
       "billingReceipts": "Receipts",
+      "billingLateFeePolicies": "Sera za Ada za Kuchelewa",
+      "billingLateFeeBatches": "Makundi ya Ada za Kuchelewa",
+      "billingConcessionSchemes": "Mipango ya Punguzo",
+      "billingSponsors": "Wafadhili",
+      "billingTransportRoutes": "Njia za Usafiri",
+      "billingBulkBilling": "Utozaji wa Jumla",
       "payments": "Payments",
       "approvals": "Approvals",
       "settings": "Settings",
@@ -271,6 +277,12 @@
       },
       "feeGroup": "Fee group",
       "selectFeeGroup": "None",
+      "sponsor": "Mfadhili",
+      "selectSponsor": "Hakuna",
+      "noSponsorsFound": "Hakuna wafadhili waliopatikana.",
+      "transportRoute": "Njia ya usafiri",
+      "selectTransportRoute": "Hakuna",
+      "noTransportRoutesFound": "Hakuna njia za usafiri zilizopatikana.",
       "submitCreate": "Enroll student",
       "submitEdit": "Save changes",
       "submitting": "Saving…",
@@ -309,6 +321,8 @@
       "guardianNewCreated": "New guardian created and linked.",
       "guardianLinkedExisting": "Linked to existing guardian {fullName} — looks like a sibling!",
       "billingTitle": "Billing",
+      "sponsorAwardsTitle": "Tuzo za Wafadhili",
+      "optionalItemsTitle": "Vitu vya Hiari",
       "receiptsTitle": "Receipts",
       "creditBalanceTitle": "Salio la Ziada",
       "creditBalance": {
@@ -323,6 +337,9 @@
         "creating": "Creating…",
         "createButton": "Create wallet"
       },
+      "debitNotesTitle": "Noti za Malipo",
+      "refundVouchersTitle": "Hati za Marejesho",
+      "concessionsTitle": "Punguzo",
       "deleteStudentDialog": {
         "title": "Delete student?",
         "description": "This will permanently delete {name}. This cannot be undone.",
@@ -590,13 +607,7 @@
         "priorityInvalid": "Priority must be a non-negative number.",
         "submit": "Save",
         "submitting": "Saving…",
-        "genericError": "Something went wrong. Please try again.",
-        "selectGlAccount": "Select a GL income account",
-        "searchGlAccount": "Search by code or name…",
-        "loadingAccounts": "Loading accounts…",
-        "noAccountsFound": "No income accounts found — configure the Chart of Accounts first.",
-        "glAccountUuidPlaceholder": "GL account ID (UUID)",
-        "glAccountLoadFailedHint": "Couldn't load GL accounts — enter the account ID manually. This usually means your role doesn't have permission to view the Chart of Accounts."
+        "genericError": "Something went wrong. Please try again."
       }
     },
     "feeStructures": {
@@ -840,6 +851,8 @@
         "genericError": "Something went wrong. Please try again.",
         "glNotConfiguredTitle": "GL not configured",
         "glNotConfiguredDescription": "This invoice can't be posted because a required GL control account isn't configured. Contact your administrator.",
+        "creditNotesTitle": "Noti za Mikopo",
+        "concessionsTitle": "Punguzo",
         "voidDialog": {
           "trigger": "Void",
           "title": "Void this invoice?",
@@ -955,6 +968,724 @@
     "feeCategoryChipPicker": {
       "filterPlaceholder": "Filter fee categories…",
       "noMatches": "No fee categories match your filter."
+    },
+    "lateFeePolicies": {
+      "list": {
+        "pageTitle": "Sera za Ada za Kuchelewa",
+        "pageSubtitle": "Sanidi jinsi ankara zilizochelewa zinavyokusanya ada za kuchelewa — kiasi kisichobadilika, asilimia ya salio, au ratiba ya ngazi kulingana na siku za kuchelewa.",
+        "newPolicy": "Sera mpya",
+        "listTitle": "Sera",
+        "listDescription": "Kila sera hufafanua njia yake ya malipo na muda wa neema; chagua moja kwa kundi la ada za kuchelewa ili kuiendesha.",
+        "columns": {
+          "name": "Jina",
+          "mode": "Njia",
+          "graceDays": "Siku za neema",
+          "requiresApproval": "Inahitaji idhini",
+          "status": "Hali"
+        }
+      },
+      "dialog": {
+        "titleCreate": "Sera mpya ya ada ya kuchelewa",
+        "titleEdit": "Hariri sera ya ada ya kuchelewa",
+        "description": "Hufafanua jinsi ankara zilizochelewa zinavyopata ada ya kuchelewa mara tu muda wake wa neema unapopita.",
+        "name": "Jina",
+        "mode": "Njia",
+        "graceDays": "Siku za neema",
+        "graceDaysHint": "Idadi ya siku baada ya tarehe ya mwisho ya ankara kabla haijahesabiwa kuwa imechelewa kwa madhumuni ya ada ya kuchelewa.",
+        "requiresApproval": "Inahitaji idhini kabla kundi kuweza kutumwa",
+        "nameRequired": "Jina linahitajika.",
+        "graceDaysInvalid": "Siku za neema lazima ziwe nambari isiyo hasi.",
+        "amountRequired": "Kiasi kisichobadilika kinahitajika.",
+        "rateRequired": "Kiwango kinahitajika.",
+        "tiersRequired": "Ongeza angalau ngazi moja.",
+        "tierAmountOrRateRequired": "Kila ngazi inahitaji kiasi au kiwango.",
+        "submit": "Hifadhi",
+        "submitting": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "modeValues": {
+        "FLAT": "Kiasi kisichobadilika",
+        "PERCENT": "Asilimia ya salio",
+        "TIERED": "Ngazi kwa siku za kuchelewa"
+      },
+      "paramsForm": {
+        "flatAmount": "Kiasi kisichobadilika",
+        "flatAmountHint": "Hutozwa mara moja kwa kila ankara iliyochelewa, bila kujali salio.",
+        "percentRate": "Kiwango",
+        "percentRateHint": "Sehemu ya desimali ya salio la ankara — mfano 0.05 kwa 5%, si nambari kamili.",
+        "tiersLabel": "Ngazi",
+        "tiersHint": "Ngazi ya kwanza ambayo wigo wake wa siku unajumuisha idadi ya siku za kuchelewa za ankara ndiyo hutumika. Kila ngazi inahitaji kiasi au kiwango.",
+        "minDaysOverdue": "Siku za chini za kuchelewa",
+        "maxDaysOverdue": "Siku za juu za kuchelewa",
+        "tierAmount": "Kiasi",
+        "tierRate": "Kiwango",
+        "openEnded": "Bila kikomo",
+        "removeTier": "Ondoa ngazi",
+        "addTier": "Ongeza ngazi"
+      },
+      "detail": {
+        "backToList": "Rudi kwenye sera za ada za kuchelewa",
+        "deactivate": "Zima",
+        "activate": "Washa",
+        "statusToggleError": "Imeshindwa kubadilisha hali ya sera hii. Tafadhali jaribu tena.",
+        "graceDaysLabel": "Siku za neema",
+        "graceDaysValue": "Siku {count}",
+        "requiresApprovalLabel": "Inahitaji idhini",
+        "paramsLabel": "Kanuni za malipo",
+        "minDaysOverdue": "Siku za chini za kuchelewa",
+        "maxDaysOverdue": "Siku za juu za kuchelewa",
+        "tierAmount": "Kiasi",
+        "tierRate": "Kiwango",
+        "openEnded": "Bila kikomo",
+        "noTiers": "Hakuna ngazi zilizowekwa."
+      }
+    },
+    "lateFeeBatches": {
+      "list": {
+        "pageTitle": "Makundi ya Ada za Kuchelewa",
+        "pageSubtitle": "Endesha sera ya ada ya kuchelewa dhidi ya ankara zilizochelewa, kisha kagua, idhinisha, na tuma makundi yanayotokana.",
+        "listTitle": "Makundi",
+        "listDescription": "Kila kundi ni mzunguko mmoja wa sera uliochaguliwa — chagua sera hapo juu kuona makundi yake, au endesha mpya.",
+        "policyLabel": "Sera",
+        "selectPolicyPlaceholder": "Chagua sera…",
+        "selectPolicyPrompt": "Chagua sera hapo juu ili kuona makundi yake ya ada za kuchelewa.",
+        "columns": {
+          "runDate": "Tarehe ya kuendesha",
+          "status": "Hali",
+          "totalAssessed": "Jumla iliyotathminiwa",
+          "studentCount": "Wanafunzi"
+        }
+      },
+      "runDialog": {
+        "trigger": "Endesha Ada za Kuchelewa Sasa",
+        "title": "Endesha ada za kuchelewa sasa",
+        "description": "Huendesha sera iliyochaguliwa dhidi ya kila ankara iliyochelewa hadi tarehe uliyochagua, na kukusanya matokeo kuwa kundi jipya. Hakuna uendeshaji wa kiotomatiki uliopangwa — hii ni hatua ya mwongozo unayoianzisha mwenyewe.",
+        "manualActionHint": "Hii huendesha mara moja dhidi ya idadi halisi ya ankara zilizochelewa — hakuna kipanga-ratiba au kazi ya usiku bado, kwa hivyo haitaendesha tena yenyewe.",
+        "runDateLabel": "Tarehe ya kuendesha",
+        "runButton": "Endesha sasa",
+        "running": "Inaendesha…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "statusValues": {
+        "DRAFT": "Rasimu",
+        "PENDING_APPROVAL": "Inasubiri idhini",
+        "POSTED": "Imetumwa"
+      },
+      "statusActions": {
+        "post": "Tuma",
+        "posting": "Inatuma…",
+        "emptyDraftHint": "Hakuna kilichotathminiwa katika mzunguko huu — hakuna ankara iliyochelewa iliyozalisha malipo hadi tarehe ya kuendesha. Kutuma kutaweka tu kundi hili kuwa kamili; hakuna ankara zitakazozalishwa.",
+        "emptyDraftHintRequiresApproval": "Sera hii inahitaji idhini kabla kundi kutumwa, lakini hakuna kilichotathminiwa katika mzunguko huu — hakuna ankara iliyochelewa iliyozalisha malipo hadi tarehe ya kuendesha, hivyo halikuhitaji kwenda kwenye Inasubiri Idhini. Kutuma kutaweka tu kundi hili kuwa kamili; hakuna ankara zitakazozalishwa.",
+        "approveTrigger": "Idhinisha",
+        "approveConfirmTitle": "Idhinisha kundi hili?",
+        "approveConfirmDescription": "Kuidhinisha hutuma kundi hili mara moja — ankara moja ya ada ya kuchelewa huzalishwa na kutumwa kwa kila mwanafunzi/muhula katika muhtasari ulio hapa chini. Hili haliwezi kutenduliwa kutoka hapa.",
+        "approveConfirmButton": "Idhinisha na utume",
+        "approving": "Inaidhinisha…",
+        "sendBackToDraftTrigger": "Rudisha kwenye Rasimu",
+        "sendBackToDraftConfirmTitle": "Rudisha kundi hili kwenye Rasimu?",
+        "sendBackToDraftConfirmDescription": "Kundi hili litarudi kwenye Rasimu bila kutuma chochote. Hakuna hali tofauti ya \"kukataliwa\" — unaweza kulituma baadaye ukibadilisha mawazo, au kuliacha kama lilivyo.",
+        "sendBackToDraftConfirmButton": "Rudisha kwenye Rasimu",
+        "sendingBackToDraft": "Inarudisha kwenye Rasimu…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "summaryTable": {
+        "empty": "Hakuna kilichotathminiwa katika mzunguko huu — hakuna ankara iliyochelewa iliyozalisha malipo hadi tarehe ya kuendesha.",
+        "totalAssessedLabel": "Jumla iliyotathminiwa",
+        "studentCountLabel": "Wanafunzi",
+        "termLabel": "Muhula",
+        "invoiceIdColumn": "Ankara",
+        "daysOverdueColumn": "Siku za kuchelewa",
+        "amountColumn": "Kiasi"
+      },
+      "detail": {
+        "backToList": "Rudi kwenye makundi ya ada za kuchelewa",
+        "batchTitle": "Kundi — {runDate}",
+        "policyLabel": "Sera",
+        "summaryTitle": "Muhtasari"
+      }
+    },
+    "concessionSchemes": {
+      "pageTitle": "Mipango ya Punguzo la Ada",
+      "pageSubtitle": "Sanidi mipango ya msamaha, punguzo, ufadhili wa masomo, na bursary ambayo punguzo linaweza kuombwa dhidi yake.",
+      "newScheme": "Mpango mpya",
+      "listTitle": "Mipango",
+      "table": {
+        "name": "Jina",
+        "kind": "Aina",
+        "calc": "Hesabu",
+        "value": "Thamani",
+        "status": "Hali"
+      },
+      "dialog": {
+        "titleCreate": "Mpango mpya wa punguzo",
+        "titleEdit": "Hariri mpango wa punguzo",
+        "description": "Hufafanua jinsi punguzo chini ya mpango huu linavyohesabiwa na akaunti gani ya matumizi (GL) inayolibeba.",
+        "name": "Jina",
+        "kind": "Aina",
+        "calc": "Hesabu",
+        "valuePercent": "Thamani (%)",
+        "valueFixed": "Thamani (kiasi kisichobadilika)",
+        "categoryScope": "Wigo wa kategoria za ada",
+        "categoryScopeHint": "Acha kategoria zote bila kuchagua ili kuruhusu mpango huu dhidi ya kategoria yoyote ya ada.",
+        "glAccount": "Akaunti ya matumizi (GL)",
+        "allowsStacking": "Inaruhusu kuunganishwa na punguzo lingine",
+        "nameRequired": "Jina linahitajika.",
+        "valueRequired": "Thamani inahitajika.",
+        "glAccountRequired": "Akaunti ya matumizi (GL) inahitajika.",
+        "submit": "Hifadhi",
+        "submitting": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "kindValues": {
+        "WAIVER": "Msamaha",
+        "DISCOUNT": "Punguzo",
+        "SCHOLARSHIP": "Ufadhili wa masomo",
+        "BURSARY": "Bursary"
+      },
+      "calcValues": {
+        "PERCENT": "Asilimia",
+        "FIXED": "Kiasi kisichobadilika"
+      },
+      "detail": {
+        "backToList": "Rudi kwenye mipango ya punguzo",
+        "activate": "Washa",
+        "deactivate": "Zima",
+        "kindLabel": "Aina",
+        "calcLabel": "Hesabu",
+        "valueLabel": "Thamani",
+        "categoryScopeLabel": "Wigo wa kategoria za ada",
+        "categoryScopeAll": "Kategoria yoyote ya ada",
+        "allowsStackingLabel": "Inaruhusu kuunganishwa",
+        "glAccountLabel": "Akaunti ya matumizi (GL)"
+      }
+    },
+    "sponsors": {
+      "pageTitle": "Wafadhili",
+      "pageSubtitle": "Simamia wafadhili wa nje wanaoweza kufadhili ada za mwanafunzi, kupitia tuzo za ufadhili.",
+      "newSponsor": "Mfadhili mpya",
+      "listTitle": "Wafadhili",
+      "table": {
+        "name": "Jina",
+        "agreementFile": "Mkataba",
+        "hasAgreement": "Upo",
+        "allowsCashConversion": "Inaruhusu ubadilishaji wa pesa taslimu"
+      },
+      "dialog": {
+        "titleCreate": "Mfadhili mpya",
+        "titleEdit": "Hariri mfadhili",
+        "description": "Mfadhili ni wa kudumu mara akishaundwa — hakuna kitendo cha kufuta au kuzima kwa rekodi hii.",
+        "name": "Jina",
+        "contacts": "Mawasiliano",
+        "addContactRow": "Ongeza safu",
+        "contactsHint": "Jozi huru za lebo/thamani — mfano \"Simu\" / \"+254 700 000000\" — huhifadhiwa kama ilivyoingizwa.",
+        "contactKeyPlaceholder": "Lebo (mfano Simu)",
+        "contactValuePlaceholder": "Thamani",
+        "agreementFile": "Hati ya mkataba",
+        "allowsCashConversion": "Inaruhusu ubadilishaji wa pesa taslimu",
+        "nameRequired": "Jina linahitajika.",
+        "submit": "Hifadhi",
+        "submitting": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "detail": {
+        "backToList": "Rudi kwenye wafadhili",
+        "contactsLabel": "Mawasiliano",
+        "noContacts": "Hakuna maelezo ya mawasiliano yaliyowekwa.",
+        "agreementLabel": "Hati ya mkataba",
+        "noAgreement": "Hakuna hati ya mkataba iliyowekwa.",
+        "loadingAgreement": "Inapakia hati…",
+        "agreementLoadError": "Imeshindwa kupakia hati ya mkataba.",
+        "openAgreement": "Fungua mkataba",
+        "allowsCashConversionLabel": "Inaruhusu ubadilishaji wa pesa taslimu"
+      }
+    },
+    "transportRoutes": {
+      "pageTitle": "Njia za Usafiri",
+      "pageSubtitle": "Simamia njia za usafiri ambazo wanafunzi wanaweza kupangiwa.",
+      "newRoute": "Njia mpya",
+      "listTitle": "Njia",
+      "table": {
+        "name": "Jina",
+        "amount": "Kiasi",
+        "status": "Hali"
+      },
+      "dialog": {
+        "titleCreate": "Njia mpya ya usafiri",
+        "titleEdit": "Hariri njia ya usafiri",
+        "description": "Njia ambayo mwanafunzi anaweza kupangiwa na kutozwa ada.",
+        "name": "Jina",
+        "amount": "Kiasi",
+        "amountHint": "Ada la fasta linalotozwa kwa kila mwanafunzi njia hii inapotozwa kupitia Toza Usafiri.",
+        "nameRequired": "Jina linahitajika.",
+        "amountRequired": "Kiasi kinahitajika.",
+        "submit": "Hifadhi",
+        "submitting": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena.",
+        "bus": "Basi",
+        "busPlaceholder": "mfano KAA 001X",
+        "busHint": "Si lazima — gari linalohudumia njia hii, linatumika katika muhtasari wa mapato dhidi ya matumizi hapa chini."
+      },
+      "detail": {
+        "backToList": "Rudi kwenye njia za usafiri",
+        "activate": "Washa",
+        "deactivate": "Zima",
+        "amountLabel": "Kiasi",
+        "billTransportHint": "Kiasi cha njia hii hakitozwi kiotomatiki kwa kupangia tu wanafunzi kwenye njia hii.",
+        "billTransportLink": "Tumia Toza Usafiri kutengeneza ankara kwa wanafunzi uliochagua.",
+        "busLabel": "Basi",
+        "busNotSet": "Haijawekwa"
+      },
+      "billTransport": "Toza Usafiri",
+      "billForm": {
+        "pageTitle": "Toza Usafiri",
+        "pageSubtitle": "Tengeneza ankara za ada ya usafiri kwa wanafunzi wa njia fulani.",
+        "backToList": "Rudi kwenye njia za usafiri",
+        "formTitle": "Toza njia ya usafiri",
+        "academicYearTerm": "Academic year & term",
+        "selectYear": "Select academic year",
+        "selectTerm": "Select term",
+        "class": "Grade",
+        "selectClass": "Select grade",
+        "route": "Njia",
+        "selectRoute": "Chagua njia",
+        "routeAmountHint": "Kila mwanafunzi uliyemchagua atatozwa {amount} kwa njia hii.",
+        "students": "Students",
+        "studentSearchPlaceholder": "Search by name or admission no…",
+        "selectAll": "Select all",
+        "selectedCount": "{count} selected",
+        "noStudentsMatchSearch": "No students match your search.",
+        "selectClassAndRouteFirst": "Chagua darasa na njia ili kuona wanafunzi wake.",
+        "onThisRouteTag": "(kwenye njia hii)",
+        "collectFromWallet": "Collect amount from student wallet",
+        "collectFromWalletNotice": "Salio lote la sasa la mkoba wa mwanafunzi litatumika kwenye ankara/ankara zitakazotengenezwa.",
+        "applyCreditBalance": "Tumia salio la ziada linalopatikana",
+        "applyCreditBalanceNotice": "Salio lote la sasa la ziada la mwanafunzi litatumika kwenye ankara/ankara zitakazotengenezwa.",
+        "termRequired": "A term is required.",
+        "classRequired": "A grade is required.",
+        "routeRequired": "Njia inahitajika.",
+        "studentsRequired": "Select at least one student.",
+        "generating": "Generating…",
+        "collecting": "Collecting from wallets…",
+        "applyingCredit": "Inatumia salio la ziada…",
+        "submit": "Generate Invoice",
+        "genericError": "Something went wrong. Please try again.",
+        "resultTitle": "Result",
+        "resultSucceeded": "Generated {invoices} invoice(s) for {students} student(s).",
+        "resultFailedTitle": "Failed",
+        "walletResultTitle": "Wallet collection",
+        "walletSettled": "Settled: {count}",
+        "walletPartialShortfall": "Bado kuna pungufu: {count}",
+        "walletNeedsApproval": "Needs approval: {count}",
+        "walletInsufficientBalance": "Insufficient balance: {count}",
+        "walletNoWallet": "No wallet: {count}",
+        "walletFailed": "Failed: {count}",
+        "viewReceiptLink": "Angalia risiti",
+        "walletOutcome": {
+          "settled": "Imelipwa kutoka mkobani: {amount}",
+          "partialShortfall": "{amount} ya ankara bado haijalipwa baada ya uhamishaji",
+          "needsApproval": "Inazidi kiwango cha juu kinachohitaji idhini kwa uhamisho wa mkoba — inahitaji idhini",
+          "insufficientBalance": "Salio la mkoba halitoshi",
+          "noWallet": "Mwanafunzi hana mkoba ulioanzishwa",
+          "failed": "Uhamisho wa mkoba umeshindwa"
+        },
+        "creditBalanceResultTitle": "Utumiaji wa salio la ziada",
+        "creditBalanceSettled": "Imelipwa: {count}",
+        "creditBalancePartialShortfall": "Bado kuna pungufu: {count}",
+        "creditBalanceFailed": "Imeshindwa: {count}",
+        "creditBalanceOutcome": {
+          "settled": "Imetumika kutoka salio la ziada: {amount}",
+          "partialShortfall": "{amount} ya ankara bado haijalipwa baada ya kutumia salio la ziada",
+          "failed": "Utumiaji wa salio la ziada umeshindwa"
+        }
+      },
+      "expenses": {
+        "title": "Matumizi ya basi",
+        "logDialog": {
+          "trigger": "Andika matumizi ya basi",
+          "title": "Andika matumizi ya basi",
+          "description": "Inatengeneza hati ya matumizi (DRAFT) — mafuta, matengenezo, au gharama nyingine — iliyounganishwa na njia hii.",
+          "logging": "Inaandika…",
+          "logButton": "Andika matumizi",
+          "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+        }
+      },
+      "summary": {
+        "title": "Mapato dhidi ya matumizi",
+        "income": "Mapato (ada za usafiri zilizotozwa)",
+        "expense": "Matumizi (matumizi ya basi)",
+        "net": "Jumla halisi"
+      }
+    },
+    "sponsorAwards": {
+      "table": {
+        "sponsor": "Mfadhili",
+        "term": "Muhula",
+        "amount": "Kiasi cha tuzo",
+        "appliedAmount": "Kilichotumika hadi sasa",
+        "remaining": "Salio linalobaki",
+        "appliesAutomaticallyNote": "Tuzo hujitumia kiotomatiki wakati ankara inayofuata ya mwanafunzi na muhula huu itakapotolewa — hakuna kitendo cha mikono cha \"kutumia\" popote kwenye jedwali hili."
+      },
+      "dialog": {
+        "trigger": "Tuzo mpya",
+        "title": "Tuzo mpya ya mfadhili",
+        "description": "Inatenga ufadhili wa mfadhili kwa mwanafunzi huyu kwa muhula mmoja. Tuzo hujitumia kiotomatiki kwenye ankara za baadaye — hakuna hatua nyingine inayohitajika hapa.",
+        "sponsor": "Mfadhili",
+        "sponsorPlaceholder": "Chagua mfadhili",
+        "sponsorSearchPlaceholder": "Tafuta wafadhili…",
+        "sponsorEmptyText": "Hakuna wafadhili waliopatikana.",
+        "term": "Muhula",
+        "yearPlaceholder": "Mwaka wa masomo",
+        "termPlaceholder": "Muhula",
+        "amount": "Kiasi cha tuzo",
+        "categoryScope": "Punguza kwa kategoria za ada (hiari)",
+        "categoryScopeHint": "Acha bila kuchagua ili tuzo hii itumike dhidi ya kategoria yoyote ya ada kwenye ankara za mwanafunzi huyu kwa muhula huu.",
+        "appliesAutomaticallyHint": "Tuzo hii hujitumia kiotomatiki wakati ankara inayofuata ya mwanafunzi na muhula huu itakapotolewa — hakuna hatua tofauti ya \"kutumia\".",
+        "sponsorRequired": "Chagua mfadhili.",
+        "termRequired": "Chagua muhula.",
+        "amountRequired": "Kiasi cha tuzo kinahitajika.",
+        "submit": "Unda tuzo",
+        "submitting": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      }
+    },
+    "optionalItems": {
+      "yearPlaceholder": "Mwaka wa masomo",
+      "termPlaceholder": "Muhula",
+      "selectTermFirst": "Chagua muhula ili kuona uandikishaji wa vitu vya hiari vya mwanafunzi huyu.",
+      "addItem": "Ongeza kitu cha hiari",
+      "timingHint": "Uandikishaji lazima ufanyike kabla ya ankara ya muhula huu kutolewa ili uwe na athari — kuongeza kitu baada ya ankara kutolewa hakuna athari ya nyuma.",
+      "usingStructureDefault": "Inatumia kiasi chaguo-msingi cha muundo wa ada",
+      "overrideAmount": "Kiasi kilichobadilishwa: {amount}",
+      "dialog": {
+        "title": "Ongeza kitu cha hiari",
+        "description": "Inamwandikisha mwanafunzi huyu katika kitu kimoja cha hiari cha kategoria ya ada kwa muhula uliochaguliwa.",
+        "feeCategory": "Kategoria ya ada",
+        "feeCategoryPlaceholder": "Chagua kategoria ya ada",
+        "feeCategorySearchPlaceholder": "Tafuta kategoria za ada…",
+        "feeCategoryEmptyText": "Hakuna kategoria za ada zilizopatikana.",
+        "feeCategoryRequired": "Chagua kategoria ya ada.",
+        "amountOverride": "Kiasi cha kubadilisha (hiari)",
+        "amountOverrideHint": "Acha wazi ili kutumia kiasi chaguo-msingi cha muundo wa ada kwa kategoria hii.",
+        "duplicateError": "Mwanafunzi huyu tayari ameandikishwa katika kitu hiki cha hiari kwa muhula huu.",
+        "submit": "Ongeza kitu",
+        "submitting": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "removeDialog": {
+        "trigger": "Ondoa",
+        "title": "Ondoa kitu hiki cha hiari?",
+        "description": "Inaondoa {name} kutoka kwenye uandikishaji wa vitu vya hiari vya mwanafunzi huyu kwa muhula huu. Iwapo ankara ya muhula huu tayari imetolewa, hii haina athari kwake — kitu hicho tayari kilitozwa au kuruka wakati wa kutolewa kwa ankara.",
+        "removing": "Inaondoa…",
+        "genericError": "Imeshindwa kuondoa kitu hiki. Tafadhali jaribu tena."
+      }
+    },
+    "common": {
+      "glAccountPicker": {
+        "selectGlAccount": "Chagua akaunti ya GL",
+        "searchGlAccount": "Tafuta kwa msimbo au jina…",
+        "loadingAccounts": "Inapakia akaunti…",
+        "noAccountsFound": "Hakuna akaunti zilizopatikana — sanidi Chati ya Akaunti kwanza.",
+        "glAccountUuidPlaceholder": "Kitambulisho cha akaunti ya GL (UUID)",
+        "glAccountLoadFailedHint": "Imeshindwa kupakia akaunti za GL — ingiza kitambulisho cha akaunti mwenyewe. Hii kwa kawaida inamaanisha jukumu lako halina ruhusa ya kuona Chati ya Akaunti."
+      },
+      "agreementFilePicker": {
+        "upload": "Pakia",
+        "uploading": "Inapakia…",
+        "replace": "Badilisha",
+        "remove": "Ondoa",
+        "uploadError": "Imeshindwa kupakia faili hii. Tafadhali jaribu tena.",
+        "documentLabel": "Hati ya mkataba",
+        "loadingPreview": "Inapakia…",
+        "previewError": "Imeshindwa kupakia hati hii.",
+        "openInNewTab": "Fungua kwenye kichupo kipya"
+      }
+    },
+    "documentLineEditor": {
+      "category": "Aina ya ada",
+      "selectCategory": "Chagua aina ya ada",
+      "searchCategory": "Tafuta aina za ada…",
+      "description": "Maelezo",
+      "descriptionOptionalHint": "Si lazima — hutumia jina la aina ya ada ikiwa haujajaza",
+      "amount": "Kiasi",
+      "maxHint": "Hadi {amount} (kiasi cha mstari asilia wa ankara)",
+      "addLine": "Ongeza mstari",
+      "removeLine": "Ondoa mstari"
+    },
+    "creditNotes": {
+      "table": {
+        "number": "Namba ya noti ya mkopo",
+        "reason": "Sababu",
+        "status": "Hali",
+        "total": "Jumla"
+      },
+      "dialog": {
+        "trigger": "Noti Mpya ya Mkopo",
+        "title": "Noti mpya ya mkopo",
+        "description": "Inasahihisha ankara iliyotumwa ambayo tayari ina malipo yaliyowekwa, kwa kurejesha mkopo kwenye mstari mmoja au zaidi wa awali.",
+        "reason": "Sababu",
+        "reasonRequired": "Sababu inahitajika.",
+        "categoryRequired": "Chagua aina ya ada kwa kila mstari.",
+        "amountRequired": "Ingiza kiasi kwa kila mstari.",
+        "noInvoiceLinesHint": "Ankara hii haina mistari ya kurejesha mkopo.",
+        "submitting": "Inaunda…",
+        "submit": "Unda noti ya mkopo",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "statusValues": {
+        "DRAFT": "Rasimu",
+        "PENDING_APPROVAL": "Inasubiri idhini",
+        "APPROVED": "Imeidhinishwa",
+        "POSTED": "Imetumwa"
+      },
+      "statusActions": {
+        "submitTrigger": "Wasilisha kwa idhini",
+        "submitting": "Inawasilisha…",
+        "approveTrigger": "Idhinisha",
+        "approveConfirmTitle": "Idhinisha noti hii ya mkopo?",
+        "approveConfirmDescription": "Hii itaidhinisha noti ya mkopo {number}, ikiruhusu kutumwa.",
+        "approving": "Inaidhinisha…",
+        "approveConfirmButton": "Idhinisha",
+        "rejectTrigger": "Kataa",
+        "rejectConfirmTitle": "Rudisha noti hii ya mkopo kwenye Rasimu?",
+        "rejectConfirmDescription": "Noti ya mkopo {number} haina hali ya kudumu ya kukataliwa — hii inairudisha kwenye Rasimu, ambapo inaweza kuhaririwa na kuwasilishwa tena.",
+        "rejecting": "Inarudisha…",
+        "rejectConfirmButton": "Rudisha kwenye rasimu",
+        "postTrigger": "Tuma",
+        "postConfirmTitle": "Tuma noti hii ya mkopo?",
+        "postConfirmDescription": "Hii itatuma noti ya mkopo {number} kwenye leja kuu.",
+        "postInvoiceEffectNote": "Kutuma kunapunguza moja kwa moja kiasi kilicholipwa na salio la ankara lengwa — athari ile ile ambayo urejeshaji halisi wa malipo ungekuwa nao.",
+        "posting": "Inatuma…",
+        "postConfirmButton": "Tuma",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      }
+    },
+    "debitNotes": {
+      "table": {
+        "number": "Namba ya noti ya malipo",
+        "term": "Muhula",
+        "reason": "Sababu",
+        "status": "Hali",
+        "total": "Jumla"
+      },
+      "dialog": {
+        "trigger": "Noti Mpya ya Malipo",
+        "title": "Noti mpya ya malipo",
+        "description": "Inaongeza gharama mpya moja kwa moja dhidi ya mwanafunzi huyu. Kuituma kunazalisha na kutuma ankara mpya halisi — hatari zile zile za mgongano kama utumaji mwingine wowote wa ankara zinatumika, hii si marekebisho madogo.",
+        "term": "Muhula",
+        "selectYear": "Chagua mwaka wa masomo",
+        "selectTerm": "Chagua muhula",
+        "termRequired": "Muhula unahitajika.",
+        "reason": "Sababu",
+        "reasonRequired": "Sababu inahitajika.",
+        "categoryRequired": "Chagua aina ya ada kwa kila mstari.",
+        "amountRequired": "Ingiza kiasi kwa kila mstari.",
+        "lineDescriptionRequired": "Maelezo yanahitajika kwa kila mstari.",
+        "submitting": "Inaunda…",
+        "submit": "Unda noti ya malipo",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "statusValues": {
+        "DRAFT": "Rasimu",
+        "POSTED": "Imetumwa"
+      },
+      "statusActions": {
+        "postTrigger": "Tuma",
+        "postConfirmTitle": "Tuma noti hii ya malipo?",
+        "postConfirmDescription": "Hii itatuma noti ya malipo {number}.",
+        "postInvoiceEffectNote": "Kutuma kunazalisha na kutuma ankara mpya halisi kwa mwanafunzi huyu — hatari zile zile za mgongano (mfano mgongano wa kutozwa mara mbili) kama utumaji mwingine wowote wa ankara, si marekebisho madogo.",
+        "posting": "Inatuma…",
+        "postConfirmButton": "Tuma",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      }
+    },
+    "concessions": {
+      "table": {
+        "kind": "Aina",
+        "target": "Mpango / tuzo la mfadhili",
+        "amount": "Kiasi",
+        "reason": "Sababu",
+        "status": "Hali",
+        "sponsorAwardLabel": "Tuzo la mfadhili: {sponsor}"
+      },
+      "dialog": {
+        "trigger": "Omba punguzo",
+        "title": "Omba punguzo",
+        "description": "Inaomba msamaha, punguzo, ufadhili wa masomo, au ufadhili dhidi ya ankara. Ombi hili linaanza likisubiri idhini — hakuna kinachotumwa hadi liidhinishwe.",
+        "invoice": "Ankara",
+        "invoicePlaceholder": "Chagua ankara",
+        "invoiceSearchPlaceholder": "Tafuta ankara…",
+        "invoiceEmptyText": "Mwanafunzi huyu hana ankara zilizotumwa au zilizolipwa kwa sehemu za kulenga.",
+        "invoiceHint": "Ni ankara za mwanafunzi huyu pekee zilizotumwa au zilizolipwa kwa sehemu ndizo zinazoonyeshwa hapa.",
+        "invoiceRequired": "Chagua ankara.",
+        "balanceSuffix": "salio",
+        "kind": "Aina",
+        "kindValues": {
+          "WAIVER": "Msamaha",
+          "DISCOUNT": "Punguzo",
+          "SCHOLARSHIP": "Ufadhili wa masomo",
+          "BURSARY": "Ufadhili"
+        },
+        "targetMode": "Inafadhiliwa na",
+        "targetModeScheme": "Mpango wa punguzo",
+        "targetModeSponsorAward": "Tuzo la mfadhili",
+        "scheme": "Mpango wa punguzo",
+        "schemePlaceholder": "Chagua mpango",
+        "schemeSearchPlaceholder": "Tafuta mipango…",
+        "schemeEmptyText": "Hakuna mipango ya punguzo inayotumika iliyopatikana.",
+        "schemeRequired": "Chagua mpango wa punguzo.",
+        "sponsorAward": "Tuzo la mfadhili",
+        "sponsorAwardPlaceholder": "Chagua tuzo la mfadhili",
+        "sponsorAwardSearchPlaceholder": "Tafuta tuzo za wafadhili…",
+        "sponsorAwardEmptyText": "Mwanafunzi huyu hana tuzo za wafadhili.",
+        "sponsorAwardRequired": "Chagua tuzo la mfadhili.",
+        "sponsorAwardItemLabel": "{sponsor} — {remaining} zimebaki",
+        "amount": "Kiasi",
+        "amountRequired": "Kiasi kinahitajika.",
+        "reason": "Sababu",
+        "reasonRequired": "Sababu inahitajika.",
+        "submit": "Omba punguzo",
+        "submitting": "Inatuma ombi…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "statusValues": {
+        "PENDING_APPROVAL": "Inasubiri idhini",
+        "APPROVED": "Imeidhinishwa",
+        "REJECTED": "Imekataliwa",
+        "POSTED": "Imetumwa"
+      },
+      "statusActions": {
+        "approveTrigger": "Idhinisha",
+        "approveConfirmTitle": "Idhinisha punguzo hili?",
+        "approveConfirmDescription": "Hii itaidhinisha punguzo. Ikiwa ankara lengwa tayari imetumwa, punguzo litaweza kutumwa peke yake; ikiwa ankara bado ni rasimu, punguzo litaunganishwa kiotomatiki wakati ankara hiyo itakapotumwa.",
+        "approving": "Inaidhinisha…",
+        "approveConfirmButton": "Idhinisha",
+        "rejectTrigger": "Kataa",
+        "rejectConfirmTitle": "Kataa punguzo hili?",
+        "rejectConfirmDescription": "Hii itakataa punguzo hili kabisa. Haliwezi kuwasilishwa tena — ombi jipya litahitajika badala yake.",
+        "rejecting": "Inakataa…",
+        "rejectConfirmButton": "Kataa",
+        "postStandaloneTrigger": "Tuma peke yake",
+        "postStandaloneConfirmTitle": "Tuma punguzo hili peke yake?",
+        "postStandaloneConfirmDescription": "Hii itatuma punguzo moja kwa moja dhidi ya ankara {number}, ambayo tayari imetumwa.",
+        "postStandaloneBlocksVoidNote": "Hii itazuia kabisa kitendo cha kufuta cha ankara hii — mara marekebisho kama haya yanapotumika, tumia noti ya mkopo kwa marekebisho yoyote yajayo badala yake.",
+        "postingStandalone": "Inatuma…",
+        "postStandaloneConfirmButton": "Tuma peke yake",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "autoFoldNote": "Ankara hii bado ni rasimu. Punguzo lililoidhinishwa dhidi yake halitumwi peke yake — litaunganishwa kiotomatiki wakati ankara hii itakapotumwa ijayo, bila hatua nyingine yoyote kuhitajika au kuwezekana kabla ya hapo."
+    },
+    "refundVouchers": {
+      "table": {
+        "number": "Namba ya hati",
+        "status": "Hali",
+        "amount": "Kiasi",
+        "method": "Njia",
+        "journal": "Jarida la GL",
+        "journalPosted": "Limetumwa",
+        "journalNotPosted": "Bado halijatumwa"
+      },
+      "methodValues": {
+        "CASH": "Fedha taslimu",
+        "BANK": "Uhamisho wa benki",
+        "MPESA_B2C": "M-Pesa B2C"
+      },
+      "dialog": {
+        "trigger": "Hati Mpya ya Marejesho",
+        "title": "Hati mpya ya marejesho",
+        "description": "Inaomba marejesho yatakayolipwa kutoka salio la mkopo la mwanafunzi huyu mwenyewe — marejesho hayawezi kamwe kuzalisha salio hasi la kudaiwa.",
+        "amount": "Kiasi",
+        "amountRequired": "Kiasi kinahitajika.",
+        "creditBalanceHint": "Salio la mkopo linalopatikana: {balance}. Seva inatekeleza hii kama kikomo kigumu wakati hati inapoundwa.",
+        "creditBalanceLoading": "Inapakia salio la mkopo la mwanafunzi huyu…",
+        "creditBalanceExceededHint": "Hii inazidi salio la sasa la mkopo la mwanafunzi — seva itaikataa.",
+        "method": "Njia ya malipo",
+        "payee": "Maelezo ya mpokeaji",
+        "addPayeeRow": "Ongeza maelezo",
+        "payeeHint": "Maelezo huru kuhusu atakayepokea marejesho haya (mfano jina, namba ya simu, namba ya akaunti) — si lazima.",
+        "payeeKeyPlaceholder": "Lebo (mfano Simu)",
+        "payeeValuePlaceholder": "Thamani",
+        "submitting": "Inaunda…",
+        "submit": "Unda hati ya marejesho",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "statusValues": {
+        "DRAFT": "Rasimu",
+        "PENDING_APPROVAL": "Inasubiri idhini",
+        "APPROVED": "Imeidhinishwa",
+        "APPROVED_UNPAID": "Imeidhinishwa — haijalipwa",
+        "PAID": "Imelipwa",
+        "CANCELLED": "Imefutwa"
+      },
+      "statusActions": {
+        "submitTrigger": "Wasilisha kwa idhini",
+        "submitting": "Inawasilisha…",
+        "approveTrigger": "Idhinisha",
+        "approveConfirmTitle": "Idhinisha hati hii ya marejesho?",
+        "approveConfirmDescription": "Hii itaidhinisha hati ya marejesho {number}.",
+        "approveEffectNote": "Idhinisha (hii pia itatuma kiingilio cha GL na kuhamisha moja kwa moja hadi Haijalipwa) — hakuna hatua tofauti ya \"imeidhinishwa lakini bado haijatumwa\".",
+        "approving": "Inaidhinisha…",
+        "approveConfirmButton": "Idhinisha",
+        "rejectTrigger": "Kataa",
+        "rejectConfirmTitle": "Kataa hati hii ya marejesho?",
+        "rejectConfirmDescription": "Hii itafuta hati ya marejesho {number} moja kwa moja — hakuna shughuli ya GL itakayotokea, na hii haiwezi kutenduliwa.",
+        "rejecting": "Inakataa…",
+        "rejectConfirmButton": "Kataa",
+        "markPaidTrigger": "Weka alama imelipwa",
+        "markPaidConfirmTitle": "Weka alama hati hii ya marejesho imelipwa?",
+        "markPaidConfirmDescription": "Inathibitisha kuwa hati {number} imekwisha lipwa kwa mwanafunzi.",
+        "b2cTransactionId": "Namba ya muamala ya M-Pesa B2C (si lazima)",
+        "b2cTransactionIdPlaceholder": "mfano namba ya muamala kutoka kwa malipo ya B2C",
+        "b2cHint": "Programu hii haitumi malipo ya M-Pesa yenyewe.",
+        "b2cHintLink": "Tumia ukurasa wa M-Pesa B2C kutuma malipo, kisha bandika namba ya muamala inayotokana hapa.",
+        "markingPaid": "Inaweka alama imelipwa…",
+        "markPaidConfirmButton": "Weka alama imelipwa",
+        "cancelTrigger": "Ghairi",
+        "cancelConfirmTitle": "Ghairi hati hii ya marejesho?",
+        "cancelConfirmDescription": "Hii itaghairi hati ya marejesho {number}. Haiwezi kutenduliwa.",
+        "cancelAfterApprovalWarning": "Hati hii tayari imeidhinishwa na jarida lake la GL limetumwa (likipunguza salio la mwanafunzi, likiongeza akaunti ya malipo) — kughairi sasa HAITAgeuza jarida hilo. Kiingilio cha kufidia kitahitajika kufanywa kwa mkono ikiwa kinahitajika.",
+        "cancelling": "Inaghairi…",
+        "cancelConfirmButton": "Ghairi hati",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      }
+    },
+    "bulkBilling": {
+      "title": "Utozaji wa Jumla",
+      "subtitle": "Tengeneza na tuma ankara kwa wanafunzi wengi kwa wakati mmoja, kulingana na muundo wao halisi wa ada uliochapishwa.",
+      "form": {
+        "formTitle": "Tengeneza ankara",
+        "termLabel": "Mwaka wa masomo na muhula",
+        "selectYear": "Chagua mwaka wa masomo",
+        "selectTerm": "Chagua muhula",
+        "classesLabel": "Madarasa (hiari)",
+        "selectClasses": "Chagua madarasa…",
+        "classesHint": "Acha bila kuchagua ili kujumuisha kila darasa shuleni. Kuchagua darasa moja au zaidi kunapunguza zoezi hili kwa madarasa hayo tu.",
+        "streamsLabel": "Mikondo (hiari)",
+        "selectStreams": "Chagua mikondo…",
+        "streamsHint": "Kunapunguza zoezi hili kwa mikondo hii tu, ndani ya madarasa yaliyochaguliwa hapo juu.",
+        "streamsDisabledHint": "Chagua angalau darasa moja ili kuchuja kwa mkondo.",
+        "termRequiredError": "Mwaka wa masomo na muhula vinahitajika.",
+        "submit": "Tengeneza Ankara",
+        "generating": "Inatengeneza…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "confirmDialog": {
+        "normalTitle": "Tengeneza ankara kwa wigo huu?",
+        "normalBody": "Hii itatengeneza na kutuma ankara kwa kila mwanafunzi hai katika madarasa {classCount} na mikondo {streamCount} yaliyochaguliwa, aliye na muundo wa ada uliochapishwa kwa muhula huu. Hili haliwezi kutenduliwa.",
+        "dangerTitle": "Hii itatoza shule nzima",
+        "dangerBody": "Hujachagua darasa au mkondo wowote. Hii itatengeneza na kutuma ankara kwa KILA MWANAFUNZI HAI SHULENI MZIMA aliye na muundo wa ada uliochapishwa kwa muhula huu — hakuna kutendua, na hakuna hatua ya uthibitisho kwenye seva. Kidirisha hiki ndicho kinga pekee.",
+        "dangerAlertTitle": "Hakuna kutendua, hakuna uthibitisho wa pili",
+        "dangerAlertBody": "Ukishathibitisha, ankara zitaanza kutengenezwa na kutumwa mara moja, mwanafunzi mmoja baada ya mwingine, kwa shule nzima. Mwanafunzi aliyeshatozwa kwa muhula huu atashindwa tu na kurukwa — kila mtu mwingine atatozwa. Hili haliwezi kusitishwa likishaanza, na ukifunga kichupo hiki au kuondoka, hakuna njia ya kuangalia matokeo baadaye.",
+        "typeToConfirmLabel": "Andika {word} ili kuthibitisha",
+        "confirmButton": "Tengeneza ankara"
+      },
+      "inFlightNoticeTitle": "Usiondoke",
+      "inFlightNotice": "Zoezi hili bado linaendelea. Usifunge kichupo hiki au kuondoka — linaweza kuchukua muda kwa idadi kubwa ya wanafunzi, na hakuna njia ya kuangalia matokeo baadaye ukiondoka.",
+      "result": {
+        "title": "Matokeo",
+        "succeededCount": "Ankara {count} zimetengenezwa na kutumwa kwa mafanikio.",
+        "failedCount": "Wanafunzi {count} wameshindwa.",
+        "failuresListTitle": "Zilizoshindwa"
+      }
     }
   },
   "payments": {

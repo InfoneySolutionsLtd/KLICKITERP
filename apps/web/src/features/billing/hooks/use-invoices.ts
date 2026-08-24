@@ -16,10 +16,22 @@ import {
 
 export const INVOICES_QUERY_KEY = ["billing", "invoices"] as const;
 
-function studentInvoicesKey(studentId: string | undefined) {
+/** Exported (Phase 6 Slice 22 Part 5 — Credit Notes) alongside `detailKey` below, for the same reuse reason — `usePostCreditNote()` invalidates this too, matching `usePostInvoice()`'s own invalidation set. */
+export function studentInvoicesKey(studentId: string | undefined) {
   return [...INVOICES_QUERY_KEY, "student", studentId] as const;
 }
-function detailKey(id: string | undefined) {
+/**
+ * Exported (Phase 6 Slice 22 Part 5 — Credit Notes) — `CreditNotesService.post()`
+ * (`packages/server/src/domains/billing/application/credit-notes.service.ts`)
+ * directly mutates the target invoice's own `paidAmount`/`balance`/`status`
+ * (the same `postStandalone()`-style convention `ConcessionsService` uses),
+ * so `usePostCreditNote()` (`use-credit-notes.ts`) must invalidate this exact
+ * key on success for the invoice detail page to reflect the new balance
+ * without a manual refresh — reusing the builder here (rather than
+ * reconstructing the tuple shape in a second file) keeps both hooks
+ * guaranteed in sync if this shape ever changes.
+ */
+export function detailKey(id: string | undefined) {
   return [...INVOICES_QUERY_KEY, "detail", id] as const;
 }
 function linesKey(id: string | undefined) {

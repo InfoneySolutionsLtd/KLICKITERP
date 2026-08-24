@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsOptional, IsString, IsUUID, Matches, MaxLength, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsBoolean, IsOptional, IsString, IsUUID, Matches, MaxLength, ValidateNested } from "class-validator";
 import { DECIMAL_PATTERN } from "./decimal.util";
 
 export class CreateCreditNoteLineDto {
@@ -38,6 +38,7 @@ export class CreateCreditNoteDto {
 
 export class DecideCreditNoteDto {
   @ApiProperty()
+  @IsBoolean()
   approved!: boolean;
 }
 

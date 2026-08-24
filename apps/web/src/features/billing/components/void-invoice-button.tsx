@@ -23,13 +23,18 @@ import { isPositiveMoney } from "../lib/errors";
 
 /**
  * `POST /billing/invoices/:id/void` — BR-BILL-09: only while `paidAmount=0`
- * (a real, permanent block once any adjustment has touched the invoice —
- * this slice can't fully exercise that block since it doesn't build
- * concessions/credit-notes, noted honestly in verification rather than
- * forced). Real confirm dialog, same trigger+confirm-`Dialog`+error-banner
- * shape `DeleteClassButton`/`DeleteStudentButton` already established —
- * disabled with a clear explanation once `invoice.paidAmount` is genuinely
- * positive, rather than a plain disabled button with no reason given.
+ * (a real, permanent block once any adjustment has touched the invoice).
+ * Real confirm dialog, same trigger+confirm-`Dialog`+error-banner shape
+ * `DeleteClassButton`/`DeleteStudentButton` already established — disabled
+ * with a clear explanation once `invoice.paidAmount` is genuinely positive,
+ * rather than a plain disabled button with no reason given.
+ *
+ * Phase 6 Slice 22 Part 5 — the `blockedHint` copy below's "Use a credit
+ * note instead" now has a real, built answer: the invoice detail page's own
+ * "Credit Notes" section (`app/(erp)/billing/invoices/[id]/page.tsx`,
+ * `<CreateCreditNoteDialog>`/`<CreditNotesTable>`) is exactly that
+ * mechanism — `CreditNotesService.post()` reduces `paidAmount`/`balance` the
+ * same way a real payment reversal would, without needing this Void action.
  */
 export function VoidInvoiceButton({ invoice }: { invoice: InvoiceResponseDto }) {
   const t = useTranslations("billing.invoices.detail.voidDialog");

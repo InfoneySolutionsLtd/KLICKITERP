@@ -27,6 +27,26 @@ export function useTerms(academicYearId: string | undefined) {
   });
 }
 
+const ALL_TERMS_QUERY_KEY = ["billing", "terms", "all"] as const;
+
+/**
+ * Part 3 (Billing sub-features batch) — the unscoped `GET /terms` call (no
+ * `academicYearId`, confirmed optional server-side by reading
+ * `AcademicCalendarController.listTerms()` directly), for callers that need
+ * to resolve a bare `termId` to a display name without already knowing its
+ * owning academic year — e.g. `SponsorAwardsTable`, whose
+ * `SponsorAwardResponseDto` rows carry only `termId`. `useTerms()` above
+ * stays scoped/`enabled`-gated for the cascading-picker case; this is a
+ * separate query key so the two never collide or overwrite each other's
+ * cache entry.
+ */
+export function useAllTerms() {
+  return useQuery({
+    queryKey: ALL_TERMS_QUERY_KEY,
+    queryFn: () => listTerms(),
+  });
+}
+
 /** Phase 6 Slice 3b — the new Academic Year wizard's create-year step. Invalidates the years list so every picker in the app (this one included) sees the new year immediately. */
 export function useCreateAcademicYear() {
   const queryClient = useQueryClient();

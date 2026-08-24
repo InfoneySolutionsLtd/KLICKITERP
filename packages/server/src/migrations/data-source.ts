@@ -79,6 +79,8 @@ import { BillLateFeePolicyEntity } from "../domains/billing/domain/bill-late-fee
 import { BillLateFeeBatchEntity } from "../domains/billing/domain/bill-late-fee-batch.entity";
 import { BillStudentCreditEntity } from "../domains/billing/domain/bill-student-credit.entity";
 import { BillStudentCreditEntryEntity } from "../domains/billing/domain/bill-student-credit-entry.entity";
+import { BillTransportBillingLineEntity } from "../domains/billing/domain/bill-transport-billing-line.entity";
+import { BillTransportExpenseEntity } from "../domains/billing/domain/bill-transport-expense.entity";
 import { PayCashierSessionEntity } from "../domains/payments/domain/pay-cashier-session.entity";
 import { PayReceiptEntity } from "../domains/payments/domain/pay-receipt.entity";
 import { PayReceiptSplitEntity } from "../domains/payments/domain/pay-receipt-split.entity";
@@ -279,6 +281,8 @@ export const AppDataSource = new DataSource({
     BillLateFeeBatchEntity,
     BillStudentCreditEntity,
     BillStudentCreditEntryEntity,
+    BillTransportBillingLineEntity,
+    BillTransportExpenseEntity,
     PayCashierSessionEntity,
     PayReceiptEntity,
     PayReceiptSplitEntity,

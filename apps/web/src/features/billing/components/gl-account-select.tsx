@@ -4,7 +4,8 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
-import { useIncomeAccounts } from "../hooks/use-accounts";
+import { useAccountsByClass } from "../hooks/use-accounts";
+import type { GlAccountClass } from "../api/accounts.api";
 
 /**
  * Phase 6 Slice 3 — GL income account picker for `FeeCategoryDialog`'s
@@ -29,18 +30,37 @@ import { useIncomeAccounts } from "../hooks/use-accounts";
  * degrades to the plain UUID input with a visible explanatory hint instead
  * of silently failing. This is a more honest application of the plan's
  * fallback than "assume the endpoint never exists" would have been.
+ *
+ * Part 1 (Billing sub-features batch) — generalized with an optional
+ * `accountClass` prop (default `"INCOME"`, matching this component's only
+ * caller before this pass — `FeeCategoryDialog` needs zero changes). A
+ * second real caller now exists: Concession Schemes' `glAccountId`, the
+ * DEBIT/contra side of a concession posting, needs an EXPENSE-class account,
+ * not income — `accountClass="EXPENSE"` selects `useAccountsByClass()`
+ * instead of the income-only `useIncomeAccounts()` fast path. Since this
+ * component now has a second real caller with genuinely different field
+ * semantics, its 6 label keys were migrated from the fee-category-specific
+ * `billing.feeCategories.dialog.*` namespace to a shared, generic
+ * `billing.common.glAccountPicker.*` namespace — this component's own
+ * translations no longer imply "income account" specifically.
  */
 export function GlAccountSelect({
   value,
   onChange,
   disabled,
+  accountClass = "INCOME",
 }: {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  accountClass?: GlAccountClass;
 }) {
-  const t = useTranslations("billing.feeCategories.dialog");
-  const query = useIncomeAccounts();
+  const t = useTranslations("billing.common.glAccountPicker");
+  // Same `["billing","accounts","income"]` cache key as the old
+  // `useIncomeAccounts()`-only implementation when `accountClass` is left at
+  // its "INCOME" default — genuinely zero behavior change for the existing
+  // Fee Category caller, not just an equivalent result.
+  const query = useAccountsByClass(accountClass);
 
   const items = React.useMemo(
     () => (query.data ?? []).map((account) => ({ value: account.id, label: `${account.code} — ${account.name}` })),

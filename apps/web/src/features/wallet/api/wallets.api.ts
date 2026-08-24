@@ -190,34 +190,51 @@ export interface UpdateWalletLimitsInput {
  *    spend, `{categoryId, amount, receiptFileId?}`). `@nestjs/swagger`'s
  *    component-schema registry keys purely by class NAME, so ONE of the two
  *    silently overwrites the other in the generated OpenAPI document's
- *    `components.schemas.SpendDto` — `openapi-typescript` then generates the
- *    WRONG body shape for this wallet endpoint (the petty-cash one,
- *    `categoryId`/`receiptFileId`, confirmed by reading the actual `tsc`
- *    error this produced). This is a genuine, pre-existing, NestJS-flagged
- *    cross-module naming collision (unrelated to this dispatch's own
- *    `WallWalletRepository`/`WalletsController` changes) — fixed here on the
- *    frontend, same as every other such gap in this codebase; NOT fixed by
- *    renaming either server-side `SpendDto` class, which is out of this
- *    dispatch's scope and would be a real, if cosmetic, behavior-neutral
- *    rename affecting Module 15 (Expenses) too.
+ *    `components.schemas.SpendDto`, and WHICH one wins is not controlled by
+ *    either domain's own code — it can silently flip between regenerations
+ *    depending on Nest's own module-registration order. **Re-confirmed
+ *    2026-08-24 (Transport Routes enhancement's own contracts regen,
+ *    unrelated to this endpoint): the winner has flipped since this comment
+ *    was first written** — Wallet's own shape (`{amount, servicePointId
+ *    (required), items?, idempotencyKey?}`) now wins, so the generated body
+ *    type for THIS endpoint is now correct in shape (`servicePointId`
+ *    required, matching the real `SpendDto` above) except for `items`,
+ *    which still degrades to the narrow `{} & {[x:string]:undefined}` shape
+ *    (a plain `@ApiPropertyOptional({ type: Object })` field, the same
+ *    "polymorphic object" gap `payeeRef` hits elsewhere in this codebase) —
+ *    `PettyCashSpendRequestBody` in `features/expenses/api/petty-cash.api.ts`
+ *    now needs the SAME class of cast in the OPPOSITE direction (petty-cash's
+ *    endpoint now generates Wallet's shape, wrong for it). This remains a
+ *    genuine, pre-existing, NestJS-flagged cross-module naming collision —
+ *    fixed here on the frontend, same as every other such gap in this
+ *    codebase; NOT fixed by renaming either server-side `SpendDto` class,
+ *    which is out of scope for either dispatch that has touched this file
+ *    and would be a real, if cosmetic, behavior-neutral rename affecting
+ *    Module 15 (Expenses) too.
  */
-// These two interfaces deliberately match the WRONG/generated shape
-// `apiClient.POST`'s inferred body type expects (confirmed directly against
-// the actual `tsc` errors each produced) — NOT the real correct shape
-// (`UpdateWalletLimitsInput`/`SpendDto` above), which is what the `as
-// unknown as` cast at each call site below actually carries at runtime. This
-// is the same "cast to the generated type just to satisfy the checker, real
+// `UpdateWalletLimitsRequestBody` deliberately matches the WRONG/generated
+// shape `apiClient.POST`'s inferred body type expects for that one endpoint
+// (confirmed directly against the actual `tsc` error it produced) — NOT the
+// real correct shape (`UpdateWalletLimitsInput` above), which is what the
+// `as unknown as` cast at that call site actually carries at runtime. This is
+// the same "cast to the generated type just to satisfy the checker, real
 // data flows through unchanged" shape `custom-fields.api.ts`'s own
 // `CreateCustomFieldRequestBody`/`UpdateCustomFieldRequestBody` established.
+// `SpendRequestBody` below is the SAME mechanism but now mirrors the
+// CORRECT-for-this-endpoint generated shape (see this file's own doc comment
+// above on the `SpendDto` collision flip) — only `items` still needs the
+// narrow `Record<string, never>` gapped shape, everything else matches the
+// real `SpendDto` verbatim.
 interface UpdateWalletLimitsRequestBody {
   dailyLimit?: string;
   txnLimit?: string;
   categoryBlocks?: ("TRANSPORT" | "LIBRARY" | "SHOP" | "MEALS" | "PRINTING" | "TRIPS" | "ACTIVITIES" | "EMERGENCY" | "CUSTOM")[];
 }
 interface SpendRequestBody {
-  categoryId: string;
   amount: string;
-  receiptFileId?: string | null;
+  servicePointId: string;
+  items?: Record<string, never>;
+  idempotencyKey?: string;
 }
 
 export async function updateWalletLimits(id: string, dto: UpdateWalletLimitsInput): Promise<WalletResponseDto> {

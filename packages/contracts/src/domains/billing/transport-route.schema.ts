@@ -13,12 +13,14 @@ import { z } from "zod";
 export const CreateTransportRouteDtoSchema = z.object({
     name: z.string().max(60),
     amount: z.string().regex(/^-?\d+(\.\d+)?$/),
+    bus: z.string().max(80).optional(),
 });
 export type CreateTransportRouteDto = z.infer<typeof CreateTransportRouteDtoSchema>;
 
 export const UpdateTransportRouteDtoSchema = z.object({
     name: z.string().max(60).optional(),
     amount: z.string().regex(/^-?\d+(\.\d+)?$/).optional(),
+    bus: z.string().max(80).optional(),
 });
 export type UpdateTransportRouteDto = z.infer<typeof UpdateTransportRouteDtoSchema>;
 
@@ -26,6 +28,7 @@ export const TransportRouteResponseDtoSchema = z.object({
     id: z.string(),
     name: z.string(),
     amount: z.string(),
+    bus: z.string().nullable(),
     isActive: z.boolean(),
 });
 export type TransportRouteResponseDto = z.infer<typeof TransportRouteResponseDtoSchema>;

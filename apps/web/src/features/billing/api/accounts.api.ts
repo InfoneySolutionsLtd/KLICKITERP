@@ -4,6 +4,19 @@ import { unwrapApiResult } from "@/lib/api-error";
 import { optionalQuery } from "./query-params";
 
 /**
+ * `gl_account.class` — mirrors `CreateAccountDtoSchema.class`'s real enum
+ * literal-for-literal (`packages/contracts/src/accounting/create-account.schema.ts`,
+ * itself generated from `packages/server`'s own `class-validator` DTO) —
+ * confirmed directly rather than guessed, since `AccountResponseDto.class`
+ * itself is only loosely typed `z.string()` in the generated zod schema (a
+ * separate, known codegen looseness, not this literal union). No
+ * `GlAccountClass` type is exported from `@klickit/contracts` itself, so
+ * it's declared once here and reused by every caller that needs it
+ * (`use-accounts.ts`, `gl-account-select.tsx`).
+ */
+export type GlAccountClass = "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+
+/**
  * Phase 6 Slice 3 — GL account picker research outcome: `GET
  * /accounting/accounts` (`packages/server/src/accounting/api/accounts.controller.ts`,
  * permission `accounting:account:view`) is a REAL, existing list endpoint —
@@ -30,12 +43,24 @@ import { optionalQuery } from "./query-params";
  * (`account.isPostable === true`) since the backend offers no server-side
  * filter for it — `<GlAccountSelect>` now only ever offers real, postable
  * leaf accounts.
+ *
+ * Part 1 (Billing sub-features batch) — generalized to accept any
+ * `GlAccountClass`, not just `INCOME`. Concession Schemes' `glAccountId` is
+ * the DEBIT/contra side of a concession posting (an EXPENSE-class account),
+ * needing the exact same postable-leaf-only picker shape but scoped to a
+ * different class. `listIncomeAccounts()` below is kept as a thin
+ * `class: "INCOME"` wrapper — zero behavior change for its existing Fee
+ * Category caller.
  */
-export async function listIncomeAccounts(): Promise<AccountResponseDto[]> {
+export async function listAccounts(accountClass: GlAccountClass): Promise<AccountResponseDto[]> {
   const accounts = await unwrapApiResult<AccountResponseDto[]>(
     await apiClient.GET("/api/v1/accounting/accounts", {
-      params: { query: optionalQuery({ class: "INCOME", isActive: "true", parentId: undefined }) },
+      params: { query: optionalQuery({ class: accountClass, isActive: "true", parentId: undefined }) },
     }),
   );
   return accounts.filter((account) => account.isPostable);
+}
+
+export async function listIncomeAccounts(): Promise<AccountResponseDto[]> {
+  return listAccounts("INCOME");
 }

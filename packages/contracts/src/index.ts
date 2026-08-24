@@ -52,6 +52,8 @@ export * from "./domains/billing/sponsor-award.schema";
 export * from "./domains/billing/sponsor.schema";
 export * from "./domains/billing/student-credit.schema";
 export * from "./domains/billing/student-optional-item.schema";
+export * from "./domains/billing/transport-billing.schema";
+export * from "./domains/billing/transport-expense.schema";
 export * from "./domains/billing/transport-route.schema";
 export * from "./domains/expenses/category.schema";
 export * from "./domains/expenses/claim.schema";

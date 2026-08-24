@@ -20,6 +20,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ApiError, parseFieldErrors } from "@/lib/api-error";
+import { SponsorCombobox } from "@/features/billing/components/sponsor-combobox";
+import { TransportRouteCombobox } from "@/features/billing/components/transport-route-combobox";
 import { STUDENT_BOARDING_KINDS } from "../constants";
 import { useCreateStudent, useUpdateStudent } from "../hooks/use-students";
 import { useFeeGroups } from "../hooks/use-fee-groups";
@@ -36,12 +38,20 @@ const NO_FEE_GROUP_VALUE = "__none__";
  * `admissionNo`/`enrolledOn` into its submit payload; both are absent from
  * `UpdateStudentDtoSchema` entirely — `admissionNo` has no update path
  * anywhere in `StudentsService`, and `enrolledOn` is create-only per the
- * plan, not merely disabled). `sponsorId`/`transportRouteId`/`photoFileId`/
- * `customFields` are deliberately omitted from this form entirely — forward
- * references to unbuilt Billing/Files modules and an unscoped arbitrary-JSON
- * editor, per the plan's scope boundary; both real DTOs' zod schemas accept
- * their absence (`.optional()`), so omitting them here is a valid submission,
- * not a workaround.
+ * plan, not merely disabled).
+ *
+ * Part 1 (Billing sub-features batch) — `sponsorId`/`transportRouteId` are
+ * NO LONGER excluded: now that Sponsors and Transport Routes have real
+ * frontend screens (`<SponsorCombobox>`/`<TransportRouteCombobox>`, both
+ * optional/nullable single-select pickers, same `Controller`-wrapped shape
+ * as `feeGroupId` below), these two FKs are genuinely assignable from this
+ * form — omitting them any longer would have meant routes/sponsors could be
+ * created but never actually attached to a student. `photoFileId`/
+ * `customFields` remain deliberately omitted — a Files-module gap (no
+ * upload-then-reference flow exists for a student photo yet) and an
+ * unscoped arbitrary-JSON editor respectively, both still out of scope for
+ * this batch. All four fields' absence is a valid submission either way —
+ * both real DTOs' zod schemas accept it (`.optional()`).
  *
  * Phase 6 Slice 2b item 8: `admissionNo` is now `.optional()` on the real
  * `CreateStudentDtoSchema` (it stays required in this local
@@ -70,6 +80,8 @@ interface StudentFormValues {
   streamId?: string;
   boarding?: "DAY" | "BOARDER";
   feeGroupId?: string;
+  sponsorId?: string;
+  transportRouteId?: string;
   enrolledOn: string;
 }
 
@@ -88,6 +100,8 @@ function defaultValuesFor(mode: "create" | "edit", student?: StudentResponseDto)
       streamId: student.streamId ?? undefined,
       boarding: student.boarding as "DAY" | "BOARDER",
       feeGroupId: student.feeGroupId ?? undefined,
+      sponsorId: student.sponsorId ?? undefined,
+      transportRouteId: student.transportRouteId ?? undefined,
       enrolledOn: student.enrolledOn,
     };
   }
@@ -95,11 +109,24 @@ function defaultValuesFor(mode: "create" | "edit", student?: StudentResponseDto)
   // no client-side default is pre-selected, so the Select genuinely starts
   // unset (placeholder shown) and a submit with it left untouched really
   // does omit the field, letting the server apply its own "DAY" default.
-  return { admissionNo: "", firstName: "", middleName: "", lastName: "", classId: "", streamId: undefined, boarding: undefined, feeGroupId: undefined, enrolledOn: todayIso() };
+  return {
+    admissionNo: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    classId: "",
+    streamId: undefined,
+    boarding: undefined,
+    feeGroupId: undefined,
+    sponsorId: undefined,
+    transportRouteId: undefined,
+    enrolledOn: todayIso(),
+  };
 }
 
 export function StudentForm({ mode, student }: { mode: "create" | "edit"; student?: StudentResponseDto }) {
   const t = useTranslations("students.form");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const queryClient = useQueryClient();
   const feeGroupsQuery = useFeeGroups();
@@ -173,6 +200,8 @@ export function StudentForm({ mode, student }: { mode: "create" | "edit"; studen
           streamId: values.streamId || undefined,
           boarding: values.boarding,
           feeGroupId: values.feeGroupId || undefined,
+          sponsorId: values.sponsorId || undefined,
+          transportRouteId: values.transportRouteId || undefined,
           enrolledOn: values.enrolledOn,
         };
         const created = await createMutation.mutateAsync(payload);
@@ -240,6 +269,8 @@ export function StudentForm({ mode, student }: { mode: "create" | "edit"; studen
           streamId: values.streamId || undefined,
           boarding: values.boarding,
           feeGroupId: values.feeGroupId || undefined,
+          sponsorId: values.sponsorId || undefined,
+          transportRouteId: values.transportRouteId || undefined,
         };
         await updateMutation.mutateAsync(payload);
         router.push(`/students/${student.id}`);
@@ -416,6 +447,46 @@ export function StudentForm({ mode, student }: { mode: "create" | "edit"; studen
                   ))}
                 </SelectContent>
               </Select>
+            )}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>{t("sponsor")}</Label>
+          <Controller
+            control={form.control}
+            name="sponsorId"
+            render={({ field }) => (
+              <SponsorCombobox
+                value={field.value ?? null}
+                onChange={(v) => field.onChange(v ?? undefined)}
+                nullLabel={t("selectSponsor")}
+                placeholder={t("selectSponsor")}
+                searchPlaceholder={tCommon("search")}
+                loadingText={tCommon("loading")}
+                emptyText={t("noSponsorsFound")}
+              />
+            )}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>{t("transportRoute")}</Label>
+          <Controller
+            control={form.control}
+            name="transportRouteId"
+            render={({ field }) => (
+              <TransportRouteCombobox
+                value={field.value ?? null}
+                onChange={(v) => field.onChange(v ?? undefined)}
+                nullLabel={t("selectTransportRoute")}
+                placeholder={t("selectTransportRoute")}
+                searchPlaceholder={tCommon("search")}
+                loadingText={tCommon("loading")}
+                emptyText={t("noTransportRoutesFound")}
+              />
             )}
           />
         </div>

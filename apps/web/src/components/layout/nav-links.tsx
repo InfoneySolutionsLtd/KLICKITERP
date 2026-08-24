@@ -81,10 +81,41 @@ const NAV_ITEMS: NavItem[] = [
   // Part 3 added a 5th child — Collect Fees (`/billing/collect`) — the
   // shared directed multi-invoice collection flow both entry points (this
   // nav item, and every Pending/Upcoming row's own "Collect" link) now point
-  // at. Part 4 adds the 6th and FINAL child — Receipts (`/billing/receipts`,
-  // the new global/unscoped Receipts list, gated server-side by
-  // `payments:receipt:view-all`) — completing this dropdown; no more
-  // children are added after this.
+  // at. Part 4 added a 6th child — Receipts (`/billing/receipts`, the new
+  // global/unscoped Receipts list, gated server-side by
+  // `payments:receipt:view-all`).
+  //
+  // An 8-part Billing sub-features batch (Concessions/Concession Schemes,
+  // Sponsors/Sponsor Awards, Credit/Debit Notes, Refund Vouchers, Late Fee
+  // Policies/Batches, Bulk Billing, Transport Routes, Student Optional
+  // Items — `packages/server/src/domains/billing/`, backend complete,
+  // frontend built out part by part) appended further children as each part
+  // shipped: Late Fee Policies (`/billing/late-fee-policies`, above), then
+  // Concession Schemes (`/billing/concession-schemes`,
+  // `billing:concession-scheme:view`), Sponsors (`/billing/sponsors`,
+  // `billing:sponsor:view`), and Transport Routes
+  // (`/billing/transport-routes`, `billing:transport-route:view`). Not every
+  // one of the 8 sub-features gets a nav child — Credit Notes, Debit Notes,
+  // Refund Vouchers, Concessions, Sponsor Awards, and Student Optional Items
+  // are contextual features reached from a Student's or Invoice's own detail
+  // page instead (matching the established precedent that Invoices
+  // themselves have no standalone list page in this codebase). Same
+  // `allowedRoles: []`/`<QueryBoundary>`-is-the-real-gate reasoning as every
+  // other entry above for all new children below.
+  //
+  // Phase 6 Billing sub-features batch, Part 8 (Bulk Billing — FINAL part of
+  // the batch) — the 12th and last child appended without touching the
+  // mechanism itself: Bulk Billing (`/billing/bulk-billing`,
+  // `billing:bulk-billing:execute` — the SAME permission code the existing
+  // "Generate Invoice" ad-hoc bulk tool above already uses, since the two
+  // are functionally distinct engines sharing one permission code, confirmed
+  // by reading both controllers directly). **THIS IS THE BILLING DROPDOWN'S
+  // FINAL SHAPE — 12 children total, no more planned** — all 8 sub-features
+  // in the batch now have a real, working, verified frontend (6 as nav
+  // children here, the other 6 as contextual features on Student/Invoice
+  // detail pages), the same "last part declares final shape" convention
+  // Banking's/Payroll's/Fixed Assets' own dropdowns already used at the
+  // close of their respective batches.
   {
     href: "/billing/fee-categories",
     labelKey: "billing",
@@ -97,6 +128,21 @@ const NAV_ITEMS: NavItem[] = [
       { href: "/billing/upcoming", labelKey: "billingUpcomingInvoices" },
       { href: "/billing/collect", labelKey: "billingCollectFees" },
       { href: "/billing/receipts", labelKey: "billingReceipts" },
+      { href: "/billing/late-fee-policies", labelKey: "billingLateFeePolicies" },
+      // Phase 6 Billing sub-features batch, Part 7 (Late Fee Batches) — one
+      // more child appended without touching the mechanism itself: Late Fee
+      // Batches (`/billing/late-fee-batches`, `billing:late-fee-batch:view`
+      // gating list/detail, `billing:late-fee-batch:run` gating the "Run
+      // Late Fees Now" action and decide/post — confirmed by reading
+      // `LateFeeBatchesController` directly). Depends on Late Fee Policies
+      // (above) for its own required policy-scoped list pattern. Same
+      // `allowedRoles: []`/`<QueryBoundary>`-is-the-real-gate reasoning as
+      // every other entry in this dropdown.
+      { href: "/billing/late-fee-batches", labelKey: "billingLateFeeBatches" },
+      { href: "/billing/concession-schemes", labelKey: "billingConcessionSchemes" },
+      { href: "/billing/sponsors", labelKey: "billingSponsors" },
+      { href: "/billing/transport-routes", labelKey: "billingTransportRoutes" },
+      { href: "/billing/bulk-billing", labelKey: "billingBulkBilling" },
     ],
   },
   // Phase 6 Slice 4 (Payments core loop, Module 10) — same `allowedRoles: []`/

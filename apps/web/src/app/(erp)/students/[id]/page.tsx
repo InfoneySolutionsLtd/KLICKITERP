@@ -24,7 +24,20 @@ import { useStudent } from "@/features/students/hooks/use-students";
 import { GenerateInvoiceDialog } from "@/features/billing/components/generate-invoice-dialog";
 import { StudentInvoicesTable } from "@/features/billing/components/student-invoices-table";
 import { CreditBalanceCard } from "@/features/billing/components/credit-balance-card";
+import { SponsorAwardDialog } from "@/features/billing/components/sponsor-award-dialog";
+import { SponsorAwardsTable } from "@/features/billing/components/sponsor-awards-table";
+import { OptionalItemsCard } from "@/features/billing/components/optional-items-card";
+import { CreateDebitNoteDialog } from "@/features/billing/components/create-debit-note-dialog";
+import { DebitNotesTable } from "@/features/billing/components/debit-notes-table";
+import { CreateRefundVoucherDialog } from "@/features/billing/components/create-refund-voucher-dialog";
+import { RefundVouchersTable } from "@/features/billing/components/refund-vouchers-table";
+import { RequestConcessionDialog } from "@/features/billing/components/request-concession-dialog";
+import { ConcessionsTable } from "@/features/billing/components/concessions-table";
 import { useStudentInvoices } from "@/features/billing/hooks/use-invoices";
+import { useSponsorAwardsForStudent } from "@/features/billing/hooks/use-sponsor-awards";
+import { useDebitNotesByStudent } from "@/features/billing/hooks/use-debit-notes";
+import { useRefundVouchersByStudent } from "@/features/billing/hooks/use-refund-vouchers";
+import { useConcessionsByStudent } from "@/features/billing/hooks/use-concessions";
 import { ReceiptsTable } from "@/features/payments/components/receipts-table";
 import { useStudentReceipts } from "@/features/payments/hooks/use-receipts";
 import { WalletCard } from "@/features/wallet/components/wallet-card";
@@ -98,6 +111,10 @@ function StudentDetail({ student }: { student: StudentResponseDto }) {
   const tBoarding = useTranslations("students.boarding");
   const ledgerQuery = useStudentLedger(student.id);
   const invoicesQuery = useStudentInvoices(student.id);
+  const sponsorAwardsQuery = useSponsorAwardsForStudent(student.id);
+  const debitNotesQuery = useDebitNotesByStudent(student.id);
+  const refundVouchersQuery = useRefundVouchersByStudent(student.id);
+  const concessionsQuery = useConcessionsByStudent(student.id);
   const receiptsQuery = useStudentReceipts(student.id);
 
   return (
@@ -176,6 +193,38 @@ function StudentDetail({ student }: { student: StudentResponseDto }) {
         </CardContent>
       </Card>
 
+      {/* Part 3 (Billing sub-features batch) — Sponsor Awards, a new
+          stacked Card inserted right after Billing, same
+          CardHeader/CardTitle/CardContent + header-action-dialog shape the
+          Billing card above already uses (`SponsorAwardDialog` owns its own
+          trigger button + open state, same as `GenerateInvoiceDialog`). */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base text-foreground">{t("sponsorAwardsTitle")}</CardTitle>
+          <SponsorAwardDialog studentId={student.id} />
+        </CardHeader>
+        <CardContent>
+          <QueryBoundary query={sponsorAwardsQuery} isEmpty={(d) => d.length === 0}>
+            {(awards) => <SponsorAwardsTable awards={awards} />}
+          </QueryBoundary>
+        </CardContent>
+      </Card>
+
+      {/* Part 3 (Billing sub-features batch) — Optional Items, wrapped in
+          the same outer Card shape as every sibling card here for visual
+          weight parity; `OptionalItemsCard` itself owns its own term
+          picker, list, and Add trigger (it needs a term selected before its
+          Add button can even be enabled, so a header-action-button shape
+          like Billing/Sponsor Awards above doesn't fit as cleanly). */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base text-foreground">{t("optionalItemsTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <OptionalItemsCard studentId={student.id} />
+        </CardContent>
+      </Card>
+
       {/* Phase 6 Slice 12 (Part E — Credit Balance Forward frontend) — one
           more stacked Card, same CardHeader/CardTitle/CardContent
           convention as every card here, inserted between Billing and
@@ -186,6 +235,26 @@ function StudentDetail({ student }: { student: StudentResponseDto }) {
         </CardHeader>
         <CardContent>
           <CreditBalanceCard studentId={student.id} />
+        </CardContent>
+      </Card>
+
+      {/* Part 6 (Billing sub-features batch) — Refund Vouchers, placed
+          directly after Credit Balance (same CardHeader/CardTitle/CardContent
+          + header-action-dialog shape the Billing/Sponsor Awards/Debit Notes
+          cards already use) since the two are directly related: a refund
+          voucher's own `amount` is capped server-side at exactly this
+          card's own credit balance figure (BR-BILL-12,
+          `create-refund-voucher-dialog.tsx` reuses the same
+          `useStudentCreditBalance()` hook as a live preview ceiling). */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base text-foreground">{t("refundVouchersTitle")}</CardTitle>
+          <CreateRefundVoucherDialog studentId={student.id} />
+        </CardHeader>
+        <CardContent>
+          <QueryBoundary query={refundVouchersQuery} isEmpty={(d) => d.length === 0}>
+            {(vouchers) => <RefundVouchersTable vouchers={vouchers} studentId={student.id} />}
+          </QueryBoundary>
         </CardContent>
       </Card>
 
@@ -213,6 +282,52 @@ function StudentDetail({ student }: { student: StudentResponseDto }) {
         </CardHeader>
         <CardContent>
           <WalletCard studentId={student.id} />
+        </CardContent>
+      </Card>
+
+      {/* Phase 6 Slice 22 Part 5 (Debit Notes) — one more stacked Card, same
+          CardHeader/CardTitle/CardContent + header-action-dialog shape the
+          Billing/Sponsor Awards cards above already use. Placed last
+          (additive, appended after the pre-existing card stack) to avoid
+          colliding with Part 3's own insertion point right after Billing.
+          `listDebitNotesByStudent` has no term filter server-side
+          (`debit-notes.api.ts`'s own doc comment), so this shows EVERY debit
+          note ever raised for this student across every term, with its own
+          Term column (`DebitNotesTable`) rather than a client-side term
+          filter — the plan's own "simplest, matches what the backend
+          actually supports" scope decision. */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base text-foreground">{t("debitNotesTitle")}</CardTitle>
+          <CreateDebitNoteDialog studentId={student.id} />
+        </CardHeader>
+        <CardContent>
+          <QueryBoundary query={debitNotesQuery} isEmpty={(d) => d.length === 0}>
+            {(notes) => <DebitNotesTable notes={notes} studentId={student.id} />}
+          </QueryBoundary>
+        </CardContent>
+      </Card>
+
+      {/* Part 4 (Billing sub-features batch) — Concessions, one more
+          stacked Card, same CardHeader/CardTitle/CardContent +
+          header-action-dialog shape the Billing/Sponsor Awards/Debit Notes/
+          Refund Vouchers cards above already use. Placed last (additive,
+          appended after the pre-existing card stack) for the same reason
+          Debit Notes' own comment above states — avoids colliding with
+          other parts' own insertion points. No `PostStandaloneConcessionButton`
+          on this surface (per the plan — that action needs the loaded
+          invoice's own status, only available on the invoice detail page's
+          own "Concessions" section) — `ConcessionsTable` renders it only
+          when an `invoice` prop is supplied, which this call site omits. */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base text-foreground">{t("concessionsTitle")}</CardTitle>
+          <RequestConcessionDialog studentId={student.id} />
+        </CardHeader>
+        <CardContent>
+          <QueryBoundary query={concessionsQuery} isEmpty={(d) => d.length === 0}>
+            {(concessions) => <ConcessionsTable concessions={concessions} studentId={student.id} />}
+          </QueryBoundary>
         </CardContent>
       </Card>
     </>

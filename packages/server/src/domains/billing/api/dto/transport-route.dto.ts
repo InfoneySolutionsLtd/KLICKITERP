@@ -11,6 +11,12 @@ export class CreateTransportRouteDto {
   @ApiProperty({ type: String, description: "Decimal string" })
   @Matches(DECIMAL_PATTERN)
   amount!: string;
+
+  @ApiPropertyOptional({ maxLength: 80, nullable: true, description: "Free-text identifier for the vehicle serving this route (e.g. plate number)" })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  bus?: string;
 }
 
 export class UpdateTransportRouteDto {
@@ -24,6 +30,12 @@ export class UpdateTransportRouteDto {
   @IsOptional()
   @Matches(DECIMAL_PATTERN)
   amount?: string;
+
+  @ApiPropertyOptional({ maxLength: 80, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  bus?: string;
 }
 
 export class TransportRouteResponseDto {
@@ -35,6 +47,9 @@ export class TransportRouteResponseDto {
 
   @ApiProperty({ type: String, description: "Decimal string" })
   amount!: string;
+
+  @ApiProperty({ nullable: true })
+  bus!: string | null;
 
   @ApiProperty()
   isActive!: boolean;

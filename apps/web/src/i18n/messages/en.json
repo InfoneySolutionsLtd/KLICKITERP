@@ -84,6 +84,12 @@
       "billingUpcomingInvoices": "Upcoming Invoices",
       "billingCollectFees": "Collect Fees",
       "billingReceipts": "Receipts",
+      "billingLateFeePolicies": "Late Fee Policies",
+      "billingLateFeeBatches": "Late Fee Batches",
+      "billingConcessionSchemes": "Concession Schemes",
+      "billingSponsors": "Sponsors",
+      "billingTransportRoutes": "Transport Routes",
+      "billingBulkBilling": "Bulk Billing",
       "payments": "Payments",
       "approvals": "Approvals",
       "settings": "Settings",
@@ -271,6 +277,12 @@
       },
       "feeGroup": "Fee group",
       "selectFeeGroup": "None",
+      "sponsor": "Sponsor",
+      "selectSponsor": "None",
+      "noSponsorsFound": "No sponsors found.",
+      "transportRoute": "Transport route",
+      "selectTransportRoute": "None",
+      "noTransportRoutesFound": "No transport routes found.",
       "submitCreate": "Enroll student",
       "submitEdit": "Save changes",
       "submitting": "Saving…",
@@ -309,6 +321,8 @@
       "guardianNewCreated": "New guardian created and linked.",
       "guardianLinkedExisting": "Linked to existing guardian {fullName} — looks like a sibling!",
       "billingTitle": "Billing",
+      "sponsorAwardsTitle": "Sponsor Awards",
+      "optionalItemsTitle": "Optional Items",
       "receiptsTitle": "Receipts",
       "creditBalanceTitle": "Credit Balance",
       "creditBalance": {
@@ -323,6 +337,9 @@
         "creating": "Creating…",
         "createButton": "Create wallet"
       },
+      "debitNotesTitle": "Debit Notes",
+      "refundVouchersTitle": "Refund Vouchers",
+      "concessionsTitle": "Concessions",
       "deleteStudentDialog": {
         "title": "Delete student?",
         "description": "This will permanently delete {name}. This cannot be undone.",
@@ -590,13 +607,7 @@
         "priorityInvalid": "Priority must be a non-negative number.",
         "submit": "Save",
         "submitting": "Saving…",
-        "genericError": "Something went wrong. Please try again.",
-        "selectGlAccount": "Select a GL income account",
-        "searchGlAccount": "Search by code or name…",
-        "loadingAccounts": "Loading accounts…",
-        "noAccountsFound": "No income accounts found — configure the Chart of Accounts first.",
-        "glAccountUuidPlaceholder": "GL account ID (UUID)",
-        "glAccountLoadFailedHint": "Couldn't load GL accounts — enter the account ID manually. This usually means your role doesn't have permission to view the Chart of Accounts."
+        "genericError": "Something went wrong. Please try again."
       }
     },
     "feeStructures": {
@@ -840,6 +851,8 @@
         "genericError": "Something went wrong. Please try again.",
         "glNotConfiguredTitle": "GL not configured",
         "glNotConfiguredDescription": "This invoice can't be posted because a required GL control account isn't configured. Contact your administrator.",
+        "creditNotesTitle": "Credit Notes",
+        "concessionsTitle": "Concessions",
         "voidDialog": {
           "trigger": "Void",
           "title": "Void this invoice?",
@@ -955,6 +968,724 @@
     "feeCategoryChipPicker": {
       "filterPlaceholder": "Filter fee categories…",
       "noMatches": "No fee categories match your filter."
+    },
+    "lateFeePolicies": {
+      "list": {
+        "pageTitle": "Late Fee Policies",
+        "pageSubtitle": "Configure how overdue invoices accrue late fees — flat amount, percentage of balance, or a tiered schedule by days overdue.",
+        "newPolicy": "New policy",
+        "listTitle": "Policies",
+        "listDescription": "Each policy defines its own charge mode and grace period; assign one to a late-fee batch to actually run it.",
+        "columns": {
+          "name": "Name",
+          "mode": "Mode",
+          "graceDays": "Grace days",
+          "requiresApproval": "Requires approval",
+          "status": "Status"
+        }
+      },
+      "dialog": {
+        "titleCreate": "New late-fee policy",
+        "titleEdit": "Edit late-fee policy",
+        "description": "Defines how overdue invoices accrue a late fee once their grace period has passed.",
+        "name": "Name",
+        "mode": "Mode",
+        "graceDays": "Grace days",
+        "graceDaysHint": "Number of days after an invoice's due date before it's considered overdue for late-fee purposes.",
+        "requiresApproval": "Requires approval before a batch can post",
+        "nameRequired": "Name is required.",
+        "graceDaysInvalid": "Grace days must be a non-negative number.",
+        "amountRequired": "A flat amount is required.",
+        "rateRequired": "A rate is required.",
+        "tiersRequired": "Add at least one tier.",
+        "tierAmountOrRateRequired": "Each tier needs either an amount or a rate.",
+        "submit": "Save",
+        "submitting": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "modeValues": {
+        "FLAT": "Flat amount",
+        "PERCENT": "Percentage of balance",
+        "TIERED": "Tiered by days overdue"
+      },
+      "paramsForm": {
+        "flatAmount": "Flat amount",
+        "flatAmountHint": "Charged once per overdue invoice, regardless of balance.",
+        "percentRate": "Rate",
+        "percentRateHint": "A decimal fraction of the invoice's balance — e.g. 0.05 for 5%, not a whole number.",
+        "tiersLabel": "Tiers",
+        "tiersHint": "The first tier whose day range contains the invoice's days-overdue count applies. Each tier needs either an amount or a rate.",
+        "minDaysOverdue": "Min days overdue",
+        "maxDaysOverdue": "Max days overdue",
+        "tierAmount": "Amount",
+        "tierRate": "Rate",
+        "openEnded": "Open-ended",
+        "removeTier": "Remove tier",
+        "addTier": "Add tier"
+      },
+      "detail": {
+        "backToList": "Back to late-fee policies",
+        "deactivate": "Deactivate",
+        "activate": "Activate",
+        "statusToggleError": "Couldn't update this policy's status. Please try again.",
+        "graceDaysLabel": "Grace days",
+        "graceDaysValue": "{count} days",
+        "requiresApprovalLabel": "Requires approval",
+        "paramsLabel": "Charge rules",
+        "minDaysOverdue": "Min days overdue",
+        "maxDaysOverdue": "Max days overdue",
+        "tierAmount": "Amount",
+        "tierRate": "Rate",
+        "openEnded": "Open-ended",
+        "noTiers": "No tiers configured."
+      }
+    },
+    "lateFeeBatches": {
+      "list": {
+        "pageTitle": "Late Fee Batches",
+        "pageSubtitle": "Run a late-fee policy against its overdue population and review, approve, and post the resulting batches.",
+        "listTitle": "Batches",
+        "listDescription": "Each batch is one run of the selected policy — pick a policy above to see its batches, or run a new one.",
+        "policyLabel": "Policy",
+        "selectPolicyPlaceholder": "Select a policy…",
+        "selectPolicyPrompt": "Select a policy above to see its late-fee batches.",
+        "columns": {
+          "runDate": "Run date",
+          "status": "Status",
+          "totalAssessed": "Total assessed",
+          "studentCount": "Students"
+        }
+      },
+      "runDialog": {
+        "trigger": "Run Late Fees Now",
+        "title": "Run late fees now",
+        "description": "Runs the selected policy against every overdue invoice as of the chosen date, aggregating the result into a new batch. There is no scheduled/automatic run — this is a manual, one-off action you trigger yourself.",
+        "manualActionHint": "This runs immediately against the live overdue population — no scheduler or nightly job exists yet, so nothing will run again on its own.",
+        "runDateLabel": "Run date",
+        "runButton": "Run now",
+        "running": "Running…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "statusValues": {
+        "DRAFT": "Draft",
+        "PENDING_APPROVAL": "Pending approval",
+        "POSTED": "Posted"
+      },
+      "statusActions": {
+        "post": "Post",
+        "posting": "Posting…",
+        "emptyDraftHint": "Nothing was assessed in this run — no overdue invoice produced a charge as of the run date. Posting will simply mark this batch complete; no invoices will be generated.",
+        "emptyDraftHintRequiresApproval": "This policy requires approval before a batch posts, but nothing was assessed in this run — no overdue invoice produced a charge as of the run date, so it never needed to go to Pending Approval. Posting will simply mark this batch complete; no invoices will be generated.",
+        "approveTrigger": "Approve",
+        "approveConfirmTitle": "Approve this batch?",
+        "approveConfirmDescription": "Approving posts this batch immediately — one late-fee invoice is generated and posted per student/term in the summary below. This can't be undone from here.",
+        "approveConfirmButton": "Approve and post",
+        "approving": "Approving…",
+        "sendBackToDraftTrigger": "Send back to Draft",
+        "sendBackToDraftConfirmTitle": "Send this batch back to Draft?",
+        "sendBackToDraftConfirmDescription": "This batch will return to Draft without posting anything. There is no separate \"rejected\" state — you can post it later if you change your mind, or leave it as-is.",
+        "sendBackToDraftConfirmButton": "Send back to Draft",
+        "sendingBackToDraft": "Sending back to Draft…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "summaryTable": {
+        "empty": "Nothing was assessed in this run — no overdue invoice produced a charge as of the run date.",
+        "totalAssessedLabel": "Total assessed",
+        "studentCountLabel": "Students",
+        "termLabel": "Term",
+        "invoiceIdColumn": "Invoice",
+        "daysOverdueColumn": "Days overdue",
+        "amountColumn": "Amount"
+      },
+      "detail": {
+        "backToList": "Back to late-fee batches",
+        "batchTitle": "Batch — {runDate}",
+        "policyLabel": "Policy",
+        "summaryTitle": "Summary"
+      }
+    },
+    "concessionSchemes": {
+      "pageTitle": "Concession Schemes",
+      "pageSubtitle": "Configure the fee-waiver, discount, scholarship, and bursary schemes concessions can be requested against.",
+      "newScheme": "New scheme",
+      "listTitle": "Schemes",
+      "table": {
+        "name": "Name",
+        "kind": "Kind",
+        "calc": "Calculation",
+        "value": "Value",
+        "status": "Status"
+      },
+      "dialog": {
+        "titleCreate": "New concession scheme",
+        "titleEdit": "Edit concession scheme",
+        "description": "Defines how a concession under this scheme is calculated and which GL expense account absorbs it.",
+        "name": "Name",
+        "kind": "Kind",
+        "calc": "Calculation",
+        "valuePercent": "Value (%)",
+        "valueFixed": "Value (fixed amount)",
+        "categoryScope": "Fee category scope",
+        "categoryScopeHint": "Leave every category unselected to allow this scheme against any fee category.",
+        "glAccount": "GL expense account",
+        "allowsStacking": "Allows stacking with other concessions",
+        "nameRequired": "Name is required.",
+        "valueRequired": "A value is required.",
+        "glAccountRequired": "A GL expense account is required.",
+        "submit": "Save",
+        "submitting": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "kindValues": {
+        "WAIVER": "Waiver",
+        "DISCOUNT": "Discount",
+        "SCHOLARSHIP": "Scholarship",
+        "BURSARY": "Bursary"
+      },
+      "calcValues": {
+        "PERCENT": "Percentage",
+        "FIXED": "Fixed amount"
+      },
+      "detail": {
+        "backToList": "Back to concession schemes",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "kindLabel": "Kind",
+        "calcLabel": "Calculation",
+        "valueLabel": "Value",
+        "categoryScopeLabel": "Fee category scope",
+        "categoryScopeAll": "Any fee category",
+        "allowsStackingLabel": "Allows stacking",
+        "glAccountLabel": "GL expense account"
+      }
+    },
+    "sponsors": {
+      "pageTitle": "Sponsors",
+      "pageSubtitle": "Manage the third-party sponsors that can fund a student's fees, via sponsor awards.",
+      "newSponsor": "New sponsor",
+      "listTitle": "Sponsors",
+      "table": {
+        "name": "Name",
+        "agreementFile": "Agreement",
+        "hasAgreement": "On file",
+        "allowsCashConversion": "Allows cash conversion"
+      },
+      "dialog": {
+        "titleCreate": "New sponsor",
+        "titleEdit": "Edit sponsor",
+        "description": "A sponsor is permanent once created — there is no delete or deactivate action for this record.",
+        "name": "Name",
+        "contacts": "Contacts",
+        "addContactRow": "Add row",
+        "contactsHint": "Free-form label/value pairs — e.g. \"Phone\" / \"+254 700 000000\" — stored exactly as entered.",
+        "contactKeyPlaceholder": "Label (e.g. Phone)",
+        "contactValuePlaceholder": "Value",
+        "agreementFile": "Agreement document",
+        "allowsCashConversion": "Allows cash conversion",
+        "nameRequired": "Name is required.",
+        "submit": "Save",
+        "submitting": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "detail": {
+        "backToList": "Back to sponsors",
+        "contactsLabel": "Contacts",
+        "noContacts": "No contact details on file.",
+        "agreementLabel": "Agreement document",
+        "noAgreement": "No agreement document on file.",
+        "loadingAgreement": "Loading document…",
+        "agreementLoadError": "Couldn't load the agreement document.",
+        "openAgreement": "Open agreement",
+        "allowsCashConversionLabel": "Allows cash conversion"
+      }
+    },
+    "transportRoutes": {
+      "pageTitle": "Transport Routes",
+      "pageSubtitle": "Manage the transport routes students can be assigned to.",
+      "newRoute": "New route",
+      "listTitle": "Routes",
+      "table": {
+        "name": "Name",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "dialog": {
+        "titleCreate": "New transport route",
+        "titleEdit": "Edit transport route",
+        "description": "A route students can be assigned to and billed for.",
+        "name": "Name",
+        "amount": "Amount",
+        "amountHint": "The flat fee charged per student when this route is billed via Bill Transport.",
+        "nameRequired": "Name is required.",
+        "amountRequired": "An amount is required.",
+        "submit": "Save",
+        "submitting": "Saving…",
+        "genericError": "Something went wrong. Please try again.",
+        "bus": "Bus",
+        "busPlaceholder": "e.g. KAA 001X",
+        "busHint": "Optional — the vehicle serving this route, used in the income vs. expense summary below."
+      },
+      "detail": {
+        "backToList": "Back to transport routes",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "amountLabel": "Amount",
+        "billTransportHint": "This route's amount is not billed automatically just by assigning students to it.",
+        "billTransportLink": "Use Bill Transport to generate invoices for selected students.",
+        "busLabel": "Bus",
+        "busNotSet": "Not set"
+      },
+      "billTransport": "Bill Transport",
+      "billForm": {
+        "pageTitle": "Bill Transport",
+        "pageSubtitle": "Generate transport fee invoices for students on a route.",
+        "backToList": "Back to transport routes",
+        "formTitle": "Bill a transport route",
+        "academicYearTerm": "Academic year & term",
+        "selectYear": "Select academic year",
+        "selectTerm": "Select term",
+        "class": "Grade",
+        "selectClass": "Select grade",
+        "route": "Route",
+        "selectRoute": "Select route",
+        "routeAmountHint": "Each selected student will be billed {amount} for this route.",
+        "students": "Students",
+        "studentSearchPlaceholder": "Search by name or admission no…",
+        "selectAll": "Select all",
+        "selectedCount": "{count} selected",
+        "noStudentsMatchSearch": "No students match your search.",
+        "selectClassAndRouteFirst": "Select a grade and route to see its students.",
+        "onThisRouteTag": "(on this route)",
+        "collectFromWallet": "Collect amount from student wallet",
+        "collectFromWalletNotice": "The student's full current wallet balance will be applied to the invoice(s) generated.",
+        "applyCreditBalance": "Apply available credit balance",
+        "applyCreditBalanceNotice": "The student's full current credit balance will be applied to the invoice(s) generated.",
+        "termRequired": "A term is required.",
+        "classRequired": "A grade is required.",
+        "routeRequired": "A route is required.",
+        "studentsRequired": "Select at least one student.",
+        "generating": "Generating…",
+        "collecting": "Collecting from wallets…",
+        "applyingCredit": "Applying credit balance…",
+        "submit": "Generate Invoice",
+        "genericError": "Something went wrong. Please try again.",
+        "resultTitle": "Result",
+        "resultSucceeded": "Generated {invoices} invoice(s) for {students} student(s).",
+        "resultFailedTitle": "Failed",
+        "walletResultTitle": "Wallet collection",
+        "walletSettled": "Settled: {count}",
+        "walletPartialShortfall": "Shortfall remains: {count}",
+        "walletNeedsApproval": "Needs approval: {count}",
+        "walletInsufficientBalance": "Insufficient balance: {count}",
+        "walletNoWallet": "No wallet: {count}",
+        "walletFailed": "Failed: {count}",
+        "viewReceiptLink": "View receipt",
+        "walletOutcome": {
+          "settled": "Settled from wallet: {amount}",
+          "partialShortfall": "{amount} of the invoice remains unpaid after the sweep",
+          "needsApproval": "Exceeds the wallet transfer approval threshold — needs approval",
+          "insufficientBalance": "Insufficient wallet balance",
+          "noWallet": "Student has no provisioned wallet",
+          "failed": "Wallet transfer failed"
+        },
+        "creditBalanceResultTitle": "Credit balance application",
+        "creditBalanceSettled": "Settled: {count}",
+        "creditBalancePartialShortfall": "Shortfall remains: {count}",
+        "creditBalanceFailed": "Failed: {count}",
+        "creditBalanceOutcome": {
+          "settled": "Applied from credit balance: {amount}",
+          "partialShortfall": "{amount} of the invoice remains unpaid after applying credit balance",
+          "failed": "Credit balance application failed"
+        }
+      },
+      "expenses": {
+        "title": "Bus expenses",
+        "logDialog": {
+          "trigger": "Log bus expense",
+          "title": "Log a bus expense",
+          "description": "Creates a DRAFT expense voucher (fuel, repairs, or another cost) linked to this route.",
+          "logging": "Logging…",
+          "logButton": "Log expense",
+          "genericError": "Something went wrong. Please try again."
+        }
+      },
+      "summary": {
+        "title": "Income vs. expense",
+        "income": "Income (billed transport fees)",
+        "expense": "Expense (bus expenses)",
+        "net": "Net"
+      }
+    },
+    "sponsorAwards": {
+      "table": {
+        "sponsor": "Sponsor",
+        "term": "Term",
+        "amount": "Award amount",
+        "appliedAmount": "Applied so far",
+        "remaining": "Remaining balance",
+        "appliesAutomaticallyNote": "Awards apply themselves automatically the next time an invoice for this student and term is posted — there is no manual \"apply\" action anywhere in this table."
+      },
+      "dialog": {
+        "trigger": "New award",
+        "title": "New sponsor award",
+        "description": "Sets aside sponsor funding for this student for one term. The award applies itself automatically to future invoices — there is nothing further to trigger here.",
+        "sponsor": "Sponsor",
+        "sponsorPlaceholder": "Select a sponsor",
+        "sponsorSearchPlaceholder": "Search sponsors…",
+        "sponsorEmptyText": "No sponsors found.",
+        "term": "Term",
+        "yearPlaceholder": "Academic year",
+        "termPlaceholder": "Term",
+        "amount": "Award amount",
+        "categoryScope": "Limit to fee categories (optional)",
+        "categoryScopeHint": "Leave none selected to let this award apply against any fee category on this student's invoices for the term.",
+        "appliesAutomaticallyHint": "This award applies itself automatically the next time an invoice for this student and term posts — there is no separate \"apply\" step.",
+        "sponsorRequired": "Select a sponsor.",
+        "termRequired": "Select a term.",
+        "amountRequired": "An award amount is required.",
+        "submit": "Create award",
+        "submitting": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "optionalItems": {
+      "yearPlaceholder": "Academic year",
+      "termPlaceholder": "Term",
+      "selectTermFirst": "Select a term to see this student's optional-item enrollments.",
+      "addItem": "Add optional item",
+      "timingHint": "Enrollment must happen before this term's invoice is generated for it to have any effect — adding an item after billing has already run does nothing retroactively.",
+      "usingStructureDefault": "Using the fee structure's own default amount",
+      "overrideAmount": "Override amount: {amount}",
+      "dialog": {
+        "title": "Add optional item",
+        "description": "Enrolls this student in one optional fee-category item for the selected term.",
+        "feeCategory": "Fee category",
+        "feeCategoryPlaceholder": "Select a fee category",
+        "feeCategorySearchPlaceholder": "Search fee categories…",
+        "feeCategoryEmptyText": "No fee categories found.",
+        "feeCategoryRequired": "Select a fee category.",
+        "amountOverride": "Amount override (optional)",
+        "amountOverrideHint": "Leave blank to use the fee structure's own default amount for this category.",
+        "duplicateError": "This student is already enrolled in this optional item for this term.",
+        "submit": "Add item",
+        "submitting": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "removeDialog": {
+        "trigger": "Remove",
+        "title": "Remove this optional item?",
+        "description": "Removes {name} from this student's optional-item enrollments for this term. If this term's invoice has already been generated, this has no effect on it — the item was already billed or skipped at generation time.",
+        "removing": "Removing…",
+        "genericError": "Couldn't remove this item. Please try again."
+      }
+    },
+    "common": {
+      "glAccountPicker": {
+        "selectGlAccount": "Select a GL account",
+        "searchGlAccount": "Search by code or name…",
+        "loadingAccounts": "Loading accounts…",
+        "noAccountsFound": "No accounts found — configure the Chart of Accounts first.",
+        "glAccountUuidPlaceholder": "GL account ID (UUID)",
+        "glAccountLoadFailedHint": "Couldn't load GL accounts — enter the account ID manually. This usually means your role doesn't have permission to view the Chart of Accounts."
+      },
+      "agreementFilePicker": {
+        "upload": "Upload",
+        "uploading": "Uploading…",
+        "replace": "Replace",
+        "remove": "Remove",
+        "uploadError": "Couldn't upload this file. Please try again.",
+        "documentLabel": "Agreement document",
+        "loadingPreview": "Loading…",
+        "previewError": "Couldn't load this document.",
+        "openInNewTab": "Open in new tab"
+      }
+    },
+    "documentLineEditor": {
+      "category": "Fee category",
+      "selectCategory": "Select a fee category",
+      "searchCategory": "Search fee categories…",
+      "description": "Description",
+      "descriptionOptionalHint": "Optional — defaults to the fee category's own name",
+      "amount": "Amount",
+      "maxHint": "Up to {amount} (the original invoice line's amount)",
+      "addLine": "Add line",
+      "removeLine": "Remove line"
+    },
+    "creditNotes": {
+      "table": {
+        "number": "Credit note #",
+        "reason": "Reason",
+        "status": "Status",
+        "total": "Total"
+      },
+      "dialog": {
+        "trigger": "New Credit Note",
+        "title": "New credit note",
+        "description": "Corrects a posted invoice that already has payment applied to it, by crediting back one or more of its original lines.",
+        "reason": "Reason",
+        "reasonRequired": "A reason is required.",
+        "categoryRequired": "Select a fee category for every line.",
+        "amountRequired": "Enter an amount for every line.",
+        "noInvoiceLinesHint": "This invoice has no lines to credit against.",
+        "submitting": "Creating…",
+        "submit": "Create credit note",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "statusValues": {
+        "DRAFT": "Draft",
+        "PENDING_APPROVAL": "Pending approval",
+        "APPROVED": "Approved",
+        "POSTED": "Posted"
+      },
+      "statusActions": {
+        "submitTrigger": "Submit for approval",
+        "submitting": "Submitting…",
+        "approveTrigger": "Approve",
+        "approveConfirmTitle": "Approve this credit note?",
+        "approveConfirmDescription": "This approves credit note {number}, allowing it to be posted.",
+        "approving": "Approving…",
+        "approveConfirmButton": "Approve",
+        "rejectTrigger": "Reject",
+        "rejectConfirmTitle": "Send this credit note back to Draft?",
+        "rejectConfirmDescription": "Credit note {number} has no permanent rejected state — this sends it back to Draft, where it can be edited and resubmitted.",
+        "rejecting": "Sending back…",
+        "rejectConfirmButton": "Send back to draft",
+        "postTrigger": "Post",
+        "postConfirmTitle": "Post this credit note?",
+        "postConfirmDescription": "This posts credit note {number} to the general ledger.",
+        "postInvoiceEffectNote": "Posting reduces the target invoice's own paid amount and balance directly — the same effect a real payment reversal would have.",
+        "posting": "Posting…",
+        "postConfirmButton": "Post",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "debitNotes": {
+      "table": {
+        "number": "Debit note #",
+        "term": "Term",
+        "reason": "Reason",
+        "status": "Status",
+        "total": "Total"
+      },
+      "dialog": {
+        "trigger": "New Debit Note",
+        "title": "New debit note",
+        "description": "Raises a new charge directly against this student. Posting it generates and posts a real new invoice — the same conflict risks as any other invoice post apply, this is not a lightweight adjustment.",
+        "term": "Term",
+        "selectYear": "Select academic year",
+        "selectTerm": "Select term",
+        "termRequired": "A term is required.",
+        "reason": "Reason",
+        "reasonRequired": "A reason is required.",
+        "categoryRequired": "Select a fee category for every line.",
+        "amountRequired": "Enter an amount for every line.",
+        "lineDescriptionRequired": "A description is required for every line.",
+        "submitting": "Creating…",
+        "submit": "Create debit note",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "statusValues": {
+        "DRAFT": "Draft",
+        "POSTED": "Posted"
+      },
+      "statusActions": {
+        "postTrigger": "Post",
+        "postConfirmTitle": "Post this debit note?",
+        "postConfirmDescription": "This posts debit note {number}.",
+        "postInvoiceEffectNote": "Posting generates and posts a real new invoice for this student — the exact same conflict risks (e.g. a duplicate/already-billed conflict) any other invoice post carries, not a lightweight adjustment.",
+        "posting": "Posting…",
+        "postConfirmButton": "Post",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "concessions": {
+      "table": {
+        "kind": "Kind",
+        "target": "Scheme / sponsor award",
+        "amount": "Amount",
+        "reason": "Reason",
+        "status": "Status",
+        "sponsorAwardLabel": "Sponsor award: {sponsor}"
+      },
+      "dialog": {
+        "trigger": "Request concession",
+        "title": "Request a concession",
+        "description": "Requests a waiver, discount, scholarship, or bursary against an invoice. This starts pending approval — nothing is posted until it is approved.",
+        "invoice": "Invoice",
+        "invoicePlaceholder": "Select an invoice",
+        "invoiceSearchPlaceholder": "Search invoices…",
+        "invoiceEmptyText": "This student has no posted or partially paid invoices to target.",
+        "invoiceHint": "Only this student's own posted or partially paid invoices are shown here.",
+        "invoiceRequired": "Select an invoice.",
+        "balanceSuffix": "balance",
+        "kind": "Kind",
+        "kindValues": {
+          "WAIVER": "Waiver",
+          "DISCOUNT": "Discount",
+          "SCHOLARSHIP": "Scholarship",
+          "BURSARY": "Bursary"
+        },
+        "targetMode": "Funded by",
+        "targetModeScheme": "Concession scheme",
+        "targetModeSponsorAward": "Sponsor award",
+        "scheme": "Concession scheme",
+        "schemePlaceholder": "Select a scheme",
+        "schemeSearchPlaceholder": "Search schemes…",
+        "schemeEmptyText": "No active concession schemes found.",
+        "schemeRequired": "Select a concession scheme.",
+        "sponsorAward": "Sponsor award",
+        "sponsorAwardPlaceholder": "Select a sponsor award",
+        "sponsorAwardSearchPlaceholder": "Search sponsor awards…",
+        "sponsorAwardEmptyText": "This student has no sponsor awards.",
+        "sponsorAwardRequired": "Select a sponsor award.",
+        "sponsorAwardItemLabel": "{sponsor} — {remaining} remaining",
+        "amount": "Amount",
+        "amountRequired": "An amount is required.",
+        "reason": "Reason",
+        "reasonRequired": "A reason is required.",
+        "submit": "Request concession",
+        "submitting": "Requesting…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "statusValues": {
+        "PENDING_APPROVAL": "Pending approval",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "POSTED": "Posted"
+      },
+      "statusActions": {
+        "approveTrigger": "Approve",
+        "approveConfirmTitle": "Approve this concession?",
+        "approveConfirmDescription": "This approves the concession. If its target invoice is already posted, it can then be posted standalone; if the invoice is still a draft, the concession folds automatically into that invoice's own post instead.",
+        "approving": "Approving…",
+        "approveConfirmButton": "Approve",
+        "rejectTrigger": "Reject",
+        "rejectConfirmTitle": "Reject this concession?",
+        "rejectConfirmDescription": "This permanently rejects the concession. It cannot be resubmitted — a new request would need to be raised instead.",
+        "rejecting": "Rejecting…",
+        "rejectConfirmButton": "Reject",
+        "postStandaloneTrigger": "Post standalone",
+        "postStandaloneConfirmTitle": "Post this concession standalone?",
+        "postStandaloneConfirmDescription": "This posts the concession directly against invoice {number}, which has already been posted.",
+        "postStandaloneBlocksVoidNote": "This permanently blocks this invoice's own Void action — once an adjustment like this is applied, use a credit note for any further correction instead.",
+        "postingStandalone": "Posting…",
+        "postStandaloneConfirmButton": "Post standalone",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "autoFoldNote": "This invoice is still a draft. An approved concession against it is not posted standalone — it folds automatically into this invoice's own post the next time it is posted, with no separate action needed or possible until then."
+    },
+    "refundVouchers": {
+      "table": {
+        "number": "Voucher #",
+        "status": "Status",
+        "amount": "Amount",
+        "method": "Method",
+        "journal": "GL journal",
+        "journalPosted": "Posted",
+        "journalNotPosted": "Not yet posted"
+      },
+      "methodValues": {
+        "CASH": "Cash",
+        "BANK": "Bank transfer",
+        "MPESA_B2C": "M-Pesa B2C"
+      },
+      "dialog": {
+        "trigger": "New Refund Voucher",
+        "title": "New refund voucher",
+        "description": "Requests a refund paid out of this student's own credit balance — a refund can never create a negative receivable.",
+        "amount": "Amount",
+        "amountRequired": "An amount is required.",
+        "creditBalanceHint": "Available credit balance: {balance}. The server enforces this as a hard cap when the voucher is created.",
+        "creditBalanceLoading": "Loading this student's credit balance…",
+        "creditBalanceExceededHint": "This exceeds the student's current credit balance — the server will reject it.",
+        "method": "Payout method",
+        "payee": "Payee details",
+        "addPayeeRow": "Add detail",
+        "payeeHint": "Free-form details for whoever will receive this refund (e.g. name, phone, account number) — optional.",
+        "payeeKeyPlaceholder": "Label (e.g. Phone)",
+        "payeeValuePlaceholder": "Value",
+        "submitting": "Creating…",
+        "submit": "Create refund voucher",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "statusValues": {
+        "DRAFT": "Draft",
+        "PENDING_APPROVAL": "Pending approval",
+        "APPROVED": "Approved",
+        "APPROVED_UNPAID": "Approved — unpaid",
+        "PAID": "Paid",
+        "CANCELLED": "Cancelled"
+      },
+      "statusActions": {
+        "submitTrigger": "Submit for approval",
+        "submitting": "Submitting…",
+        "approveTrigger": "Approve",
+        "approveConfirmTitle": "Approve this refund voucher?",
+        "approveConfirmDescription": "This approves refund voucher {number}.",
+        "approveEffectNote": "Approve (this will also post the GL entry and move straight to Unpaid) — there is no separate \"approved but not yet posted\" step.",
+        "approving": "Approving…",
+        "approveConfirmButton": "Approve",
+        "rejectTrigger": "Reject",
+        "rejectConfirmTitle": "Reject this refund voucher?",
+        "rejectConfirmDescription": "This cancels refund voucher {number} outright — no GL activity occurs, and this cannot be undone.",
+        "rejecting": "Rejecting…",
+        "rejectConfirmButton": "Reject",
+        "markPaidTrigger": "Mark paid",
+        "markPaidConfirmTitle": "Mark this refund voucher paid?",
+        "markPaidConfirmDescription": "Confirms that voucher {number} has actually been paid out to the student.",
+        "b2cTransactionId": "M-Pesa B2C transaction ID (optional)",
+        "b2cTransactionIdPlaceholder": "e.g. the transaction ID from the B2C payout",
+        "b2cHint": "This app does not send the M-Pesa payout itself.",
+        "b2cHintLink": "Use the M-Pesa B2C page to send the payout, then paste the resulting transaction ID here.",
+        "markingPaid": "Marking paid…",
+        "markPaidConfirmButton": "Mark paid",
+        "cancelTrigger": "Cancel",
+        "cancelConfirmTitle": "Cancel this refund voucher?",
+        "cancelConfirmDescription": "This cancels refund voucher {number}. This cannot be undone.",
+        "cancelAfterApprovalWarning": "This voucher has already been approved and its GL journal posted (debiting the student's balance, crediting the payout account) — cancelling now will NOT reverse that journal. A compensating entry would need to be made manually if one is required.",
+        "cancelling": "Cancelling…",
+        "cancelConfirmButton": "Cancel voucher",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "bulkBilling": {
+      "title": "Bulk Billing",
+      "subtitle": "Generate and post invoices for many students at once, against their own real published fee structure.",
+      "form": {
+        "formTitle": "Generate invoices",
+        "termLabel": "Academic year & term",
+        "selectYear": "Select academic year",
+        "selectTerm": "Select term",
+        "classesLabel": "Classes (optional)",
+        "selectClasses": "Select classes…",
+        "classesHint": "Leave empty to include every class in the school. Selecting one or more classes limits this run to just those classes.",
+        "streamsLabel": "Streams (optional)",
+        "selectStreams": "Select streams…",
+        "streamsHint": "Limits this run to just these streams, within the classes selected above.",
+        "streamsDisabledHint": "Select at least one class to filter by stream.",
+        "termRequiredError": "An academic year and term are required.",
+        "submit": "Generate Invoices",
+        "generating": "Generating…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "confirmDialog": {
+        "normalTitle": "Generate invoices for this scope?",
+        "normalBody": "This generates and posts an invoice for every active student in the {classCount} selected class(es) and {streamCount} selected stream(s) who has a published fee structure for this term. This cannot be undone.",
+        "dangerTitle": "This will bill the entire school",
+        "dangerBody": "You have not selected any classes or streams. This will generate and post an invoice for EVERY ACTIVE STUDENT IN THE SCHOOL who has a published fee structure for this term — there is no undo, and no confirmation step exists on the server. This dialog is the only safeguard.",
+        "dangerAlertTitle": "No undo, no second confirmation",
+        "dangerAlertBody": "Once you confirm, invoices begin generating and posting immediately, one student at a time, for the whole school. A student already billed for this term simply fails and is skipped — everyone else is billed. This cannot be cancelled once started, and if you close this tab or navigate away, there is no way to look up the result afterward.",
+        "typeToConfirmLabel": "Type {word} to confirm",
+        "confirmButton": "Generate invoices"
+      },
+      "inFlightNoticeTitle": "Do not navigate away",
+      "inFlightNotice": "This run is still in progress. Do not close this tab or navigate away — it may take a while for a large population, and there is no way to look up the result afterward if you leave.",
+      "result": {
+        "title": "Result",
+        "succeededCount": "{count} invoice(s) generated and posted successfully.",
+        "failedCount": "{count} student(s) failed.",
+        "failuresListTitle": "Failures"
+      }
     }
   },
   "payments": {
