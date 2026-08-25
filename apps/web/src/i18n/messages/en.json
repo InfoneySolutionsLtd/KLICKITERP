@@ -830,22 +830,10 @@
       "detail": {
         "viewStudent": "View student",
         "summaryTitle": "Summary",
-        "amountsTitle": "Amounts",
         "statusLabel": "Status",
         "sourceLabel": "Source",
         "issueDateLabel": "Issue date",
         "dueDateLabel": "Due date",
-        "subtotalLabel": "Subtotal",
-        "concessionTotalLabel": "Concessions",
-        "totalLabel": "Total",
-        "paidAmountLabel": "Paid",
-        "balanceLabel": "Balance",
-        "linesTitle": "Invoice lines",
-        "lineNo": "#",
-        "lineCategory": "Category",
-        "lineDescription": "Description",
-        "lineAmount": "Amount",
-        "lineConcession": "Concession",
         "post": "Post",
         "posting": "Posting…",
         "genericError": "Something went wrong. Please try again.",
@@ -863,7 +851,28 @@
           "voiding": "Voiding…",
           "blockedHint": "This invoice can't be voided because a payment has already been applied to it. Use a credit note instead.",
           "genericError": "Something went wrong. Please try again."
-        }
+        },
+        "printAction": "Print",
+        "addDiscountAction": "Add Discount",
+        "collectFeeAction": "Collect Fee"
+      },
+      "printDocument": {
+        "admissionNo": "Admission No",
+        "name": "Name",
+        "grade": "Grade",
+        "academicYear": "Academic Year",
+        "division": "Division",
+        "issueDate": "Date",
+        "dueDate": "Due Date",
+        "invoiceNo": "Invoice No",
+        "particulars": "Particulars",
+        "amount": "Amount",
+        "subTotal": "Sub Total",
+        "discount": "Discount",
+        "grandTotal": "Grand Total",
+        "paidAmount": "Paid Amount",
+        "balance": "Balance",
+        "balanceInWords": "Balance is {words}."
       }
     },
     "bulkGenerate": {
@@ -1819,7 +1828,12 @@
         "target": "Applied to",
         "amount": "Amount",
         "invoice": "Invoice",
-        "prepayment": "Overpayment / credit balance"
+        "prepayment": "Overpayment / credit balance",
+        "toggleLines": "Show fee categories",
+        "expandedInvoiceCategoryHint": "Fee categories on the invoice this receipt was applied to (informational — this receipt's own payment isn't tracked per category, only per invoice).",
+        "loadingLines": "Loading fee categories…",
+        "loadingLinesError": "Couldn't load fee categories.",
+        "noLines": "No lines on this invoice."
       },
       "reversal": {
         "requestTrigger": "Request reversal",
@@ -5400,10 +5414,18 @@
         "narrativeLabel": "Narrative",
         "viewJournal": "View journal"
       },
+      "attachments": {
+        "title": "Attachments",
+        "uploadTrigger": "Add attachment",
+        "uploading": "Uploading…",
+        "uploadError": "Something went wrong uploading that file. Please try again.",
+        "openTrigger": "Open",
+        "openError": "Something went wrong opening that file. Please try again."
+      },
       "statusActions": {
         "submitTrigger": "Submit for approval",
         "submitting": "Submitting…",
-        "attachmentRequiredError": "Attach at least one receipt/document before submitting a voucher over the configured KES threshold (default KES 1,000). File attachments aren't supported on this screen yet — ask a System Admin for help, or keep the amount at or below the threshold.",
+        "attachmentRequiredError": "Attach at least one receipt/document before submitting a voucher over the configured KES threshold (default KES 1,000). Use the Attachments section above to upload one, then try submitting again.",
         "genericError": "Something went wrong. Please try again.",
         "approveTrigger": "Approve",
         "approveConfirmTitle": "Approve voucher",

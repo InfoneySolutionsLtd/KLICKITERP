@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Search } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PendingUpcomingInvoiceResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,12 @@ const MIN_SEARCH_LENGTH = 2;
  * expected and documented, not a placeholder flow built here) with the
  * invoice's `studentId`/`id` pre-filled as query params.
  *
+ * **Invoice/Receipt "View" pass**: a second Actions button, "View" (`Eye`
+ * icon), links to the existing `/billing/invoices/{id}` detail page — its
+ * print-style document (`<InvoicePrintDocument>`) is exactly where a user
+ * can see the real fee-category lines that make up an invoice, per this
+ * pass's own brief.
+ *
  * Phase 6 Slice 9 (Part B) — gained a debounced (300ms, `useDebouncedValue()`)
  * search box wired to the backend's new `q` param (ILIKE against the joined
  * student's name/admission number). Only fires once 2+ characters are typed
@@ -48,6 +54,7 @@ const MIN_SEARCH_LENGTH = 2;
  */
 export function OpenInvoicesTable({ bucket }: { bucket: "PENDING" | "UPCOMING" }) {
   const t = useTranslations("billing.openInvoices");
+  const tCommon = useTranslations("common");
   const classesQuery = useClasses();
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(DEFAULT_PAGE_SIZE);
@@ -102,13 +109,21 @@ export function OpenInvoicesTable({ bucket }: { bucket: "PENDING" | "UPCOMING" }
         id: "actions",
         header: t("columns.actions"),
         cell: ({ row }) => (
-          <Button asChild size="sm" variant="outline">
-            <Link href={`/billing/collect?studentId=${row.original.studentId}&invoiceId=${row.original.id}`}>{t("collect")}</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/billing/invoices/${row.original.id}`}>
+                <Eye className="size-4" />
+                {tCommon("view")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/billing/collect?studentId=${row.original.studentId}&invoiceId=${row.original.id}`}>{t("collect")}</Link>
+            </Button>
+          </div>
         ),
       },
     ],
-    [t, classNameById],
+    [t, tCommon, classNameById],
   );
 
   const total = query.data?.total ?? 0;

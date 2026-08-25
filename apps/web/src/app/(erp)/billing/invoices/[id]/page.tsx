@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Percent, Printer, Receipt } from "lucide-react";
 import type { InvoiceResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
-import { formatMoney } from "@/lib/money";
-import { InvoiceLinesTable } from "@/features/billing/components/invoice-lines-table";
+import { InvoicePrintDocument } from "@/features/billing/components/invoice-print-document";
 import { InvoiceStatusBadge } from "@/features/billing/components/status-badges";
 import { PostInvoiceButton } from "@/features/billing/components/post-invoice-button";
 import { VoidInvoiceButton } from "@/features/billing/components/void-invoice-button";
@@ -21,6 +20,7 @@ import { useCreditNotesByInvoice } from "@/features/billing/hooks/use-credit-not
 import { RequestConcessionDialog } from "@/features/billing/components/request-concession-dialog";
 import { ConcessionsTable } from "@/features/billing/components/concessions-table";
 import { useConcessionsByInvoice } from "@/features/billing/hooks/use-concessions";
+import { PrintWatermark } from "@/features/document-verification/components/print-watermark";
 
 function ProfileRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -32,6 +32,8 @@ function ProfileRow({ label, value }: { label: string; value: React.ReactNode })
 }
 
 const VOIDABLE_STATUSES = ["POSTED", "PARTIALLY_PAID", "PAID"];
+/** Not DRAFT/VOID and a real remaining balance — the same set of conditions a "collect against this invoice" action should ever be offered for. `"0.0000"` is the exact 4dp decimal-string zero every `Money.toDecimalString()` value on this page is guaranteed to serialize as (never `"0"`/`"0.00"`), so a plain string comparison is safe here, no `Number()`/`parseFloat` needed. */
+const COLLECTIBLE_STATUSES = ["POSTED", "PARTIALLY_PAID"];
 
 function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
   const t = useTranslations("billing.invoices.detail");
@@ -40,24 +42,66 @@ function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
   const creditNotesQuery = useCreditNotesByInvoice(invoice.id);
   const concessionsQuery = useConcessionsByInvoice(invoice.id);
 
+  const isCollectible = COLLECTIBLE_STATUSES.includes(invoice.status) && invoice.balance !== "0.0000";
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{invoice.number}</h1>
-          <Link href={`/students/${invoice.studentId}`} className="text-sm text-primary hover:underline">
+          <Link href={`/students/${invoice.studentId}`} className="text-sm text-primary hover:underline print:hidden">
             {t("viewStudent")}
           </Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
           <InvoiceStatusBadge status={invoice.status} />
           {invoice.status === "DRAFT" && <PostInvoiceButton invoiceId={invoice.id} studentId={invoice.studentId} />}
           {VOIDABLE_STATUSES.includes(invoice.status) && <VoidInvoiceButton invoice={invoice} />}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
+      {/* Print-style document + its own action row (Print/Add Discount/Collect
+          Fee) — the user's explicit "view the fee categories that make up an
+          invoice" ask, modeled on their own reference screenshot. Add
+          Discount reuses the SAME approval-gated Concession workflow the
+          Concessions section below already offers (`defaultKind="DISCOUNT"`,
+          a distinct trigger) — it does not change the balance instantly. */}
+      <div className="flex flex-wrap justify-end gap-2 print:hidden">
+        <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
+          <Printer className="size-4" />
+          {t("printAction")}
+        </Button>
+        {invoice.status !== "VOID" && (
+          <RequestConcessionDialog
+            studentId={invoice.studentId}
+            invoiceId={invoice.id}
+            defaultKind="DISCOUNT"
+            trigger={
+              <Button type="button" variant="outline" size="sm">
+                <Percent className="size-4" />
+                {t("addDiscountAction")}
+              </Button>
+            }
+          />
+        )}
+        {isCollectible && (
+          <Button asChild size="sm">
+            <Link href={`/billing/collect?studentId=${invoice.studentId}&invoiceId=${invoice.id}`}>
+              <Receipt className="size-4" />
+              {t("collectFeeAction")}
+            </Link>
+          </Button>
+        )}
+      </div>
+
+      <div className="relative space-y-6">
+        <PrintWatermark />
+
+        <QueryBoundary query={linesQuery} isEmpty={(d) => d.length === 0}>
+          {(lines) => <InvoicePrintDocument invoice={invoice} lines={lines} />}
+        </QueryBoundary>
+
+        <Card className="print:hidden">
           <CardHeader>
             <CardTitle className="text-base text-foreground">{t("summaryTitle")}</CardTitle>
           </CardHeader>
@@ -68,31 +112,7 @@ function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
             <ProfileRow label={t("dueDateLabel")} value={invoice.dueDate} />
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base text-foreground">{t("amountsTitle")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProfileRow label={t("subtotalLabel")} value={formatMoney(invoice.subtotal)} />
-            <ProfileRow label={t("concessionTotalLabel")} value={formatMoney(invoice.concessionTotal)} />
-            <ProfileRow label={t("totalLabel")} value={formatMoney(invoice.total)} />
-            <ProfileRow label={t("paidAmountLabel")} value={formatMoney(invoice.paidAmount)} />
-            <ProfileRow label={t("balanceLabel")} value={<span className="font-semibold">{formatMoney(invoice.balance)}</span>} />
-          </CardContent>
-        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base text-foreground">{t("linesTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <QueryBoundary query={linesQuery} isEmpty={(d) => d.length === 0}>
-            {(lines) => <InvoiceLinesTable lines={lines} />}
-          </QueryBoundary>
-        </CardContent>
-      </Card>
 
       {/* Phase 6 Slice 22 Part 5 (Credit Notes) — the concrete answer to
           `VoidInvoiceButton`'s own "Use a credit note instead" hint, shown
@@ -104,7 +124,7 @@ function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
           the same status set `VOIDABLE_STATUSES` above already tracks, so
           the "New Credit Note" trigger reuses it rather than duplicating the
           condition. */}
-      <Card>
+      <Card className="print:hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base text-foreground">{t("creditNotesTitle")}</CardTitle>
           {VOIDABLE_STATUSES.includes(invoice.status) && <CreateCreditNoteDialog invoiceId={invoice.id} />}
@@ -128,7 +148,7 @@ function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
           STANDALONE until the invoice itself has posted
           (`PostStandaloneConcessionButton`'s own gate, rendered per row via
           `<ConcessionsTable invoice={invoice} />` below). */}
-      <Card>
+      <Card className="print:hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base text-foreground">{t("concessionsTitle")}</CardTitle>
           {invoice.status !== "VOID" && <RequestConcessionDialog studentId={invoice.studentId} invoiceId={invoice.id} />}
@@ -156,11 +176,13 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* No standalone `/billing/invoices` list route exists in this slice
-          (invoices are only ever reached from a student's Billing card or
-          the fresh-generate redirect) — a plain history-back button avoids
-          linking to a route that doesn't exist. */}
-      <Button type="button" variant="ghost" size="sm" onClick={() => router.back()}>
+      {/* No standalone `/billing/invoices` list route exists — this page is
+          reached from a student's Billing card, the fresh-generate redirect,
+          or (Invoice/Receipt "View" pass) the Pending/Upcoming Invoices
+          lists' own new View button — a plain history-back button correctly
+          returns to whichever of those the user actually came from, rather
+          than hardcoding one specific parent route. */}
+      <Button type="button" variant="ghost" size="sm" className="print:hidden" onClick={() => router.back()}>
         <ArrowLeft className="size-4" />
         {tCommon("back")}
       </Button>

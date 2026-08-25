@@ -830,22 +830,10 @@
       "detail": {
         "viewStudent": "View student",
         "summaryTitle": "Summary",
-        "amountsTitle": "Amounts",
         "statusLabel": "Status",
         "sourceLabel": "Source",
         "issueDateLabel": "Issue date",
         "dueDateLabel": "Due date",
-        "subtotalLabel": "Subtotal",
-        "concessionTotalLabel": "Concessions",
-        "totalLabel": "Total",
-        "paidAmountLabel": "Paid",
-        "balanceLabel": "Balance",
-        "linesTitle": "Invoice lines",
-        "lineNo": "#",
-        "lineCategory": "Category",
-        "lineDescription": "Description",
-        "lineAmount": "Amount",
-        "lineConcession": "Concession",
         "post": "Post",
         "posting": "Posting…",
         "genericError": "Something went wrong. Please try again.",
@@ -863,7 +851,28 @@
           "voiding": "Voiding…",
           "blockedHint": "This invoice can't be voided because a payment has already been applied to it. Use a credit note instead.",
           "genericError": "Something went wrong. Please try again."
-        }
+        },
+        "printAction": "Imprimer",
+        "addDiscountAction": "Ajouter une remise",
+        "collectFeeAction": "Encaisser les frais"
+      },
+      "printDocument": {
+        "admissionNo": "N° d'admission",
+        "name": "Nom",
+        "grade": "Classe",
+        "academicYear": "Année académique",
+        "division": "Division",
+        "issueDate": "Date",
+        "dueDate": "Date d'échéance",
+        "invoiceNo": "N° de facture",
+        "particulars": "Détails",
+        "amount": "Montant",
+        "subTotal": "Sous-total",
+        "discount": "Remise",
+        "grandTotal": "Total général",
+        "paidAmount": "Montant payé",
+        "balance": "Solde",
+        "balanceInWords": "Le solde est de {words}."
       }
     },
     "bulkGenerate": {
@@ -1819,7 +1828,12 @@
         "target": "Applied to",
         "amount": "Amount",
         "invoice": "Invoice",
-        "prepayment": "Overpayment / credit balance"
+        "prepayment": "Overpayment / credit balance",
+        "toggleLines": "Afficher les catégories de frais",
+        "expandedInvoiceCategoryHint": "Catégories de frais de la facture à laquelle ce reçu a été appliqué (à titre indicatif — le paiement de ce reçu n'est pas suivi par catégorie, seulement par facture).",
+        "loadingLines": "Chargement des catégories de frais…",
+        "loadingLinesError": "Impossible de charger les catégories de frais.",
+        "noLines": "Aucune ligne sur cette facture."
       },
       "reversal": {
         "requestTrigger": "Request reversal",
@@ -5400,10 +5414,18 @@
         "narrativeLabel": "Motif",
         "viewJournal": "Voir l'écriture comptable"
       },
+      "attachments": {
+        "title": "Pièces jointes",
+        "uploadTrigger": "Ajouter une pièce jointe",
+        "uploading": "Téléversement…",
+        "uploadError": "Une erreur s'est produite lors du téléversement de ce fichier. Veuillez réessayer.",
+        "openTrigger": "Ouvrir",
+        "openError": "Une erreur s'est produite lors de l'ouverture de ce fichier. Veuillez réessayer."
+      },
       "statusActions": {
         "submitTrigger": "Soumettre pour approbation",
         "submitting": "Soumission…",
-        "attachmentRequiredError": "Joignez au moins un reçu/document avant de soumettre un bon dépassant le seuil configuré en KES (par défaut KES 1 000). Le téléversement de fichiers n'est pas encore pris en charge sur cet écran — demandez de l'aide à un administrateur système, ou maintenez le montant à ce seuil ou en dessous.",
+        "attachmentRequiredError": "Joignez au moins un reçu/document avant de soumettre un bon dépassant le seuil configuré en KES (par défaut KES 1 000). Utilisez la section Pièces jointes ci-dessus pour en téléverser une, puis réessayez de soumettre.",
         "genericError": "Une erreur s'est produite. Veuillez réessayer.",
         "approveTrigger": "Approuver",
         "approveConfirmTitle": "Approuver le bon",

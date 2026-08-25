@@ -16,6 +16,7 @@ import { useUsersLookup } from "@/features/departments/hooks/use-users-lookup";
 import { useCategory } from "@/features/expenses/hooks/use-categories";
 import { isDraftPlaceholderNumber, useVoucher, type VoucherResponseDto } from "@/features/expenses/hooks/use-vouchers";
 import { VoucherStatusActions } from "@/features/expenses/components/voucher-status-actions";
+import { VoucherAttachmentsCard } from "@/features/expenses/components/voucher-attachments-card";
 
 const STATUS_BADGE_VARIANT: Record<string, BadgeProps["variant"]> = {
   DRAFT: "soft-secondary",
@@ -131,6 +132,8 @@ function VoucherDetailBody({ voucher }: { voucher: VoucherResponseDto }) {
           )}
         </CardContent>
       </Card>
+
+      <VoucherAttachmentsCard voucherId={voucher.id} />
     </>
   );
 }

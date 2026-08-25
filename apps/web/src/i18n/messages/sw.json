@@ -830,22 +830,10 @@
       "detail": {
         "viewStudent": "View student",
         "summaryTitle": "Summary",
-        "amountsTitle": "Amounts",
         "statusLabel": "Status",
         "sourceLabel": "Source",
         "issueDateLabel": "Issue date",
         "dueDateLabel": "Due date",
-        "subtotalLabel": "Subtotal",
-        "concessionTotalLabel": "Concessions",
-        "totalLabel": "Total",
-        "paidAmountLabel": "Paid",
-        "balanceLabel": "Balance",
-        "linesTitle": "Invoice lines",
-        "lineNo": "#",
-        "lineCategory": "Category",
-        "lineDescription": "Description",
-        "lineAmount": "Amount",
-        "lineConcession": "Concession",
         "post": "Post",
         "posting": "Posting…",
         "genericError": "Something went wrong. Please try again.",
@@ -863,7 +851,28 @@
           "voiding": "Voiding…",
           "blockedHint": "This invoice can't be voided because a payment has already been applied to it. Use a credit note instead.",
           "genericError": "Something went wrong. Please try again."
-        }
+        },
+        "printAction": "Chapisha",
+        "addDiscountAction": "Ongeza Punguzo",
+        "collectFeeAction": "Kusanya Ada"
+      },
+      "printDocument": {
+        "admissionNo": "Namba ya Usajili",
+        "name": "Jina",
+        "grade": "Darasa",
+        "academicYear": "Mwaka wa Masomo",
+        "division": "Kikundi",
+        "issueDate": "Tarehe",
+        "dueDate": "Tarehe ya Mwisho",
+        "invoiceNo": "Namba ya Ankara",
+        "particulars": "Maelezo",
+        "amount": "Kiasi",
+        "subTotal": "Jumla Ndogo",
+        "discount": "Punguzo",
+        "grandTotal": "Jumla Kuu",
+        "paidAmount": "Kiasi Kilicholipwa",
+        "balance": "Salio",
+        "balanceInWords": "Salio ni {words}."
       }
     },
     "bulkGenerate": {
@@ -1819,7 +1828,12 @@
         "target": "Applied to",
         "amount": "Amount",
         "invoice": "Invoice",
-        "prepayment": "Overpayment / credit balance"
+        "prepayment": "Overpayment / credit balance",
+        "toggleLines": "Onyesha kategoria za ada",
+        "expandedInvoiceCategoryHint": "Kategoria za ada kwenye ankara ambayo risiti hii ilitumika. (Kwa taarifa tu — malipo ya risiti hii hayafuatiliwi kwa kila kategoria, bali kwa ankara nzima.)",
+        "loadingLines": "Inapakia kategoria za ada…",
+        "loadingLinesError": "Imeshindwa kupakia kategoria za ada.",
+        "noLines": "Hakuna vipengele kwenye ankara hii."
       },
       "reversal": {
         "requestTrigger": "Request reversal",
@@ -5400,10 +5414,18 @@
         "narrativeLabel": "Maelezo",
         "viewJournal": "Angalia ingizo la jarida"
       },
+      "attachments": {
+        "title": "Viambatanisho",
+        "uploadTrigger": "Ongeza kiambatanisho",
+        "uploading": "Inapakia…",
+        "uploadError": "Hitilafu imetokea wakati wa kupakia faili hiyo. Tafadhali jaribu tena.",
+        "openTrigger": "Fungua",
+        "openError": "Hitilafu imetokea wakati wa kufungua faili hiyo. Tafadhali jaribu tena."
+      },
       "statusActions": {
         "submitTrigger": "Wasilisha kwa Idhini",
         "submitting": "Inawasilisha…",
-        "attachmentRequiredError": "Ambatanisha angalau risiti/hati moja kabla ya kuwasilisha hati ya zaidi ya kiwango cha KES kilichowekwa (kawaida KES 1,000). Kupakia faili hakuwezekani bado kwenye skrini hii — wasiliana na Msimamizi wa Mfumo kwa msaada, au weka kiasi kisichozidi kiwango hicho.",
+        "attachmentRequiredError": "Ambatanisha angalau risiti/hati moja kabla ya kuwasilisha hati ya zaidi ya kiwango cha KES kilichowekwa (kawaida KES 1,000). Tumia sehemu ya Viambatanisho hapo juu kupakia moja, kisha jaribu kuwasilisha tena.",
         "genericError": "Hitilafu imetokea. Tafadhali jaribu tena.",
         "approveTrigger": "Idhinisha",
         "approveConfirmTitle": "Idhinisha hati",

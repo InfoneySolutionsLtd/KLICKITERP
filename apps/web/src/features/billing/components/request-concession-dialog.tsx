@@ -59,13 +59,34 @@ function negateDecimalString(value: string): string {
  * own `schemeId` XOR `sponsorAwardId` validation
  * (`ConcessionsService.requestConcession()`) rather than just hinting at it:
  * only the active mode's field is ever populated or submitted.
+ *
+ * `defaultKind`/`trigger` (Invoice print view's "Add Discount" quick-access
+ * button) — both optional, backward compatible: every existing call site
+ * omits them and gets byte-for-byte the same behavior as before (kind
+ * defaults to `"WAIVER"`, trigger defaults to the plain `<Button>` below).
+ * A caller that wants a discount-scoped shortcut (e.g. a green "Add
+ * Discount" button on the invoice detail page, distinct from the
+ * Concessions section's own generic trigger further down that same page)
+ * passes `defaultKind="DISCOUNT"` and its own `trigger` element — the kind
+ * `<Select>` inside the dialog is still fully editable either way, this
+ * only changes what's pre-selected on open.
  */
-export function RequestConcessionDialog({ studentId, invoiceId }: { studentId: string; invoiceId?: string }) {
+export function RequestConcessionDialog({
+  studentId,
+  invoiceId,
+  defaultKind = "WAIVER",
+  trigger,
+}: {
+  studentId: string;
+  invoiceId?: string;
+  defaultKind?: ConcessionKind;
+  trigger?: React.ReactNode;
+}) {
   const t = useTranslations("billing.concessions.dialog");
   const tCommon = useTranslations("common");
 
   const [open, setOpen] = React.useState(false);
-  const [kind, setKind] = React.useState<ConcessionKind>("WAIVER");
+  const [kind, setKind] = React.useState<ConcessionKind>(defaultKind);
   const [targetMode, setTargetMode] = React.useState<TargetMode>("scheme");
   const [schemeId, setSchemeId] = React.useState("");
   const [sponsorAwardId, setSponsorAwardId] = React.useState("");
@@ -109,7 +130,7 @@ export function RequestConcessionDialog({ studentId, invoiceId }: { studentId: s
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
-      setKind("WAIVER");
+      setKind(defaultKind);
       setTargetMode("scheme");
       setSchemeId("");
       setSponsorAwardId("");
@@ -161,9 +182,7 @@ export function RequestConcessionDialog({ studentId, invoiceId }: { studentId: s
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button type="button">{t("trigger")}</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger ?? <Button type="button">{t("trigger")}</Button>}</DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>

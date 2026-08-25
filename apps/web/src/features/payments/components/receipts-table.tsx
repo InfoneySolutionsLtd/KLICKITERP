@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Eye } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReceiptResponseDto } from "@klickit/contracts";
+import { Button } from "@/components/ui/button";
 import { DataTable, type ServerPaginationState } from "@/components/patterns/data-table";
 import { formatMoney } from "@/lib/money";
 
@@ -31,6 +33,13 @@ type ReceiptTableRow = ReceiptResponseDto & { studentName?: string; cashierName?
  * that cross-student context — same component, no duplication, exactly the
  * plan's own "your call" instruction resolved in favor of one parametrized
  * table over a second component.
+ *
+ * **Invoice/Receipt "View" pass**: a new Actions column with an explicit
+ * "View" (`Eye` icon) button linking to `/payments/receipts/{id}` — every
+ * one of this table's callers gets it, for the same View-button consistency
+ * the Pending/Upcoming Invoices lists just gained (`open-invoices-table.tsx`).
+ * Redundant with the `number` column already being clickable, kept anyway
+ * per the explicit ask.
  */
 export function ReceiptsTable({
   receipts,
@@ -42,6 +51,7 @@ export function ReceiptsTable({
   serverPagination?: ServerPaginationState;
 }) {
   const t = useTranslations("payments.receiptsTable");
+  const tCommon = useTranslations("common");
 
   const columns: ColumnDef<ReceiptTableRow>[] = [
     {
@@ -63,6 +73,18 @@ export function ReceiptsTable({
       : []),
     { accessorKey: "total", header: t("total"), cell: ({ row }) => formatMoney(row.original.total) },
     { accessorKey: "status", header: t("status") },
+    {
+      id: "actions",
+      header: tCommon("actions"),
+      cell: ({ row }) => (
+        <Button asChild size="sm" variant="outline">
+          <Link href={`/payments/receipts/${row.original.id}`}>
+            <Eye className="size-4" />
+            {tCommon("view")}
+          </Link>
+        </Button>
+      ),
+    },
   ];
 
   return <DataTable columns={columns} data={receipts} serverPagination={serverPagination} />;
