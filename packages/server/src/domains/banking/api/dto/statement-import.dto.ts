@@ -79,6 +79,12 @@ export class ImportBankStatementLinesDto {
   rawRows!: Array<Record<string, unknown>>;
 }
 
+export class FetchBankFeedDto {
+  @ApiProperty({ format: "uuid", description: "The bank_account to fetch new transactions for — must have an enabled BANK integration config whose own accountId field matches" })
+  @IsUUID()
+  accountId!: string;
+}
+
 export class ImportBankStatementLinesResponseDto {
   @ApiProperty({ format: "uuid" })
   importId!: string;

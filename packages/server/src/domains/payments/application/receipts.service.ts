@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { EntityManager } from "typeorm";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
+import { OutboxWriterService } from "../../../shared/events/outbox-writer.service";
 import { generateUuidV7 } from "../../../shared/ids/uuid7";
 import { Money } from "../../../shared/money/money";
 import { GlAccountRepository, PostingService, PostJournalLineDraft } from "../../../accounting";
@@ -26,6 +27,7 @@ import { PayChequeRepository } from "../infrastructure/pay-cheque.repository";
 import { PayReceiptAllocationRepository } from "../infrastructure/pay-receipt-allocation.repository";
 import { PayReceiptRepository } from "../infrastructure/pay-receipt.repository";
 import { PayReceiptSplitRepository } from "../infrastructure/pay-receipt-split.repository";
+import { PaymentReceivedEvent } from "../events/payment-received.event";
 import { AllocationService } from "./allocation.service";
 import { resolveClearingAccount } from "./payment-clearing-accounts.util";
 
@@ -325,6 +327,9 @@ export class ReceiptsService {
     // every pre-existing positional `new ReceiptsService(...)` call (real
     // code and every prior test file) valid with only an append.
     private readonly documentVerificationService: DocumentVerificationService,
+    // Complete the Integrations area, Part 3.1 — same end-of-list append
+    // discipline as the two entries above.
+    private readonly outboxWriter: OutboxWriterService,
   ) {}
 
   async captureReceipt(em: EntityManager, input: CaptureReceiptInput): Promise<PayReceiptEntity> {
@@ -587,6 +592,17 @@ export class ReceiptsService {
       credit: input.total,
       memo: "Receipt posted",
     });
+
+    await this.outboxWriter.write(
+      em,
+      new PaymentReceivedEvent(receipt.id, {
+        receiptId: receipt.id,
+        receiptNumber: receipt.number,
+        studentId: receipt.studentId,
+        total: receipt.total.toDecimalString(),
+        cashierId: input.cashierId,
+      }),
+    );
 
     return receipt;
   }

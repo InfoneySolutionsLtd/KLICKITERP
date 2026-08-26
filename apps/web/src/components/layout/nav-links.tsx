@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Banknote, Boxes, CheckSquare, ChevronDown, CreditCard, GraduationCap, HandCoins, Landmark, LayoutDashboard, Layers, Megaphone, Package, Palette, Receipt, ServerCog, Settings, ShieldCheck, Truck, UserCog, Users, Wallet, WalletCards } from "lucide-react";
+import { Banknote, Boxes, CheckSquare, ChevronDown, CreditCard, FileBarChart, GraduationCap, HandCoins, Landmark, LayoutDashboard, Layers, Megaphone, Package, Palette, Receipt, ServerCog, Settings, ShieldCheck, Truck, UserCog, Users, Wallet, WalletCards } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hasAnyRole } from "@/lib/permissions";
@@ -1021,6 +1021,32 @@ const NAV_ITEMS: NavItem[] = [
   // `lucide-react` before adding it — a server/ops-administration glyph, a
   // clear semantic fit distinct from every icon already claimed above).
   { href: "/ops/backups", labelKey: "opsBackups", icon: ServerCog, allowedRoles: [] },
+  // Reports engine frontend (Module 18's own long-deferred frontend gap,
+  // backend fully built) — inserted at the very end, after Backups & Ops,
+  // matching this file's own "insert after the most-recently-shipped
+  // module" ordering convention (not alphabetical). Styled as a
+  // `children`-bearing dropdown FROM THE START even though this first slice
+  // ships only one reachable screen (the catalogue) — Saved Reports/
+  // Schedules/Audit Log screens are known, planned follow-ons, the same
+  // "dropdown from the start" call Procurement/Wallet/Communications/Fixed
+  // Assets/Payroll/Banking each made. `href` is its own first child's href,
+  // per this file's own established convention. Same `allowedRoles: []`/
+  // `<QueryBoundary>`-is-the-real-gate reasoning as every other entry above:
+  // each report has its OWN distinct `reports:<code>:view` permission,
+  // checked dynamically per-action, not a single coarse module permission.
+  // `FileBarChart` confirmed unused elsewhere in this file and a real
+  // `lucide-react` export before adding it.
+  {
+    href: "/reports",
+    labelKey: "reports",
+    icon: FileBarChart,
+    allowedRoles: [],
+    children: [
+      { href: "/reports", labelKey: "reportsCatalogue" },
+      { href: "/reports/saved", labelKey: "reportsSaved" },
+      { href: "/reports/schedules", labelKey: "reportsSchedules" },
+    ],
+  },
 ];
 
 /**

@@ -258,6 +258,7 @@ describe("wallet module — end-to-end capstone (real DataSource)", () => {
         allocationService,
         studentCreditService,
         documentVerificationService,
+        outboxWriterStub,
       );
 
       const walletTransactionsService = new WalletTransactionsService(

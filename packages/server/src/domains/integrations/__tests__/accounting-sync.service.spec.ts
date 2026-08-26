@@ -5,19 +5,24 @@ import { IntgSyncLogEntity } from "../domain/intg-sync-log.entity";
 const EM = {} as EntityManager;
 
 describe("AccountingSyncService", () => {
-  let resolver: { resolve: jest.Mock };
+  let resolver: { resolve: jest.Mock; resolveWithConfigId: jest.Mock };
   let syncLogRepository: { create: jest.Mock; list: jest.Mock };
+  let integrationConfigService: { recordTestResult: jest.Mock };
   let adapter: { pushEntity: jest.Mock; testConnection: jest.Mock };
   let service: AccountingSyncService;
 
   beforeEach(() => {
     adapter = { pushEntity: jest.fn(), testConnection: jest.fn() };
-    resolver = { resolve: jest.fn(async () => adapter) };
+    resolver = {
+      resolve: jest.fn(async () => adapter),
+      resolveWithConfigId: jest.fn(async () => ({ adapter, configId: "config-1" })),
+    };
     syncLogRepository = {
       create: jest.fn(async (data: Partial<IntgSyncLogEntity>) => ({ id: "log-1", ...data }) as IntgSyncLogEntity),
       list: jest.fn(async () => [[], 0]),
     };
-    service = new AccountingSyncService(resolver as never, syncLogRepository as never);
+    integrationConfigService = { recordTestResult: jest.fn() };
+    service = new AccountingSyncService(resolver as never, syncLogRepository as never, integrationConfigService as never);
   });
 
   describe("pushEntity — log-then-classify", () => {
@@ -81,13 +86,23 @@ describe("AccountingSyncService", () => {
   });
 
   describe("testConnection", () => {
-    it("delegates to the resolved adapter's testConnection() (FR-SET-003.1)", async () => {
+    it("delegates to the resolved adapter's testConnection() (FR-SET-003.1) and records the result on the resolved config", async () => {
       adapter.testConnection.mockResolvedValue({ ok: true, message: "Connected" });
 
       const result = await service.testConnection("SAGE");
 
-      expect(resolver.resolve).toHaveBeenCalledWith("SAGE");
+      expect(resolver.resolveWithConfigId).toHaveBeenCalledWith("SAGE");
       expect(result).toEqual({ ok: true, message: "Connected" });
+      expect(integrationConfigService.recordTestResult).toHaveBeenCalledWith("config-1", true);
+    });
+
+    it("does not attempt a writeback when no config is enabled (SyncLogOnlyAdapter fallback, configId null)", async () => {
+      resolver.resolveWithConfigId.mockResolvedValueOnce({ adapter, configId: null });
+      adapter.testConnection.mockResolvedValue({ ok: false, message: "no adapter configured" });
+
+      await service.testConnection("XERO");
+
+      expect(integrationConfigService.recordTestResult).not.toHaveBeenCalled();
     });
   });
 });

@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { DataTable } from "@/components/patterns/data-table";
 import { useAccounts as useBankAccounts } from "@/features/banking/hooks/use-accounts";
+import { FetchBankFeedButton } from "@/features/banking/components/fetch-bank-feed-button";
 import { useStatementImports, type BankStatementImport } from "@/features/banking/hooks/use-statement-import";
 
 const ALL_SENTINEL = "__all__"; // `<Select>` can't represent "nothing selected" as `value=""` — the same pattern `banking/transfers/page.tsx` already establishes.
@@ -128,6 +129,7 @@ export default function StatementImportsPage() {
                 {t("filters.clearFilters")}
               </Button>
             )}
+            {accountId && <FetchBankFeedButton accountId={accountId} />}
           </div>
 
           <QueryBoundary query={importsQuery} isEmpty={(d) => d.length === 0}>

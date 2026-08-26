@@ -16,8 +16,26 @@ export const INTEGRATION_KINDS: readonly IntegrationKind[] = ["SMTP", "SMS", "FC
  * `<NewIntegrationDialog>`/`<EditIntegrationDialog>` now genuinely branch on
  * `kind` to pick the matching form/state/validator, replacing the previous
  * MPESA-only hardcoded path.
+ *
+ * **Complete the Integrations area, Parts 2 + 4.1 + 4.2** — `SMTP`/`SMS`/
+ * `FCM`/`WHATSAPP` join the list: real backend adapters have existed for all
+ * four since Module 5 (comms), but this UI never had a form to enter their
+ * credentials (only `set_integration_config` rows created directly via
+ * SQL/API could ever configure them). `BANK` joins too, backed by the new
+ * `GenericHttpBankFeedAdapter` (`domains/banking`) — every kind in
+ * `INTEGRATION_KINDS` now has a real form.
  */
-export const CONFIGURABLE_INTEGRATION_KINDS: readonly IntegrationKind[] = ["MPESA", "QUICKBOOKS", "XERO", "SAGE"];
+export const CONFIGURABLE_INTEGRATION_KINDS: readonly IntegrationKind[] = [
+  "MPESA",
+  "QUICKBOOKS",
+  "XERO",
+  "SAGE",
+  "SMTP",
+  "SMS",
+  "FCM",
+  "WHATSAPP",
+  "BANK",
+];
 
 /** Mirrors `create-custom-field.dto.ts`'s own `CUSTOM_FIELD_ENTITIES` array (server-side) — the real, full enum. */
 export const CUSTOM_FIELD_ENTITIES: readonly CustomFieldEntityType[] = ["STUDENT", "SUPPLIER", "EMPLOYEE", "ASSET"];

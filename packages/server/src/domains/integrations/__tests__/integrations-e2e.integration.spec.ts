@@ -26,8 +26,13 @@ import { AccountingSyncService } from "../application/accounting-sync.service";
  * Postgres). Covers exactly what the task brief calls out: create a
  * subscription, dispatch an event, verify a delivery row is queued, and a
  * sync-log round trip (accounting-sync push against the SyncLogOnlyAdapter
- * fallback, since no `set_integration_config` row of kind QUICKBOOKS/XERO/
- * SAGE is seeded). `WebhookDeliveryService.attemptDelivery()`'s real HTTP
+ * fallback — actively ENFORCED, not assumed: this test temporarily disables
+ * any ambient enabled QUICKBOOKS/XERO/SAGE config for its own duration,
+ * restored in the `finally` block below, rather than trusting the dev DB
+ * happens to have none, after a real leftover config from manual QA once
+ * made this test nondeterministically pick the REAL adapter instead and
+ * fail against a real, dummy-credentialed OAuth call).
+ * `WebhookDeliveryService.attemptDelivery()`'s real HTTP
  * POST/HMAC-signature path is exercised in `webhook-delivery.service.spec.ts`
  * against an injected mock `WebhookHttpClient` instead — no outbound network
  * is available in this environment either way (docs/phase-5/PROGRESS.md
@@ -84,10 +89,28 @@ describe("integrations module — end-to-end capstone (real DataSource)", () => 
 
       const syncLogOnlyAdapter = new SyncLogOnlyAdapter();
       const resolver = new AccountingSyncResolverService(integrationConfigService, syncLogOnlyAdapter);
-      const accountingSyncService = new AccountingSyncService(resolver, syncLogRepository);
+      const accountingSyncService = new AccountingSyncService(resolver, syncLogRepository, integrationConfigService);
 
       const eventType = `TEST_EVENT_${Date.now()}`;
       let subscription: IntgWebhookSubscriptionEntity | null = null;
+
+      // This assertion below depends on the SyncLogOnlyAdapter fallback (no
+      // enabled QUICKBOOKS/XERO/SAGE config) — that's ambient DB state this
+      // test does NOT own, not something it can assume. Temporarily disable
+      // any currently-enabled config of those 3 kinds for the duration of
+      // this test, restoring each one's original isEnabled in the `finally`
+      // block below, alongside the existing webhook-row cleanup. Without
+      // this, a real config created via the Settings UI for manual QA (e.g.
+      // Phase 6 Slice 11 Part 4's own verification) makes this test flip to
+      // FAILED the moment AccountingSyncResolverService picks the real
+      // adapter instead — this happened for real and is exactly what this
+      // block prevents from happening again.
+      const ambientEnabledConfigs = (await integrationConfigService.list()).filter(
+        (c) => (c.kind === "QUICKBOOKS" || c.kind === "XERO" || c.kind === "SAGE") && c.isEnabled,
+      );
+      for (const c of ambientEnabledConfigs) {
+        await integrationConfigService.update(c.id, { isEnabled: false }, null);
+      }
 
       try {
         subscription = await webhookSubscriptionsService.create(
@@ -128,6 +151,9 @@ describe("integrations module — end-to-end capstone (real DataSource)", () => 
         if (subscription) {
           await source.getRepository(IntgWebhookDeliveryEntity).delete({ subscriptionId: subscription.id });
           await source.getRepository(IntgWebhookSubscriptionEntity).delete({ id: subscription.id });
+        }
+        for (const c of ambientEnabledConfigs) {
+          await integrationConfigService.update(c.id, { isEnabled: true }, null);
         }
       }
     },

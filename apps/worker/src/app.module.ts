@@ -34,6 +34,8 @@ import {
 // `tools/bootstrap-admin.ts` already does the same thing for `AppModule`).
 import { HealthController } from "../../api/src/health.controller";
 import { OutboxQueueModule } from "./outbox/outbox-queue.module";
+import { WebhookDispatchModule } from "./outbox/webhook-dispatch.module";
+import { WebhookRetryModule } from "./outbox/webhook-retry.module";
 
 /**
  * `apps/worker`'s composition root — ADR-003's other half
@@ -133,6 +135,12 @@ import { OutboxQueueModule } from "./outbox/outbox-queue.module";
     LicensingModule,
     // This app's own: outbox dispatcher + BullMQ wiring.
     OutboxQueueModule,
+    // Complete the Integrations area, Part 3.2/3.3 — real event->webhook
+    // dispatch (via the outbox) + a real recurring retry scheduler for
+    // WebhookDeliveryService.processDue(). Both `@Global()`, see their own
+    // doc comments for why.
+    WebhookDispatchModule,
+    WebhookRetryModule,
   ],
   controllers: [HealthController],
   providers: [

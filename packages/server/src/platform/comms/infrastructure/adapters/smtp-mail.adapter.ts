@@ -1,4 +1,5 @@
 import { createTransport, Transporter } from "nodemailer";
+import { CommTestResult } from "../ports/comm-test-result";
 import { MailPort } from "../ports/mail.port";
 import { SendResult } from "../ports/send-result";
 
@@ -44,5 +45,16 @@ export class SmtpMailAdapter implements MailPort {
     });
 
     return { providerRef: info.messageId };
+  }
+
+  /** Real check (FR-SET-003.1) — the transporter's own SMTP handshake/verify, no email sent. */
+  async testConnection(): Promise<CommTestResult> {
+    try {
+      await this.transporter.verify();
+      return { ok: true, message: `SMTP connection to ${this.config.host}:${this.config.port} verified` };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { ok: false, message: `SMTP verify failed: ${message}` };
+    }
   }
 }

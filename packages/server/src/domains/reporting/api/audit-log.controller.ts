@@ -19,6 +19,25 @@ import { ReportResultResponseDto } from "./dto/report-catalogue.dto";
  * COULD in principle be executed via the generic route, since its
  * `permissionCode` is checked there identically) — this controller is an
  * additional, more discoverable, purpose-built surface, not a replacement.
+ *
+ * Route is `GET /reports/audit-log/search`, not the bare `GET /reports/audit-log`
+ * this controller originally used. The bare path is a real, live route
+ * collision with `ReportsController.get(":code")` (`GET /reports/:code`,
+ * the generic catalogue-definition fetch every report code, including this
+ * one, needs). `AuditLogController` is registered before `ReportsController`
+ * specifically so its own literal routes win route matching (see
+ * `reporting.module.ts`'s own doc comment on controller order) - so the bare
+ * path made `GET /reports/audit-log` permanently unreachable for its actual
+ * purpose. Any caller doing that generically (a frontend rendering a params
+ * form before executing) instead silently hit this `search()` handler with
+ * `fromDate`/`toDate` both `undefined`, producing a real, confirmed-live 500
+ * (`invalid input syntax for type timestamp with time zone:
+ * "undefinedT00:00:00.000Z"`, `undefined` template-literal-coerced into
+ * that string). The extra `/search` segment takes this route out of the
+ * single-segment `:code` wildcard's match space entirely, the same
+ * reasoning `/reports/export/:id`'s own extra segment already relies on. No
+ * real caller of the old bare path existed (confirmed - nothing in
+ * `apps/web` used it before this fix).
  */
 @ApiTags("reporting-audit-log")
 @Controller("reports/audit-log")
@@ -26,7 +45,7 @@ import { ReportResultResponseDto } from "./dto/report-catalogue.dto";
 export class AuditLogController {
   constructor(private readonly auditLogReport: AuditLogReport) {}
 
-  @Get()
+  @Get("search")
   @ApiQuery({ name: "entityType", required: false })
   @ApiQuery({ name: "entityId", required: false })
   @ApiQuery({ name: "actorId", required: false })

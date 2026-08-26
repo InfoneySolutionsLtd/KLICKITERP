@@ -9,6 +9,7 @@ import { PayMpesaTransactionEntity } from "./domain/pay-mpesa-transaction.entity
 import { PaySuspenseItemEntity } from "./domain/pay-suspense-item.entity";
 import { PayBulkAllocationBatchEntity } from "./domain/pay-bulk-allocation-batch.entity";
 import { PayBulkAllocationBatchLineEntity } from "./domain/pay-bulk-allocation-batch-line.entity";
+import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
 // Sibling-module imports come AFTER this file's own entity imports above —
 // required ordering (not stylistic), the same discipline
 // `domains/billing/billing.module.ts` documents: `pay-receipt.entity.ts`/
@@ -115,6 +116,7 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     CashierSessionsService,
     AllocationService,
     ReceiptsService,
+    OutboxWriterService,
     MpesaService,
     SuspenseService,
     ChequesService,

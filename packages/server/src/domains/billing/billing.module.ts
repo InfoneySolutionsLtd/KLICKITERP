@@ -4,6 +4,7 @@ import { AccountingModule } from "../../accounting";
 import { ApprovalsModule } from "../../platform/approvals";
 import { SettingsModule } from "../../platform/settings";
 import { DocumentVerificationModule } from "../../platform/document-verification";
+import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
 import { BillFeeCategoryEntity } from "./domain/bill-fee-category.entity";
 import { BillTransportRouteEntity } from "./domain/bill-transport-route.entity";
 import { BillFeeStructureEntity } from "./domain/bill-fee-structure.entity";
@@ -223,6 +224,7 @@ import { StudentCreditController } from "./api/student-credit.controller";
     SponsorAwardsService,
     ConcessionsService,
     InvoicingService,
+    OutboxWriterService,
     BulkBillingService,
     BulkAdhocInvoicesService,
     CreditNotesService,

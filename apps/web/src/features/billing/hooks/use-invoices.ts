@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { GenerateInvoiceDto, VoidInvoiceDto } from "@klickit/contracts";
+import type { GenerateInvoiceDto, InvoiceLineResponseDto, InvoiceResponseDto, VoidInvoiceDto } from "@klickit/contracts";
+import type { AccountingSyncKind } from "@/features/integrations/api/sync.api";
 import {
   generateInvoice,
   getInvoice,
@@ -10,6 +11,7 @@ import {
   listPendingInvoices,
   listUpcomingInvoices,
   postInvoice,
+  pushInvoiceToAccounting,
   voidInvoice,
   type ListOpenInvoicesParams,
 } from "../api/invoices.api";
@@ -83,6 +85,14 @@ export function usePostInvoice(invoiceId: string, studentId: string | undefined)
       queryClient.invalidateQueries({ queryKey: studentInvoicesKey(studentId) });
       queryClient.invalidateQueries({ queryKey: ["students", "ledger", studentId] });
     },
+  });
+}
+
+/** No cache invalidation — a sync push never mutates the invoice row itself, only writes an `intg_sync_log` row (visible on `/settings/accounting-sync`, not this page). */
+export function usePushInvoiceToAccounting() {
+  return useMutation({
+    mutationFn: ({ invoice, lines, kind }: { invoice: InvoiceResponseDto; lines: InvoiceLineResponseDto[]; kind: AccountingSyncKind }) =>
+      pushInvoiceToAccounting(invoice, lines, kind),
   });
 }
 

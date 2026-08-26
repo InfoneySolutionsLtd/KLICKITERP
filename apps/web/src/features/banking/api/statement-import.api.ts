@@ -186,6 +186,21 @@ export async function importStatement(dto: ImportStatementLinesInput): Promise<I
   );
 }
 
+/**
+ * Complete the Integrations area, Part 4.2 - the "Fetch Now" manual trigger
+ * for a real BANK integration feed (BankFeedAdapterResolverService /
+ * GenericHttpBankFeedAdapter, packages/server/src/domains/banking/).
+ * FetchBankFeedDto is a plain {accountId: string} (real @IsUUID(), no
+ * codegen gap - unlike ImportStatementLinesRequestBody above, no cast
+ * needed here). Same real BR-BANK-02 dedupe as a manual import - a
+ * re-fetch covering already-seen transactions is safe, not an error.
+ */
+export async function fetchBankFeed(accountId: string): Promise<ImportBankStatementLinesResponseDto> {
+  return unwrapApiResult<ImportBankStatementLinesResponseDto>(
+    await apiClient.POST("/api/v1/banking/statement-imports/fetch", { body: { accountId } }),
+  );
+}
+
 // ---- generic file upload (this feature's own minimal copy — see this file's own doc comment above) ----
 
 /** `file_object.entity_type` this upload is tagged with — free-text server-side (`UploadFileFieldsDto.entityType`), purely descriptive metadata, matching `features/branding/constants.ts`'s own `FILE_ENTITY_TYPE` precedent. */

@@ -197,6 +197,12 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   },
   // comms:message:* (Module 5 — comm_message, read-only: sends only happen via broadcasts or internal service calls)
   { code: "comms:message:view", module: "comms", description: "View/filter the comm_message send log", isWrite: false },
+  {
+    code: "comms:integration:test",
+    module: "comms",
+    description: "Real Test Connection for SMTP/SMS/FCM/WHATSAPP integration configs (exercises the resolved adapter's own real check)",
+    isWrite: true,
+  },
   // approvals:workflow:* (Module 6 — appr_workflow_def/appr_workflow_version/appr_level/appr_routing_rule)
   {
     code: "approvals:workflow:view",
@@ -598,6 +604,19 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
     description: "Execute/query the Audit Log report — a DISTINCTLY privileged code, deliberately not bundled with ordinary reports:*:view access (audit visibility is sensitive)",
     isWrite: false,
   },
+  { code: "reports:invoice-balance-by-grade:view", module: "reports", description: "Execute the Invoice Balance by Grade report", isWrite: false },
+  { code: "reports:siblings:view", module: "reports", description: "Execute the Siblings report", isWrite: false },
+  { code: "reports:term-wise-balance:view", module: "reports", description: "Execute the Term-wise Balance report", isWrite: false },
+  { code: "reports:vehicle-expense:view", module: "reports", description: "Execute the Vehicle Expense report", isWrite: false },
+  { code: "reports:asset-register:view", module: "reports", description: "Execute the Asset Register report", isWrite: false },
+  { code: "reports:depreciation-schedule:view", module: "reports", description: "Execute the Depreciation Schedule report", isWrite: false },
+  { code: "reports:disposal-report:view", module: "reports", description: "Execute the Disposal Report", isWrite: false },
+  { code: "reports:stock-balance:view", module: "reports", description: "Execute the Stock Balance report", isWrite: false },
+  { code: "reports:stock-movement-register:view", module: "reports", description: "Execute the Stock Movement Register report", isWrite: false },
+  { code: "reports:stock-take-variance:view", module: "reports", description: "Execute the Stock Take Variance report", isWrite: false },
+  { code: "reports:bank-account-statement:view", module: "reports", description: "Execute the Bank Account Statement report", isWrite: false },
+  { code: "reports:bank-reconciliation-summary:view", module: "reports", description: "Execute the Reconciliation Summary report", isWrite: false },
+  { code: "reports:cheque-register:view", module: "reports", description: "Execute the Cheque Register report", isWrite: false },
   { code: "reports:saved-params:manage", module: "reports", description: "Create/view/update/delete the caller's own saved report parameter sets (rpt_saved_params, owner-scoped)", isWrite: true },
   { code: "reports:schedule:manage", module: "reports", description: "CRUD rpt_schedule and manually trigger the run-due batch (no scheduler exists yet)", isWrite: true },
   { code: "reports:export:create", module: "reports", description: "Create a report export job (CSV: real synchronous generation; XLSX/PDF: queued placeholder) and view its status", isWrite: true },

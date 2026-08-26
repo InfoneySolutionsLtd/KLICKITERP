@@ -35,6 +35,11 @@ export const ImportBankStatementLinesDtoSchema = z.object({
 });
 export type ImportBankStatementLinesDto = z.infer<typeof ImportBankStatementLinesDtoSchema>;
 
+export const FetchBankFeedDtoSchema = z.object({
+    accountId: z.string().uuid(),
+});
+export type FetchBankFeedDto = z.infer<typeof FetchBankFeedDtoSchema>;
+
 export const ImportBankStatementLinesResponseDtoSchema = z.object({
     importId: z.string(),
     insertedCount: z.number(),

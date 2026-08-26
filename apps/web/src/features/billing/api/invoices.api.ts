@@ -3,10 +3,12 @@ import type {
   InvoiceLineResponseDto,
   InvoiceResponseDto,
   PendingUpcomingInvoiceListResponseDto,
+  SyncLogResponseDto,
   VoidInvoiceDto,
 } from "@klickit/contracts";
 import { apiClient } from "@/lib/api-client";
 import { unwrapApiResult } from "@/lib/api-error";
+import type { AccountingSyncKind } from "@/features/integrations/api/sync.api";
 import { optionalQuery } from "./query-params";
 
 /**
@@ -54,6 +56,43 @@ export async function getInvoice(id: string): Promise<InvoiceResponseDto> {
 export async function listInvoiceLines(id: string): Promise<InvoiceLineResponseDto[]> {
   return unwrapApiResult<InvoiceLineResponseDto[]>(
     await apiClient.GET("/api/v1/billing/invoices/{id}/lines", { params: { path: { id } } }),
+  );
+}
+
+/**
+ * `POST /integrations/sync/push` (`domains/integrations`' `SyncController`),
+ * the real endpoint every accounting-sync push already goes through —
+ * deliberately NOT wrapped generically in `features/integrations/api/sync.api.ts`
+ * (see that file's own doc comment: a raw provider-shaped payload only makes
+ * sense constructed from a real domain record by that record's own screen).
+ * This is that screen. **Deliberately klickit-shaped, not true per-provider
+ * (QuickBooks/Xero/Sage) schema conformance** — each provider's real invoice
+ * JSON schema requires that provider's own API docs, not available here;
+ * this is a scope boundary, not an oversight. Safe to ship as-is:
+ * `AccountingSyncService.pushEntity()` always logs the outcome (success or a
+ * real, visible failure), never silently swallows anything.
+ */
+export async function pushInvoiceToAccounting(
+  invoice: InvoiceResponseDto,
+  lines: InvoiceLineResponseDto[],
+  kind: AccountingSyncKind,
+): Promise<SyncLogResponseDto> {
+  return unwrapApiResult<SyncLogResponseDto>(
+    await apiClient.POST("/api/v1/integrations/sync/push", {
+      body: {
+        kind,
+        entityType: "INVOICE",
+        entityId: invoice.id,
+        payload: {
+          invoiceNumber: invoice.number,
+          issueDate: invoice.issueDate,
+          dueDate: invoice.dueDate,
+          total: invoice.total,
+          balance: invoice.balance,
+          lines: lines.map((line) => ({ description: line.description, amount: line.amount })),
+        },
+      },
+    }),
   );
 }
 

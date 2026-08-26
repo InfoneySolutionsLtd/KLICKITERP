@@ -29,10 +29,25 @@ describe("AdapterResolverService", () => {
     expect(adapter).toBe(logOnlyAdapter);
   });
 
-  it("falls back to LogOnlyAdapter for WHATSAPP/INAPP channels unconditionally (no adapter kind exists for either)", async () => {
-    expect(await service.resolve("WHATSAPP")).toBe(logOnlyAdapter);
+  it("falls back to LogOnlyAdapter for INAPP unconditionally (no outbound transport exists for it at all)", async () => {
     expect(await service.resolve("INAPP")).toBe(logOnlyAdapter);
     expect(integrationConfigService.list).not.toHaveBeenCalled();
+  });
+
+  it("falls back to LogOnlyAdapter for WHATSAPP when no WHATSAPP config is enabled, but DOES attempt real resolution", async () => {
+    integrationConfigService.list.mockResolvedValue([]);
+    expect(await service.resolve("WHATSAPP")).toBe(logOnlyAdapter);
+    expect(integrationConfigService.list).toHaveBeenCalled();
+  });
+
+  it("resolves the highest-priority enabled WHATSAPP config into a real GenericHttpSmsAdapter (same class SMS uses)", async () => {
+    integrationConfigService.list.mockResolvedValue([{ id: "wa-1", kind: "WHATSAPP", isEnabled: true, priority: 0 }]);
+    integrationConfigService.getDecryptedConfig.mockResolvedValue({ endpoint: "https://graph.facebook.com/v20.0/123/messages" });
+
+    const adapter = await service.resolveWhatsapp();
+
+    expect(adapter).toBeInstanceOf(GenericHttpSmsAdapter);
+    expect(integrationConfigService.getDecryptedConfig).toHaveBeenCalledWith("wa-1");
   });
 
   it("resolves the highest-priority enabled SMS config into a real GenericHttpSmsAdapter", async () => {

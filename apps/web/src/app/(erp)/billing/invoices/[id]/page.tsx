@@ -12,6 +12,7 @@ import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { InvoicePrintDocument } from "@/features/billing/components/invoice-print-document";
 import { InvoiceStatusBadge } from "@/features/billing/components/status-badges";
 import { PostInvoiceButton } from "@/features/billing/components/post-invoice-button";
+import { SyncInvoiceToAccountingButton } from "@/features/billing/components/sync-invoice-to-accounting-button";
 import { VoidInvoiceButton } from "@/features/billing/components/void-invoice-button";
 import { useInvoice, useInvoiceLines } from "@/features/billing/hooks/use-invoices";
 import { CreateCreditNoteDialog } from "@/features/billing/components/create-credit-note-dialog";
@@ -93,6 +94,12 @@ function InvoiceDetail({ invoice }: { invoice: InvoiceResponseDto }) {
           </Button>
         )}
       </div>
+
+      {VOIDABLE_STATUSES.includes(invoice.status) && (
+        <div className="flex justify-end print:hidden">
+          <SyncInvoiceToAccountingButton invoice={invoice} lines={linesQuery.data ?? []} />
+        </div>
+      )}
 
       <div className="relative space-y-6">
         <PrintWatermark />

@@ -1,6 +1,7 @@
 import { DataSource } from "typeorm";
 import { AppDataSource } from "../../../migrations/data-source";
 import { runInTransaction } from "../../../shared/database/tx";
+import { OutboxWriterService } from "../../../shared/events/outbox-writer.service";
 import { generateUuidV7 } from "../../../shared/ids/uuid7";
 import { Money } from "../../../shared/money/money";
 
@@ -444,6 +445,7 @@ describe("billing module — end-to-end capstone (real DataSource)", () => {
       postingService,
       numberingService,
       studentLedgerService,
+      new OutboxWriterService(),
     );
 
     // ---- Approvals: real ApprovalEngineService, but see class doc comment
@@ -881,10 +883,10 @@ describe("billing module — end-to-end capstone (real DataSource)", () => {
     );
     // generateInvoice() (the only InvoicingService method this test calls) never touches
     // concessionRepository/schemeRepository/sponsorAwardRepository/postingService/
-    // numberingService/studentLedgerService (those are postInvoice()/voidInvoice()-only
-    // collaborators) — same "placeholder unused collaborator" technique the capstone test
-    // above uses for ApprovalEngineService's usersService/departmentsService/
-    // delegationsService/outboxWriter.
+    // numberingService/studentLedgerService/outboxWriter (those are postInvoice()/
+    // voidInvoice()-only collaborators) — same "placeholder unused collaborator" technique
+    // the capstone test above uses for ApprovalEngineService's usersService/
+    // departmentsService/delegationsService/outboxWriter.
     const invoicingService = new InvoicingService(
       invoiceRepository,
       invoiceLineRepository,
@@ -900,6 +902,7 @@ describe("billing module — end-to-end capstone (real DataSource)", () => {
       {} as ConstructorParameters<typeof InvoicingService>[11],
       {} as ConstructorParameters<typeof InvoicingService>[12],
       {} as ConstructorParameters<typeof InvoicingService>[13],
+      {} as ConstructorParameters<typeof InvoicingService>[14],
     );
 
     let structureId: string | null = null;

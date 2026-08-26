@@ -1,7 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import { ConflictException } from "../../../shared/exceptions/conflict.exception";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { RptSavedParamsEntity } from "../domain/rpt-saved-params.entity";
 import { RptSavedParamsRepository } from "../infrastructure/rpt-saved-params.repository";
+
+const PG_UNIQUE_VIOLATION = "23505";
 
 export interface CreateSavedParamsInput {
   userId: string;
@@ -28,24 +31,33 @@ export interface UpdateSavedParamsInput {
  * user's saved report names by id.
  *
  * The `uq_rpt_saved_params_user_report_name` unique index (entity doc
- * comment) is DB-enforced, not re-checked here — `create()` lets a duplicate
- * `(userId, reportCode, name)` insert surface as whatever constraint-
- * violation translation the shared TypeORM error interceptor already
- * provides for every other unique-index violation in this codebase, the same
- * "DB is the source of truth for this invariant" treatment
- * `BillInvoiceRepository`/`GlAccountRepository`'s own unique columns get.
+ * comment) is DB-enforced; `create()` catches the Postgres `23505` violation
+ * and translates it to a real `ConflictException` (409) — no shared/global
+ * unique-violation interceptor exists anywhere in this codebase (confirmed
+ * by reading `shared/exceptions/all-exceptions.filter.ts` directly), so this
+ * mirrors the same per-service `PG_UNIQUE_VIOLATION` try/catch every sibling
+ * service with a real uniqueness invariant already uses (e.g.
+ * `procurement/application/quotations.service.ts`,
+ * `payments/application/cashier-sessions.service.ts`).
  */
 @Injectable()
 export class SavedParamsService {
   constructor(private readonly repository: RptSavedParamsRepository) {}
 
   async create(input: CreateSavedParamsInput): Promise<RptSavedParamsEntity> {
-    return this.repository.create({
-      userId: input.userId,
-      reportCode: input.reportCode,
-      name: input.name,
-      params: input.params,
-    });
+    try {
+      return await this.repository.create({
+        userId: input.userId,
+        reportCode: input.reportCode,
+        name: input.name,
+        params: input.params,
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictException(`A saved report named "${input.name}" already exists for ${input.reportCode}`);
+      }
+      throw error;
+    }
   }
 
   async get(id: string, userId: string): Promise<RptSavedParamsEntity> {
@@ -78,4 +90,11 @@ export class SavedParamsService {
       throw new NotFoundException("RptSavedParams", id);
     }
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  const code =
+    (error as { code?: string; driverError?: { code?: string } })?.code ??
+    (error as { driverError?: { code?: string } })?.driverError?.code;
+  return code === PG_UNIQUE_VIOLATION;
 }

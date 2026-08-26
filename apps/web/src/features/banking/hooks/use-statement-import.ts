@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  fetchBankFeed,
   getStatementImport,
   importStatement,
   listStatementImports,
@@ -69,6 +70,18 @@ export function useImportStatement() {
     onSuccess: (_result, dto) => {
       queryClient.invalidateQueries({ queryKey: BANKING_STATEMENT_IMPORTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: listKey(dto.accountId) });
+    },
+  });
+}
+
+/** Complete the Integrations area, Part 4.2 — same invalidation as `useImportStatement()`, since a successful fetch inserts a real `bank_statement_import` row the same way a manual import does. */
+export function useFetchBankFeed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (accountId: string) => fetchBankFeed(accountId),
+    onSuccess: (_result, accountId) => {
+      queryClient.invalidateQueries({ queryKey: BANKING_STATEMENT_IMPORTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: listKey(accountId) });
     },
   });
 }

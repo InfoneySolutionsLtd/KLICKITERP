@@ -116,6 +116,71 @@ export interface SageConfig {
   timeoutMs?: number;
 }
 
+/** Mirrors `SmtpMailAdapter`'s `SmtpMailConfig` interface (`packages/server/src/platform/comms/infrastructure/adapters/smtp-mail.adapter.ts`) — same hand-typed-from-the-adapter's-own-interface convention as `MpesaConfig` above. `secure`/`user`/`pass`/`fromName` are genuinely optional. */
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure?: boolean;
+  user?: string;
+  pass?: string;
+  fromAddress: string;
+  fromName?: string;
+}
+
+/**
+ * Mirrors `GenericHttpSmsAdapter`'s `GenericHttpSmsConfig` interface
+ * (`packages/server/src/platform/comms/infrastructure/adapters/generic-http-sms.adapter.ts`)
+ * — same convention as `MpesaConfig` above. Only `endpoint` is required; the
+ * rest have real defaults on the server side. This SAME interface shape
+ * backs `WhatsappConfig` below too — WhatsApp reuses the identical generic
+ * HTTP adapter (see `AdapterResolverService.resolveWhatsapp()`'s own doc
+ * comment), not a separate config shape.
+ */
+export interface SmsConfig {
+  endpoint: string;
+  method?: "POST" | "PUT";
+  authHeaderName?: string;
+  authHeaderValue?: string;
+  bodyTemplate?: string;
+  providerRefPath?: string;
+  costPath?: string;
+  segmentsPath?: string;
+  timeoutMs?: number;
+}
+
+/** WhatsApp reuses `GenericHttpSmsAdapter` verbatim (see `SmsConfig` above) — a distinct type alias, not a plain re-export, so this form's own doc comment/i18n namespace stays independently discoverable per this codebase's own per-kind-file convention. */
+export type WhatsappConfig = SmsConfig;
+
+/** Mirrors `FcmPushAdapter`'s `FcmPushConfig` interface (`packages/server/src/platform/comms/infrastructure/adapters/fcm-push.adapter.ts`) — same convention as `MpesaConfig` above. All three fields are required (no optional fields — a service-account credential needs all three to authenticate at all). */
+export interface FcmConfig {
+  projectId: string;
+  clientEmail: string;
+  privateKey: string;
+}
+
+/**
+ * Complete the Integrations area, Part 4.2 — mirrors `GenericHttpBankFeedAdapter`'s
+ * `GenericHttpBankFeedConfig` interface (`packages/server/src/domains/banking/infrastructure/adapters/generic-http-bank-feed.adapter.ts`),
+ * same hand-typed-from-the-adapter's-own-interface convention as `MpesaConfig`
+ * above. `accountId` is a real `bank_account.id` — kept as a plain UUID text
+ * field, matching this file's own established convention (every kind's form
+ * here uses plain inputs, even for real business-entity ids like
+ * `QuickBooksConfig.realmId`, never an entity-picker).
+ */
+export interface BankFeedConfig {
+  accountId: string;
+  endpoint: string;
+  method?: "GET" | "POST";
+  authHeaderName?: string;
+  authHeaderValue?: string;
+  transactionsPath?: string;
+  dateField: string;
+  descriptionField: string;
+  amountField: string;
+  refField?: string;
+  timeoutMs?: number;
+}
+
 /**
  * Phase 6 Slice 11 Part 1 — hand-mirrored response shapes for
  * `AcademicCalendarController`'s `/academic-years` and `/terms` endpoints

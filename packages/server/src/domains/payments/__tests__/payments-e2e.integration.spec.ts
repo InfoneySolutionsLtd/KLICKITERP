@@ -1,6 +1,7 @@
 import { DataSource } from "typeorm";
 import { AppDataSource } from "../../../migrations/data-source";
 import { runInTransaction } from "../../../shared/database/tx";
+import { OutboxWriterService } from "../../../shared/events/outbox-writer.service";
 import { generateUuidV7 } from "../../../shared/ids/uuid7";
 import { Money } from "../../../shared/money/money";
 
@@ -276,6 +277,7 @@ describe("payments module — end-to-end capstone (real DataSource)", () => {
         allocationService,
         studentCreditService,
         documentVerificationService,
+        new OutboxWriterService(),
       );
       const cashierSessionsService = new CashierSessionsService(
         sessionRepository,

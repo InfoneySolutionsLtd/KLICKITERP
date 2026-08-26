@@ -20,11 +20,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ApiError } from "@/lib/api-error";
 import { CONFIGURABLE_INTEGRATION_KINDS, INTEGRATION_KINDS } from "../constants";
 import { useCreateIntegrationConfig } from "../hooks/use-integration-configs";
-import type { IntegrationKind, MpesaConfig, QuickBooksConfig, SageConfig, XeroConfig } from "../types";
+import type { BankFeedConfig, FcmConfig, IntegrationKind, MpesaConfig, QuickBooksConfig, SageConfig, SmsConfig, SmtpConfig, WhatsappConfig, XeroConfig } from "../types";
 import { EMPTY_MPESA_CONFIG, MpesaConfigForm, isMpesaConfigComplete } from "./mpesa-config-form";
 import { EMPTY_QUICKBOOKS_CONFIG, QuickBooksConfigForm, isQuickBooksConfigComplete } from "./quickbooks-config-form";
 import { EMPTY_XERO_CONFIG, XeroConfigForm, isXeroConfigComplete } from "./xero-config-form";
 import { EMPTY_SAGE_CONFIG, SageConfigForm, isSageConfigComplete } from "./sage-config-form";
+import { EMPTY_SMTP_CONFIG, SmtpConfigForm, isSmtpConfigComplete } from "./smtp-config-form";
+import { EMPTY_SMS_CONFIG, SmsConfigForm, isSmsConfigComplete } from "./sms-config-form";
+import { EMPTY_FCM_CONFIG, FcmConfigForm, isFcmConfigComplete } from "./fcm-config-form";
+import { EMPTY_WHATSAPP_CONFIG, WhatsappConfigForm, isWhatsappConfigComplete } from "./whatsapp-config-form";
+import { EMPTY_BANK_FEED_CONFIG, BankFeedConfigForm, isBankFeedConfigComplete } from "./bank-feed-config-form";
 
 /**
  * "New Integration" flow, per the plan: a kind `<Select>` — `MPESA`/
@@ -56,6 +61,11 @@ export function NewIntegrationDialog() {
   const [quickbooksConfig, setQuickbooksConfig] = React.useState<QuickBooksConfig>(EMPTY_QUICKBOOKS_CONFIG);
   const [xeroConfig, setXeroConfig] = React.useState<XeroConfig>(EMPTY_XERO_CONFIG);
   const [sageConfig, setSageConfig] = React.useState<SageConfig>(EMPTY_SAGE_CONFIG);
+  const [smtpConfig, setSmtpConfig] = React.useState<SmtpConfig>(EMPTY_SMTP_CONFIG);
+  const [smsConfig, setSmsConfig] = React.useState<SmsConfig>(EMPTY_SMS_CONFIG);
+  const [fcmConfig, setFcmConfig] = React.useState<FcmConfig>(EMPTY_FCM_CONFIG);
+  const [whatsappConfig, setWhatsappConfig] = React.useState<WhatsappConfig>(EMPTY_WHATSAPP_CONFIG);
+  const [bankFeedConfig, setBankFeedConfig] = React.useState<BankFeedConfig>(EMPTY_BANK_FEED_CONFIG);
   const [error, setError] = React.useState<string | null>(null);
   const createMutation = useCreateIntegrationConfig();
 
@@ -66,6 +76,11 @@ export function NewIntegrationDialog() {
     setQuickbooksConfig(EMPTY_QUICKBOOKS_CONFIG);
     setXeroConfig(EMPTY_XERO_CONFIG);
     setSageConfig(EMPTY_SAGE_CONFIG);
+    setSmtpConfig(EMPTY_SMTP_CONFIG);
+    setSmsConfig(EMPTY_SMS_CONFIG);
+    setFcmConfig(EMPTY_FCM_CONFIG);
+    setWhatsappConfig(EMPTY_WHATSAPP_CONFIG);
+    setBankFeedConfig(EMPTY_BANK_FEED_CONFIG);
   }
 
   function handleOpenChange(next: boolean) {
@@ -90,6 +105,16 @@ export function NewIntegrationDialog() {
         return isXeroConfigComplete(xeroConfig);
       case "SAGE":
         return isSageConfigComplete(sageConfig);
+      case "SMTP":
+        return isSmtpConfigComplete(smtpConfig);
+      case "SMS":
+        return isSmsConfigComplete(smsConfig);
+      case "FCM":
+        return isFcmConfigComplete(fcmConfig);
+      case "WHATSAPP":
+        return isWhatsappConfigComplete(whatsappConfig);
+      case "BANK":
+        return isBankFeedConfigComplete(bankFeedConfig);
       default:
         return false;
     }
@@ -105,6 +130,16 @@ export function NewIntegrationDialog() {
         return xeroConfig as unknown as Record<string, unknown>;
       case "SAGE":
         return sageConfig as unknown as Record<string, unknown>;
+      case "SMTP":
+        return smtpConfig as unknown as Record<string, unknown>;
+      case "SMS":
+        return smsConfig as unknown as Record<string, unknown>;
+      case "FCM":
+        return fcmConfig as unknown as Record<string, unknown>;
+      case "WHATSAPP":
+        return whatsappConfig as unknown as Record<string, unknown>;
+      case "BANK":
+        return bankFeedConfig as unknown as Record<string, unknown>;
       default:
         return {};
     }
@@ -185,6 +220,11 @@ export function NewIntegrationDialog() {
           {kind === "QUICKBOOKS" && <QuickBooksConfigForm value={quickbooksConfig} onChange={setQuickbooksConfig} disabled={createMutation.isPending} />}
           {kind === "XERO" && <XeroConfigForm value={xeroConfig} onChange={setXeroConfig} disabled={createMutation.isPending} />}
           {kind === "SAGE" && <SageConfigForm value={sageConfig} onChange={setSageConfig} disabled={createMutation.isPending} />}
+          {kind === "SMTP" && <SmtpConfigForm value={smtpConfig} onChange={setSmtpConfig} disabled={createMutation.isPending} />}
+          {kind === "SMS" && <SmsConfigForm value={smsConfig} onChange={setSmsConfig} disabled={createMutation.isPending} />}
+          {kind === "FCM" && <FcmConfigForm value={fcmConfig} onChange={setFcmConfig} disabled={createMutation.isPending} />}
+          {kind === "WHATSAPP" && <WhatsappConfigForm value={whatsappConfig} onChange={setWhatsappConfig} disabled={createMutation.isPending} />}
+          {kind === "BANK" && <BankFeedConfigForm value={bankFeedConfig} onChange={setBankFeedConfig} disabled={createMutation.isPending} />}
           {!isConfigurable && (
             <Alert variant="warning">
               <AlertDescription>{t("notYetConfigurable", { kind })}</AlertDescription>

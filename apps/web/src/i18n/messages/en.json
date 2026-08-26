@@ -165,6 +165,10 @@
       "fixedAssetsVerifications": "Verifications",
       "license": "License",
       "opsBackups": "Backups & Ops",
+      "reports": "Reports",
+      "reportsCatalogue": "Catalogue",
+      "reportsSaved": "Saved Reports",
+      "reportsSchedules": "Schedules",
       "guardians": "Parents"
     },
     "topbar": {
@@ -839,6 +843,10 @@
         "genericError": "Something went wrong. Please try again.",
         "glNotConfiguredTitle": "GL not configured",
         "glNotConfiguredDescription": "This invoice can't be posted because a required GL control account isn't configured. Contact your administrator.",
+        "syncToAccountingAction": "Sync to Accounting",
+        "syncingToAccounting": "Syncing…",
+        "syncToAccountingSuccess": "Synced successfully (ref: {providerRef}).",
+        "syncToAccountingFailed": "Sync failed: {error}",
         "creditNotesTitle": "Credit Notes",
         "concessionsTitle": "Concessions",
         "voidDialog": {
@@ -2211,7 +2219,7 @@
       "newIntegrationTitle": "New integration",
       "newIntegrationDescription": "Choose a kind and enter its configuration. Credentials are encrypted at rest and can never be viewed again after saving.",
       "namePlaceholder": "e.g. Daraja Production",
-      "notYetConfigurable": "{kind} is not yet configurable in this UI. Only MPESA, QUICKBOOKS, XERO, and SAGE have real setup forms in this release.",
+      "notYetConfigurable": "{kind} is not yet configurable in this UI. Only MPESA, QUICKBOOKS, XERO, SAGE, SMTP, SMS, FCM, and WHATSAPP have real setup forms in this release.",
       "creating": "Creating…",
       "createButton": "Create integration",
       "editTrigger": "Edit",
@@ -2281,6 +2289,77 @@
         "clientSecretPlaceholder": "Sage app client secret",
         "refreshToken": "Refresh token",
         "refreshTokenPlaceholder": "OAuth2 refresh token from the authorization-code exchange",
+        "timeoutMs": "Timeout (ms)"
+      },
+      "smtpForm": {
+        "host": "SMTP host",
+        "hostPlaceholder": "smtp.example.com",
+        "port": "Port",
+        "portPlaceholder": "587",
+        "user": "Username",
+        "pass": "Password",
+        "fromAddress": "From address",
+        "fromAddressPlaceholder": "no-reply@example.com",
+        "fromName": "From name",
+        "secureLabel": "Use TLS/SSL"
+      },
+      "smsForm": {
+        "endpoint": "Gateway endpoint",
+        "endpointPlaceholder": "https://gateway.example.com/v1/send",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "timeoutMs": "Timeout (ms)",
+        "advancedSectionTitle": "Advanced (optional)",
+        "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"to\":\"{{recipient}}\",\"message\":\"{{body}}\"}",
+        "bodyTemplateHint": "JSON body sent to the gateway — {{recipient}} and {{body}} are substituted. Leave blank to use the default shape.",
+        "providerRefPath": "Provider ref path",
+        "costPath": "Cost path",
+        "segmentsPath": "Segments path"
+      },
+      "fcmForm": {
+        "projectId": "Firebase project ID",
+        "projectIdPlaceholder": "my-school-app",
+        "clientEmail": "Service account client email",
+        "clientEmailPlaceholder": "firebase-adminsdk@my-school-app.iam.gserviceaccount.com",
+        "privateKey": "Service account private key",
+        "privateKeyPlaceholder": "-----BEGIN PRIVATE KEY-----...",
+        "privateKeyHint": "The full PEM private key from the Firebase service account JSON file."
+      },
+      "whatsappForm": {
+        "endpoint": "WhatsApp Business API endpoint",
+        "endpointPlaceholder": "https://graph.facebook.com/v20.0/<phone-number-id>/messages",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "timeoutMs": "Timeout (ms)",
+        "advancedSectionTitle": "Advanced (optional)",
+        "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"messaging_product\":\"whatsapp\",\"to\":\"{{recipient}}\",\"type\":\"text\",\"text\":{\"body\":\"{{body}}\"}}",
+        "bodyTemplateHint": "JSON body sent to the WhatsApp provider — {{recipient}} and {{body}} are substituted. Leave blank to use the default shape.",
+        "providerRefPath": "Provider ref path",
+        "costPath": "Cost path",
+        "segmentsPath": "Segments path"
+      },
+      "bankFeedForm": {
+        "accountId": "Bank account ID",
+        "accountIdPlaceholder": "The bank_account this feed applies to",
+        "endpoint": "Feed endpoint",
+        "endpointPlaceholder": "https://api.example.com/v1/accounts/123/transactions?since={{since}}",
+        "dateField": "Date field",
+        "dateFieldPlaceholder": "e.g. date",
+        "descriptionField": "Description field",
+        "descriptionFieldPlaceholder": "e.g. narrative",
+        "amountField": "Amount field",
+        "amountFieldPlaceholder": "e.g. amount (signed: positive=in, negative=out)",
+        "refField": "Reference field",
+        "advancedSectionTitle": "Advanced (optional)",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "transactionsPath": "Transactions path",
+        "transactionsPathPlaceholder": "Dot-path to the array in the response, e.g. data.transactions",
         "timeoutMs": "Timeout (ms)"
       }
     },
@@ -6130,6 +6209,10 @@
         "pageTitle": "Statement Imports",
         "pageSubtitle": "Import bank statement lines from a CSV export, mapped onto one of this school's own accounts.",
         "newImportTrigger": "New Import",
+        "fetchFeedTrigger": "Fetch Now",
+        "fetchingFeed": "Fetching…",
+        "fetchFeedResult": "Fetched: {inserted} new line(s), {duplicates} already seen.",
+        "fetchFeedGenericError": "Something went wrong fetching the feed. Please try again.",
         "listTitle": "Import history",
         "listDescription": "Every statement import run, across every account.",
         "columns": {
@@ -8224,6 +8307,246 @@
       "running": "Verifying…",
       "confirm": "Verify Restore",
       "genericError": "Something went wrong. Please try again."
+    }
+  },
+  "reports": {
+    "catalogue": {
+      "pageTitle": "Reports",
+      "pageSubtitle": "Run and export the school's financial and operational reports.",
+      "domains": {
+        "accounting": "Accounting",
+        "billing": "Billing",
+        "payments": "Payments",
+        "expenses": "Expenses",
+        "payroll": "Payroll",
+        "procurement": "Procurement",
+        "students": "Students",
+        "wallet": "Wallet",
+        "dashboard": "Dashboard",
+        "audit": "Audit"
+      }
+    },
+    "detail": {
+      "backToList": "Back to Reports",
+      "paramsTitle": "Parameters",
+      "runButton": "Run report",
+      "running": "Running…",
+      "runError": "Something went wrong running this report. Please try again.",
+      "resultsTitle": "Results",
+      "totalsTitle": "Totals",
+      "yesLabel": "Yes",
+      "noLabel": "No",
+      "generatedAtLabel": "Generated {date}",
+      "exportButton": "Export CSV",
+      "exporting": "Exporting…",
+      "exportError": "Something went wrong exporting this report. Please try again.",
+      "editingSavedParams": "Editing \"{name}\"",
+      "updateSavedParamsButton": "Update saved report",
+      "updatingSavedParams": "Updating…",
+      "savedParamsUpdated": "Saved report updated.",
+      "updateSavedParamsError": "Something went wrong updating this saved report. Please try again.",
+      "saveParamsDialog": {
+        "trigger": "Save parameters",
+        "triggerAsNew": "Save as new",
+        "copyNameSuggestion": "{name} (copy)",
+        "title": "Save these parameters",
+        "description": "Save the current parameter values so you can quickly load them again later, from Saved Reports.",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Term 2 Class 4",
+        "saving": "Saving…",
+        "genericError": "Something went wrong saving these parameters. Please try again."
+      },
+      "scheduleDialog": {
+        "trigger": "Schedule",
+        "title": "Schedule this report",
+        "description": "Runs this report automatically on the schedule below and emails the CSV to the recipients you list. Someone still needs to trigger \"Run Due Now\" on the Schedules screen — there is no automatic scheduler in this system.",
+        "cronLabel": "Schedule",
+        "recipientsLabel": "Recipients",
+        "recipientsPlaceholder": "One email per line, or comma-separated",
+        "recipientsHint": "{count} valid recipient(s) detected",
+        "formatNote": "Exports as CSV — the only format currently generated.",
+        "saving": "Saving…",
+        "genericError": "Something went wrong scheduling this report. Please try again."
+      }
+    },
+    "params": {
+      "asOfDate": "As Of Date",
+      "entityType": "Entity Type",
+      "entityId": "Entity ID",
+      "actorId": "Actor",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "periodId": "Fiscal Period",
+      "fromPeriodId": "From Fiscal Period",
+      "toPeriodId": "To Fiscal Period",
+      "categoryId": "Category",
+      "status": "Status",
+      "accountId": "GL Account",
+      "runId": "Payroll Run",
+      "studentId": "Student",
+      "supplierId": "Supplier",
+      "walletId": "Wallet",
+      "termId": "Term",
+      "academicYearId": "Academic Year",
+      "routeId": "Transport Route",
+      "bankAccountId": "Bank Account",
+      "depreciationRunId": "Depreciation Run",
+      "storeId": "Store",
+      "stockTakeId": "Stock Take"
+    },
+    "pickers": {
+      "period": {
+        "selectFiscalYearPlaceholder": "Select fiscal year",
+        "selectPeriodPlaceholder": "Select period",
+        "chooseFiscalYearFirst": "Choose a fiscal year first",
+        "periodOptionLabel": "Period {seq} ({startsOn} – {endsOn})"
+      },
+      "term": {
+        "selectAcademicYearPlaceholder": "Select academic year",
+        "selectTermPlaceholder": "Select term",
+        "chooseAcademicYearFirst": "Choose an academic year first"
+      },
+      "academicYear": {
+        "loading": "Loading academic years…",
+        "placeholder": "Select an academic year"
+      },
+      "transportRoute": {
+        "loading": "Loading transport routes…",
+        "placeholder": "Select a transport route",
+        "searchPlaceholder": "Search transport routes…",
+        "empty": "No transport routes found."
+      },
+      "account": {
+        "loading": "Loading accounts…",
+        "placeholder": "Select an account",
+        "searchPlaceholder": "Search accounts…",
+        "empty": "No accounts found."
+      },
+      "category": {
+        "loading": "Loading categories…",
+        "placeholder": "Select a category",
+        "searchPlaceholder": "Search categories…",
+        "empty": "No categories found."
+      },
+      "payrollRun": {
+        "loading": "Loading payroll runs…",
+        "placeholder": "Select a payroll run",
+        "searchPlaceholder": "Search payroll runs…",
+        "empty": "No payroll runs found."
+      },
+      "supplier": {
+        "loading": "Loading suppliers…",
+        "placeholder": "Select a supplier",
+        "searchPlaceholder": "Search suppliers…",
+        "empty": "No suppliers found."
+      },
+      "user": {
+        "loading": "Loading users…",
+        "placeholder": "Select a user",
+        "searchPlaceholder": "Search users…",
+        "empty": "No users found."
+      },
+      "bankAccount": {
+        "loading": "Loading bank accounts…",
+        "placeholder": "Select a bank account",
+        "searchPlaceholder": "Search bank accounts…",
+        "empty": "No bank accounts found."
+      },
+      "depreciationRun": {
+        "loading": "Loading depreciation runs…",
+        "placeholder": "Select a depreciation run",
+        "searchPlaceholder": "Search depreciation runs…",
+        "empty": "No depreciation runs found."
+      },
+      "store": {
+        "loading": "Loading stores…",
+        "placeholder": "Select a store",
+        "searchPlaceholder": "Search stores…",
+        "empty": "No stores found."
+      },
+      "stockTake": {
+        "loading": "Loading stock takes…",
+        "placeholder": "Select a stock take",
+        "searchPlaceholder": "Search stock takes…",
+        "empty": "No stock takes found."
+      }
+    },
+    "saved": {
+      "pageTitle": "Saved Reports",
+      "pageSubtitle": "Your own saved parameter sets — load one back into a report in one click.",
+      "listTitle": "My saved reports",
+      "listDescription": "Saved from the \"Save parameters\" button on any report's own page.",
+      "columns": { "report": "Report", "name": "Name" },
+      "loadAction": "Load",
+      "renameDialog": {
+        "title": "Rename \"{name}\"",
+        "description": "Change this saved report's name.",
+        "nameLabel": "Name",
+        "saving": "Saving…",
+        "genericError": "Something went wrong renaming this saved report. Please try again."
+      },
+      "deleteDialog": {
+        "title": "Delete this saved report?",
+        "description": "This will permanently delete the saved parameter set \"{name}\". This cannot be undone.",
+        "deleting": "Deleting…",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "schedules": {
+      "pageTitle": "Report Schedules",
+      "pageSubtitle": "Reports that run automatically and email a CSV to your chosen recipients.",
+      "listTitle": "My schedules",
+      "listDescription": "Created from the \"Schedule\" button on any report's own page.",
+      "columns": { "report": "Report", "cron": "Schedule", "recipients": "Recipients", "status": "Status", "lastRun": "Last Run" },
+      "active": "Active",
+      "inactive": "Inactive",
+      "neverRun": "Never run",
+      "lastRunFailed": "failed",
+      "recipientsCount": "{count} recipient(s)",
+      "cronInput": {
+        "minuteLabel": "Minute",
+        "hourLabel": "Hour",
+        "dayOfMonthLabel": "Day of month",
+        "monthLabel": "Month",
+        "dayOfWeekLabel": "Day of week",
+        "unusedSuffix": "(unused)",
+        "invalidFieldError": "Each field must be \"*\" or a single exact whole number — no ranges, lists, or steps.",
+        "helpText": "Only day of month, month, and day of week actually control when this fires — minute and hour are validated but never used, since the next run date has no time of day. Day of week is 0=Sunday through 6=Saturday.",
+        "presetMonthly": "Monthly (1st)",
+        "presetWeekly": "Weekly (Monday)"
+      },
+      "editDialog": {
+        "title": "Edit schedule",
+        "description": "Update the schedule, recipients, or active state. The report and its parameters can't be changed here — create a new schedule instead.",
+        "cronLabel": "Schedule",
+        "recipientsLabel": "Recipients",
+        "recipientsPlaceholder": "One email per line, or comma-separated",
+        "recipientsHint": "{count} valid recipient(s) detected",
+        "isActiveLabel": "Active",
+        "isActiveHint": "Inactive schedules are silently skipped by \"Run Due Now\".",
+        "saving": "Saving…",
+        "genericError": "Something went wrong updating this schedule. Please try again."
+      },
+      "deleteDialog": {
+        "title": "Delete this schedule?",
+        "description": "This will permanently delete the schedule for \"{reportCode}\". This cannot be undone.",
+        "deleting": "Deleting…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "runDue": {
+        "trigger": "Run Due Now",
+        "title": "Run due schedules",
+        "description": "Runs every active schedule whose next due date has arrived, as of the date below, and emails the CSV to each schedule's recipients. There is no automatic scheduler anywhere in this system — this is the only way a schedule ever actually fires.",
+        "asOfDateLabel": "As of date",
+        "asOfDateHint": "Defaults to today. Every active schedule due on or before this date will fire.",
+        "genericError": "Something went wrong. Please try again.",
+        "noneWereDue": "No schedules were due as of {date}.",
+        "resultSummary": "{count} schedule(s) fired.",
+        "resultOk": "Sent successfully",
+        "resultFailed": "Failed",
+        "running": "Running…",
+        "runButton": "Run"
+      }
     }
   }
 }

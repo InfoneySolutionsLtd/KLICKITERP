@@ -23,14 +23,17 @@ import { BankChequeLeafRepository } from "./infrastructure/bank-cheque-leaf.repo
 import { AccountingModule } from "../../accounting";
 import { SettingsModule } from "../../platform/settings";
 import { ApprovalsModule } from "../../platform/approvals";
+import { FilesModule } from "../../platform/files";
 import { BankAccountsService } from "./application/bank-accounts.service";
 import { BankTransfersService } from "./application/bank-transfers.service";
 import { DepositsService } from "./application/deposits.service";
 import { WithdrawalsService } from "./application/withdrawals.service";
 import { BankStatementImportService } from "./application/bank-statement-import.service";
+import { BankFeedImportService } from "./application/bank-feed-import.service";
 import { ReconciliationService } from "./application/reconciliation.service";
 import { ChequeBooksService } from "./application/cheque-books.service";
 import { ChequeLeavesService } from "./application/cheque-leaves.service";
+import { BankFeedAdapterResolverService } from "./infrastructure/bank-feed-adapter-resolver.service";
 import { AccountsController } from "./api/accounts.controller";
 import { TransfersController } from "./api/transfers.controller";
 import { DepositsController } from "./api/deposits.controller";
@@ -79,6 +82,7 @@ import { ChequeLeavesController } from "./api/cheque-leaves.controller";
     AccountingModule,
     SettingsModule,
     ApprovalsModule,
+    FilesModule,
   ],
   controllers: [
     AccountsController,
@@ -106,6 +110,8 @@ import { ChequeLeavesController } from "./api/cheque-leaves.controller";
     DepositsService,
     WithdrawalsService,
     BankStatementImportService,
+    BankFeedAdapterResolverService,
+    BankFeedImportService,
     ReconciliationService,
     ChequeBooksService,
     ChequeLeavesService,

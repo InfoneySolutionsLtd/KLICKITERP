@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { generateUuidV7 } from "../../../../shared/ids/uuid7";
+import { CommTestResult } from "../ports/comm-test-result";
 import { MailPort } from "../ports/mail.port";
 import { PushPort } from "../ports/push.port";
 import { SendResult } from "../ports/send-result";
@@ -24,5 +25,10 @@ export class LogOnlyAdapter implements SmsPort, MailPort, PushPort {
   async send(recipient: string, body: string, meta?: Record<string, unknown>): Promise<SendResult> {
     this.logger.log(`[comms log-only] -> ${recipient}: ${body}${meta ? ` (meta=${JSON.stringify(meta)})` : ""}`);
     return { providerRef: `log-${generateUuidV7()}` };
+  }
+
+  /** Honestly reports no real adapter stands behind whichever channel resolved to this fallback. */
+  async testConnection(): Promise<CommTestResult> {
+    return { ok: false, message: "no adapter configured, using log-only fallback" };
   }
 }

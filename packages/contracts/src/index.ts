@@ -177,6 +177,7 @@ export * from "./platform/comms/optout-response.schema";
 export * from "./platform/comms/register-device-token.schema";
 export * from "./platform/comms/submit-broadcast-approval.schema";
 export * from "./platform/comms/template-response.schema";
+export * from "./platform/comms/test-connection.schema";
 export * from "./platform/comms/trigger-binding-response.schema";
 export * from "./platform/comms/unregister-device-token.schema";
 export * from "./platform/comms/update-template.schema";

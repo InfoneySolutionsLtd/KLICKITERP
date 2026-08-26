@@ -165,6 +165,10 @@
       "fixedAssetsVerifications": "Uthibitisho",
       "license": "Leseni",
       "opsBackups": "Hifadhi Rudufu na Uendeshaji",
+      "reports": "Ripoti",
+      "reportsCatalogue": "Orodha",
+      "reportsSaved": "Ripoti Zilizohifadhiwa",
+      "reportsSchedules": "Ratiba",
       "guardians": "Wazazi"
     },
     "topbar": {
@@ -839,6 +843,10 @@
         "genericError": "Something went wrong. Please try again.",
         "glNotConfiguredTitle": "GL not configured",
         "glNotConfiguredDescription": "This invoice can't be posted because a required GL control account isn't configured. Contact your administrator.",
+        "syncToAccountingAction": "Sync to Accounting",
+        "syncingToAccounting": "Syncing…",
+        "syncToAccountingSuccess": "Synced successfully (ref: {providerRef}).",
+        "syncToAccountingFailed": "Sync failed: {error}",
         "creditNotesTitle": "Noti za Mikopo",
         "concessionsTitle": "Punguzo",
         "voidDialog": {
@@ -2211,7 +2219,7 @@
       "newIntegrationTitle": "New integration",
       "newIntegrationDescription": "Choose a kind and enter its configuration. Credentials are encrypted at rest and can never be viewed again after saving.",
       "namePlaceholder": "e.g. Daraja Production",
-      "notYetConfigurable": "{kind} is not yet configurable in this UI. Only MPESA, QUICKBOOKS, XERO, and SAGE have real setup forms in this release.",
+      "notYetConfigurable": "{kind} is not yet configurable in this UI. Only MPESA, QUICKBOOKS, XERO, SAGE, SMTP, SMS, FCM, and WHATSAPP have real setup forms in this release.",
       "creating": "Creating…",
       "createButton": "Create integration",
       "editTrigger": "Edit",
@@ -2281,6 +2289,77 @@
         "clientSecretPlaceholder": "Sage app client secret",
         "refreshToken": "Refresh token",
         "refreshTokenPlaceholder": "OAuth2 refresh token from the authorization-code exchange",
+        "timeoutMs": "Timeout (ms)"
+      },
+      "smtpForm": {
+        "host": "SMTP host",
+        "hostPlaceholder": "smtp.example.com",
+        "port": "Port",
+        "portPlaceholder": "587",
+        "user": "Username",
+        "pass": "Password",
+        "fromAddress": "From address",
+        "fromAddressPlaceholder": "no-reply@example.com",
+        "fromName": "From name",
+        "secureLabel": "Use TLS/SSL"
+      },
+      "smsForm": {
+        "endpoint": "Gateway endpoint",
+        "endpointPlaceholder": "https://gateway.example.com/v1/send",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "timeoutMs": "Timeout (ms)",
+        "advancedSectionTitle": "Advanced (optional)",
+        "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"to\":\"{{recipient}}\",\"message\":\"{{body}}\"}",
+        "bodyTemplateHint": "JSON body sent to the gateway — {{recipient}} and {{body}} are substituted. Leave blank to use the default shape.",
+        "providerRefPath": "Provider ref path",
+        "costPath": "Cost path",
+        "segmentsPath": "Segments path"
+      },
+      "fcmForm": {
+        "projectId": "Firebase project ID",
+        "projectIdPlaceholder": "my-school-app",
+        "clientEmail": "Service account client email",
+        "clientEmailPlaceholder": "firebase-adminsdk@my-school-app.iam.gserviceaccount.com",
+        "privateKey": "Service account private key",
+        "privateKeyPlaceholder": "-----BEGIN PRIVATE KEY-----...",
+        "privateKeyHint": "The full PEM private key from the Firebase service account JSON file."
+      },
+      "whatsappForm": {
+        "endpoint": "WhatsApp Business API endpoint",
+        "endpointPlaceholder": "https://graph.facebook.com/v20.0/<phone-number-id>/messages",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "timeoutMs": "Timeout (ms)",
+        "advancedSectionTitle": "Advanced (optional)",
+        "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"messaging_product\":\"whatsapp\",\"to\":\"{{recipient}}\",\"type\":\"text\",\"text\":{\"body\":\"{{body}}\"}}",
+        "bodyTemplateHint": "JSON body sent to the WhatsApp provider — {{recipient}} and {{body}} are substituted. Leave blank to use the default shape.",
+        "providerRefPath": "Provider ref path",
+        "costPath": "Cost path",
+        "segmentsPath": "Segments path"
+      },
+      "bankFeedForm": {
+        "accountId": "Bank account ID",
+        "accountIdPlaceholder": "The bank_account this feed applies to",
+        "endpoint": "Feed endpoint",
+        "endpointPlaceholder": "https://api.example.com/v1/accounts/123/transactions?since={{since}}",
+        "dateField": "Date field",
+        "dateFieldPlaceholder": "e.g. date",
+        "descriptionField": "Description field",
+        "descriptionFieldPlaceholder": "e.g. narrative",
+        "amountField": "Amount field",
+        "amountFieldPlaceholder": "e.g. amount (signed: positive=in, negative=out)",
+        "refField": "Reference field",
+        "advancedSectionTitle": "Advanced (optional)",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "transactionsPath": "Transactions path",
+        "transactionsPathPlaceholder": "Dot-path to the array in the response, e.g. data.transactions",
         "timeoutMs": "Timeout (ms)"
       }
     },
@@ -6130,6 +6209,10 @@
         "pageTitle": "Uingizaji wa Taarifa za Benki",
         "pageSubtitle": "Ingiza mistari ya taarifa ya benki kutoka faili la CSV, ikilinganishwa na moja ya akaunti za shule hii.",
         "newImportTrigger": "Uingizaji Mpya",
+        "fetchFeedTrigger": "Leta Sasa",
+        "fetchingFeed": "Inaleta…",
+        "fetchFeedResult": "Imeletwa: mistari {inserted} mipya, {duplicates} tayari imeonekana.",
+        "fetchFeedGenericError": "Hitilafu imetokea wakati wa kuleta mkondo. Tafadhali jaribu tena.",
         "listTitle": "Historia ya uingizaji",
         "listDescription": "Kila zoezi la uingizaji wa taarifa, katika akaunti zote.",
         "columns": {
@@ -8224,6 +8307,246 @@
       "running": "Inathibitisha…",
       "confirm": "Thibitisha Urejeshaji",
       "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+    }
+  },
+  "reports": {
+    "catalogue": {
+      "pageTitle": "Ripoti",
+      "pageSubtitle": "Endesha na pakua ripoti za kifedha na uendeshaji za shule.",
+      "domains": {
+        "accounting": "Uhasibu",
+        "billing": "Bili",
+        "payments": "Malipo",
+        "expenses": "Matumizi",
+        "payroll": "Mishahara",
+        "procurement": "Ununuzi",
+        "students": "Wanafunzi",
+        "wallet": "Pochi",
+        "dashboard": "Dashibodi",
+        "audit": "Ukaguzi"
+      }
+    },
+    "detail": {
+      "backToList": "Rudi kwenye Ripoti",
+      "paramsTitle": "Vigezo",
+      "runButton": "Endesha ripoti",
+      "running": "Inaendesha…",
+      "runError": "Hitilafu imetokea wakati wa kuendesha ripoti hii. Tafadhali jaribu tena.",
+      "resultsTitle": "Matokeo",
+      "totalsTitle": "Jumla",
+      "yesLabel": "Ndiyo",
+      "noLabel": "Hapana",
+      "generatedAtLabel": "Imetengenezwa {date}",
+      "exportButton": "Pakua CSV",
+      "exporting": "Inapakua…",
+      "exportError": "Hitilafu imetokea wakati wa kupakua ripoti hii. Tafadhali jaribu tena.",
+      "editingSavedParams": "Inahariri \"{name}\"",
+      "updateSavedParamsButton": "Sasisha ripoti iliyohifadhiwa",
+      "updatingSavedParams": "Inasasisha…",
+      "savedParamsUpdated": "Ripoti iliyohifadhiwa imesasishwa.",
+      "updateSavedParamsError": "Hitilafu imetokea wakati wa kusasisha ripoti hii iliyohifadhiwa. Tafadhali jaribu tena.",
+      "saveParamsDialog": {
+        "trigger": "Hifadhi vigezo",
+        "triggerAsNew": "Hifadhi kama mpya",
+        "copyNameSuggestion": "{name} (nakala)",
+        "title": "Hifadhi vigezo hivi",
+        "description": "Hifadhi thamani za sasa za vigezo ili uweze kuvipakia tena haraka baadaye, kutoka Ripoti Zilizohifadhiwa.",
+        "nameLabel": "Jina",
+        "namePlaceholder": "mfano: Muhula wa 2 Darasa la 4",
+        "saving": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea wakati wa kuhifadhi vigezo hivi. Tafadhali jaribu tena."
+      },
+      "scheduleDialog": {
+        "trigger": "Ratibu",
+        "title": "Ratibu ripoti hii",
+        "description": "Huendesha ripoti hii kiotomatiki kulingana na ratiba hapa chini na kutuma CSV kwa barua pepe kwa wapokeaji uliowaorodhesha. Bado mtu anahitaji kubofya \"Endesha Zinazostahili Sasa\" kwenye skrini ya Ratiba — hakuna kipanga ratiba cha kiotomatiki katika mfumo huu.",
+        "cronLabel": "Ratiba",
+        "recipientsLabel": "Wapokeaji",
+        "recipientsPlaceholder": "Barua pepe moja kwa kila mstari, au zikitenganishwa na koma",
+        "recipientsHint": "Wapokeaji {count} halali wamegunduliwa",
+        "formatNote": "Inapakua kama CSV — muundo pekee unaotengenezwa kwa sasa.",
+        "saving": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea wakati wa kuratibu ripoti hii. Tafadhali jaribu tena."
+      }
+    },
+    "params": {
+      "asOfDate": "Tarehe Ya Hadi",
+      "entityType": "Aina ya Kitu",
+      "entityId": "Kitambulisho cha Kitu",
+      "actorId": "Mtumiaji",
+      "fromDate": "Kutoka Tarehe",
+      "toDate": "Hadi Tarehe",
+      "periodId": "Kipindi cha Fedha",
+      "fromPeriodId": "Kutoka Kipindi cha Fedha",
+      "toPeriodId": "Hadi Kipindi cha Fedha",
+      "categoryId": "Kategoria",
+      "status": "Hali",
+      "accountId": "Akaunti ya Uhasibu",
+      "runId": "Mzunguko wa Mishahara",
+      "studentId": "Mwanafunzi",
+      "supplierId": "Msambazaji",
+      "walletId": "Pochi",
+      "termId": "Muhula",
+      "academicYearId": "Mwaka wa Masomo",
+      "routeId": "Njia ya Usafiri",
+      "bankAccountId": "Akaunti ya Benki",
+      "depreciationRunId": "Mzunguko wa Uchakavu",
+      "storeId": "Ghala",
+      "stockTakeId": "Uhesabu wa Bidhaa"
+    },
+    "pickers": {
+      "period": {
+        "selectFiscalYearPlaceholder": "Chagua mwaka wa fedha",
+        "selectPeriodPlaceholder": "Chagua kipindi",
+        "chooseFiscalYearFirst": "Chagua mwaka wa fedha kwanza",
+        "periodOptionLabel": "Kipindi {seq} ({startsOn} – {endsOn})"
+      },
+      "term": {
+        "selectAcademicYearPlaceholder": "Chagua mwaka wa masomo",
+        "selectTermPlaceholder": "Chagua muhula",
+        "chooseAcademicYearFirst": "Chagua mwaka wa masomo kwanza"
+      },
+      "academicYear": {
+        "loading": "Inapakia miaka ya masomo…",
+        "placeholder": "Chagua mwaka wa masomo"
+      },
+      "transportRoute": {
+        "loading": "Inapakia njia za usafiri…",
+        "placeholder": "Chagua njia ya usafiri",
+        "searchPlaceholder": "Tafuta njia za usafiri…",
+        "empty": "Hakuna njia za usafiri zilizopatikana."
+      },
+      "account": {
+        "loading": "Inapakia akaunti…",
+        "placeholder": "Chagua akaunti",
+        "searchPlaceholder": "Tafuta akaunti…",
+        "empty": "Hakuna akaunti zilizopatikana."
+      },
+      "category": {
+        "loading": "Inapakia kategoria…",
+        "placeholder": "Chagua kategoria",
+        "searchPlaceholder": "Tafuta kategoria…",
+        "empty": "Hakuna kategoria zilizopatikana."
+      },
+      "payrollRun": {
+        "loading": "Inapakia mizunguko ya mishahara…",
+        "placeholder": "Chagua mzunguko wa mishahara",
+        "searchPlaceholder": "Tafuta mizunguko ya mishahara…",
+        "empty": "Hakuna mizunguko ya mishahara iliyopatikana."
+      },
+      "supplier": {
+        "loading": "Inapakia wasambazaji…",
+        "placeholder": "Chagua msambazaji",
+        "searchPlaceholder": "Tafuta wasambazaji…",
+        "empty": "Hakuna wasambazaji waliopatikana."
+      },
+      "user": {
+        "loading": "Inapakia watumiaji…",
+        "placeholder": "Chagua mtumiaji",
+        "searchPlaceholder": "Tafuta watumiaji…",
+        "empty": "Hakuna watumiaji waliopatikana."
+      },
+      "bankAccount": {
+        "loading": "Inapakia akaunti za benki…",
+        "placeholder": "Chagua akaunti ya benki",
+        "searchPlaceholder": "Tafuta akaunti za benki…",
+        "empty": "Hakuna akaunti za benki zilizopatikana."
+      },
+      "depreciationRun": {
+        "loading": "Inapakia mizunguko ya uchakavu…",
+        "placeholder": "Chagua mzunguko wa uchakavu",
+        "searchPlaceholder": "Tafuta mizunguko ya uchakavu…",
+        "empty": "Hakuna mizunguko ya uchakavu iliyopatikana."
+      },
+      "store": {
+        "loading": "Inapakia maghala…",
+        "placeholder": "Chagua ghala",
+        "searchPlaceholder": "Tafuta maghala…",
+        "empty": "Hakuna maghala yaliyopatikana."
+      },
+      "stockTake": {
+        "loading": "Inapakia uhesabu wa bidhaa…",
+        "placeholder": "Chagua uhesabu wa bidhaa",
+        "searchPlaceholder": "Tafuta uhesabu wa bidhaa…",
+        "empty": "Hakuna uhesabu wa bidhaa uliopatikana."
+      }
+    },
+    "saved": {
+      "pageTitle": "Ripoti Zilizohifadhiwa",
+      "pageSubtitle": "Seti zako za vigezo zilizohifadhiwa — pakia moja tena kwenye ripoti kwa kubofya mara moja.",
+      "listTitle": "Ripoti zangu zilizohifadhiwa",
+      "listDescription": "Zimehifadhiwa kutoka kitufe cha \"Hifadhi vigezo\" kwenye ukurasa wa ripoti yoyote.",
+      "columns": { "report": "Ripoti", "name": "Jina" },
+      "loadAction": "Pakia",
+      "renameDialog": {
+        "title": "Badilisha jina \"{name}\"",
+        "description": "Badilisha jina la ripoti hii iliyohifadhiwa.",
+        "nameLabel": "Jina",
+        "saving": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea wakati wa kubadilisha jina la ripoti hii. Tafadhali jaribu tena."
+      },
+      "deleteDialog": {
+        "title": "Futa ripoti hii iliyohifadhiwa?",
+        "description": "Hii itafuta kabisa seti ya vigezo iliyohifadhiwa \"{name}\". Hii haiwezi kutenduliwa.",
+        "deleting": "Inafuta…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      }
+    },
+    "schedules": {
+      "pageTitle": "Ratiba za Ripoti",
+      "pageSubtitle": "Ripoti zinazoendeshwa kiotomatiki na kutuma CSV kwa barua pepe kwa wapokeaji uliowachagua.",
+      "listTitle": "Ratiba zangu",
+      "listDescription": "Zimeundwa kutoka kitufe cha \"Ratibu\" kwenye ukurasa wa ripoti yoyote.",
+      "columns": { "report": "Ripoti", "cron": "Ratiba", "recipients": "Wapokeaji", "status": "Hali", "lastRun": "Uendeshaji wa Mwisho" },
+      "active": "Hai",
+      "inactive": "Haifanyi kazi",
+      "neverRun": "Haijawahi kuendeshwa",
+      "lastRunFailed": "imeshindwa",
+      "recipientsCount": "Wapokeaji {count}",
+      "cronInput": {
+        "minuteLabel": "Dakika",
+        "hourLabel": "Saa",
+        "dayOfMonthLabel": "Siku ya mwezi",
+        "monthLabel": "Mwezi",
+        "dayOfWeekLabel": "Siku ya wiki",
+        "unusedSuffix": "(haitumiki)",
+        "invalidFieldError": "Kila sehemu lazima iwe \"*\" au nambari kamili moja — hakuna masafa, orodha, au hatua.",
+        "helpText": "Ni siku ya mwezi, mwezi, na siku ya wiki tu ndizo zinazodhibiti ni lini hii inaendeshwa — dakika na saa zinathibitishwa lakini hazitumiki kamwe, kwani tarehe ya uendeshaji ijayo haina saa. Siku ya wiki ni 0=Jumapili hadi 6=Jumamosi.",
+        "presetMonthly": "Kila mwezi (tarehe 1)",
+        "presetWeekly": "Kila wiki (Jumatatu)"
+      },
+      "editDialog": {
+        "title": "Hariri ratiba",
+        "description": "Sasisha ratiba, wapokeaji, au hali ya kufanya kazi. Ripoti na vigezo vyake haviwezi kubadilishwa hapa — tengeneza ratiba mpya badala yake.",
+        "cronLabel": "Ratiba",
+        "recipientsLabel": "Wapokeaji",
+        "recipientsPlaceholder": "Barua pepe moja kwa kila mstari, au zikitenganishwa na koma",
+        "recipientsHint": "Wapokeaji {count} halali wamegunduliwa",
+        "isActiveLabel": "Hai",
+        "isActiveHint": "Ratiba zisizo hai zinarukwa kimya na \"Endesha Zinazostahili Sasa\".",
+        "saving": "Inahifadhi…",
+        "genericError": "Hitilafu imetokea wakati wa kusasisha ratiba hii. Tafadhali jaribu tena."
+      },
+      "deleteDialog": {
+        "title": "Futa ratiba hii?",
+        "description": "Hii itafuta kabisa ratiba ya \"{reportCode}\". Hii haiwezi kutenduliwa.",
+        "deleting": "Inafuta…",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+      },
+      "runDue": {
+        "trigger": "Endesha Zinazostahili Sasa",
+        "title": "Endesha ratiba zinazostahili",
+        "description": "Huendesha kila ratiba hai ambayo tarehe yake ijayo imefika, kama ya tarehe hapa chini, na kutuma CSV kwa barua pepe kwa wapokeaji wa kila ratiba. Hakuna kipanga ratiba cha kiotomatiki popote katika mfumo huu — hii ndiyo njia pekee ratiba inaweza kweli kuendeshwa.",
+        "asOfDateLabel": "Kama ya tarehe",
+        "asOfDateHint": "Chaguo-msingi ni leo. Kila ratiba hai inayostahili tarehe hii au kabla itaendeshwa.",
+        "genericError": "Hitilafu imetokea. Tafadhali jaribu tena.",
+        "noneWereDue": "Hakuna ratiba iliyostahili kama ya {date}.",
+        "resultSummary": "Ratiba {count} zimeendeshwa.",
+        "resultOk": "Imetumwa kwa mafanikio",
+        "resultFailed": "Imeshindwa",
+        "running": "Inaendesha…",
+        "runButton": "Endesha"
+      }
     }
   }
 }

@@ -94,6 +94,7 @@ describe("InvoicingService", () => {
   let postingService: { post: jest.Mock; reverse: jest.Mock };
   let numberingService: { allocate: jest.Mock };
   let studentLedgerService: { appendEntry: jest.Mock };
+  let outboxWriter: { write: jest.Mock };
   let service: InvoicingService;
 
   const categories: Record<string, { id: string; name: string; glIncomeAccountId: string }> = {
@@ -138,6 +139,7 @@ describe("InvoicingService", () => {
     };
     numberingService = { allocate: jest.fn(async () => "INV-000123") };
     studentLedgerService = { appendEntry: jest.fn(async () => undefined) };
+    outboxWriter = { write: jest.fn(async () => undefined) };
 
     service = new InvoicingService(
       invoiceRepository as never,
@@ -154,6 +156,7 @@ describe("InvoicingService", () => {
       postingService as never,
       numberingService as never,
       studentLedgerService as never,
+      outboxWriter as never,
     );
   });
 
@@ -276,6 +279,13 @@ describe("InvoicingService", () => {
       );
       const ledgerCall = studentLedgerService.appendEntry.mock.calls[0][1];
       expect(ledgerCall.debit.equals(Money.fromInt(1000))).toBe(true);
+
+      expect(outboxWriter.write).toHaveBeenCalledTimes(1);
+      const [em, event] = outboxWriter.write.mock.calls[0];
+      expect(em).toBe(EM);
+      expect(event.eventType).toBe("billing.invoice_posted");
+      expect(event.aggregateId).toBe("invoice-1");
+      expect(event.payload).toMatchObject({ invoiceId: "invoice-1", invoiceNumber: "INV-000123", studentId: "student-1", postedBy: "actor-1" });
     });
 
     it("invoice with a folded concession: P-02 debit to scheme account + aggregate AR-Student credit, concession marked POSTED", async () => {

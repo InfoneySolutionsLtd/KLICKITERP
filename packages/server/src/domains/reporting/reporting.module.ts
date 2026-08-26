@@ -35,6 +35,19 @@ import { SupplierStatementReport } from "./application/supplier-statement.report
 import { WalletActivityReport } from "./application/wallet-activity.report";
 import { StatutorySummaryReport } from "./application/statutory-summary.report";
 import { AuditLogReport } from "./application/audit-log.report";
+import { InvoiceBalanceByGradeReport } from "./application/invoice-balance-by-grade.report";
+import { SiblingsReport } from "./application/siblings.report";
+import { TermWiseBalanceReport } from "./application/term-wise-balance.report";
+import { VehicleExpenseReport } from "./application/vehicle-expense.report";
+import { AssetRegisterReport } from "./application/asset-register.report";
+import { DepreciationScheduleReport } from "./application/depreciation-schedule.report";
+import { DisposalReportReport } from "./application/disposal-report.report";
+import { StockBalanceReport } from "./application/stock-balance.report";
+import { StockMovementRegisterReport } from "./application/stock-movement-register.report";
+import { StockTakeVarianceReport } from "./application/stock-take-variance.report";
+import { BankAccountStatementReport } from "./application/bank-account-statement.report";
+import { BankReconciliationSummaryReport } from "./application/bank-reconciliation-summary.report";
+import { ChequeRegisterReport } from "./application/cheque-register.report";
 import { DashboardKpisService } from "./application/dashboard-kpis.service";
 import { MvRefreshService } from "./application/mv-refresh.service";
 import { ExportJobsService } from "./application/export-jobs.service";
@@ -64,6 +77,19 @@ const ALL_REPORT_PROVIDERS = [
   WalletActivityReport,
   StatutorySummaryReport,
   AuditLogReport,
+  InvoiceBalanceByGradeReport,
+  SiblingsReport,
+  TermWiseBalanceReport,
+  VehicleExpenseReport,
+  AssetRegisterReport,
+  DepreciationScheduleReport,
+  DisposalReportReport,
+  StockBalanceReport,
+  StockMovementRegisterReport,
+  StockTakeVarianceReport,
+  BankAccountStatementReport,
+  BankReconciliationSummaryReport,
+  ChequeRegisterReport,
 ] as const;
 
 /**
@@ -196,6 +222,19 @@ export class ReportingModule implements OnModuleInit {
     private readonly walletActivity: WalletActivityReport,
     private readonly statutorySummary: StatutorySummaryReport,
     private readonly auditLog: AuditLogReport,
+    private readonly invoiceBalanceByGrade: InvoiceBalanceByGradeReport,
+    private readonly siblings: SiblingsReport,
+    private readonly termWiseBalance: TermWiseBalanceReport,
+    private readonly vehicleExpense: VehicleExpenseReport,
+    private readonly assetRegister: AssetRegisterReport,
+    private readonly depreciationSchedule: DepreciationScheduleReport,
+    private readonly disposalReport: DisposalReportReport,
+    private readonly stockBalance: StockBalanceReport,
+    private readonly stockMovementRegister: StockMovementRegisterReport,
+    private readonly stockTakeVariance: StockTakeVarianceReport,
+    private readonly bankAccountStatement: BankAccountStatementReport,
+    private readonly bankReconciliationSummary: BankReconciliationSummaryReport,
+    private readonly chequeRegister: ChequeRegisterReport,
   ) {}
 
   /**
@@ -227,5 +266,18 @@ export class ReportingModule implements OnModuleInit {
     this.registry.register(this.walletActivity);
     this.registry.register(this.statutorySummary);
     this.registry.register(this.auditLog);
+    this.registry.register(this.invoiceBalanceByGrade);
+    this.registry.register(this.siblings);
+    this.registry.register(this.termWiseBalance);
+    this.registry.register(this.vehicleExpense);
+    this.registry.register(this.assetRegister);
+    this.registry.register(this.depreciationSchedule);
+    this.registry.register(this.disposalReport);
+    this.registry.register(this.stockBalance);
+    this.registry.register(this.stockMovementRegister);
+    this.registry.register(this.stockTakeVariance);
+    this.registry.register(this.bankAccountStatement);
+    this.registry.register(this.bankReconciliationSummary);
+    this.registry.register(this.chequeRegister);
   }
 }

@@ -122,6 +122,27 @@ export class IntegrationConfigService {
    * non-2xx Daraja response) is caught here and turned into a clean
    * `{ok:false, message}` — this method never throws.
    */
+  /**
+   * Writeback-only counterpart to `testConnection()`, for a module that owns
+   * a REAL adapter of its own (`domains/integrations`' QuickBooks/Xero/Sage
+   * `AccountingSyncService.testConnection()`, `platform/comms`' SMTP/SMS/FCM/
+   * WhatsApp real test-connection route) and already ran its own genuine
+   * check — `platform/settings` cannot import either of those modules itself
+   * (they import IT, never the reverse — `module-deps.json`), so this is the
+   * one direction a downstream module CAN legally call back into: record the
+   * pass/fail result of a check it performed elsewhere, without this service
+   * ever needing to know how that check was made. Only `ok` is persisted —
+   * same as `testConnection()`'s own `lastTestOk` column, `message` is a
+   * per-call response value only, there is no message column to store it in.
+   */
+  async recordTestResult(id: string, ok: boolean, actorId: string | null = null): Promise<void> {
+    const row = await this.findByIdOrFail(id);
+    row.lastTestedAt = new Date();
+    row.lastTestOk = ok;
+    row.updatedBy = actorId;
+    await this.integrationConfigRepository.save(row);
+  }
+
   private async testMpesaConnection(row: SetIntegrationConfigEntity): Promise<TestConnectionResult> {
     try {
       const config = this.decode(row.configEnc);

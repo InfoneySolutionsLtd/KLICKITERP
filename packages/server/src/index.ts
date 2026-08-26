@@ -89,6 +89,18 @@ export { FixedAssetsModule } from "./domains/fixed-assets/fixed-assets.module";
 export { ReportingModule } from "./domains/reporting/reporting.module";
 // Module 19
 export { IntegrationsModule } from "./domains/integrations/integrations.module";
+// Complete the Integrations area, Part 3.2 — `apps/worker`'s new webhook-
+// dispatch outbox-handler wiring needs `WebhookDeliveryService` directly
+// (the module class alone only gets it as far as `IntegrationsModule`'s own
+// DI container; a `useFactory` binding built outside that module needs the
+// service class itself to inject).
+export { WebhookDeliveryService } from "./domains/integrations/application/webhook-delivery.service";
+export { WebhookDispatchOutboxHandler } from "./domains/integrations/application/webhook-dispatch-outbox-handler";
+// Complete the Integrations area, Part 3.3 — `apps/worker`'s new webhook-
+// retry processor needs to open its own transaction around
+// `WebhookDeliveryService.processDue()`, the same way every request-handler
+// controller in `apps/api` already does via this exact helper.
+export { runInTransaction } from "./shared/database/tx";
 // Module 20
 export { BackupsOpsModule } from "./domains/backups-ops/backups-ops.module";
 // Module 21

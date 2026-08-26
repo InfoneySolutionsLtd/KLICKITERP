@@ -103,6 +103,14 @@ export class SchedulesController {
   @ApiResponse({ status: 200 })
   async runDue(@Body() dto: RunDueDto): Promise<RunDueResult[]> {
     const asOfDate = dto.asOfDate ?? new Date().toISOString().slice(0, 10);
-    return runInTransaction(this.dataSource, (manager) => this.schedulesService.runDue(manager, asOfDate));
+    // READ COMMITTED, not this helper's REPEATABLE READ default — `runDue()`
+    // calls `ExportJobsService.createJob()` per due schedule, which (for CSV
+    // format) commits the new `file_object` row in its OWN separate, nested
+    // transaction. Under REPEATABLE READ this outer transaction's snapshot is
+    // fixed before that nested commit, so the later `UPDATE rpt_export_job
+    // SET file_id = ...` fails its own FK check — the identical bug already
+    // found and fixed for `ExportJobsController.create()`; this is the only
+    // other real call site that routes through `createJob()`.
+    return runInTransaction(this.dataSource, (manager) => this.schedulesService.runDue(manager, asOfDate), "READ COMMITTED");
   }
 }

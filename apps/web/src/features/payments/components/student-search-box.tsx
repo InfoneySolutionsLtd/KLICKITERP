@@ -13,6 +13,8 @@ const SEARCH_DEBOUNCE_MS = 300;
 export interface StudentSearchBoxProps {
   selectedStudent: StudentResponseDto | null;
   onSelect: (student: StudentResponseDto | null) => void;
+  /** Additive, optional — every pre-existing caller (payments capture) omits it and is unaffected. */
+  disabled?: boolean;
 }
 
 /**
@@ -38,7 +40,7 @@ export interface StudentSearchBoxProps {
  * mechanism, don't reinvent it."
  */
 export const StudentSearchBox = React.forwardRef<HTMLInputElement, StudentSearchBoxProps>(function StudentSearchBox(
-  { selectedStudent, onSelect },
+  { selectedStudent, onSelect, disabled },
   forwardedRef,
 ) {
   const t = useTranslations("payments.capture");
@@ -102,6 +104,7 @@ export const StudentSearchBox = React.forwardRef<HTMLInputElement, StudentSearch
           className="pl-9 pr-9"
           placeholder={t("studentSearchPlaceholder")}
           value={selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName} — ${selectedStudent.admissionNo}` : query}
+          disabled={disabled}
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onChange={(e) => {

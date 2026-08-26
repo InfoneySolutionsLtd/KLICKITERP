@@ -51,13 +51,27 @@ export class ExportJobsController {
     const requestedBy = req.user?.sub;
     if (!requestedBy) throw new AuthenticationException("Authentication required");
 
-    const job = await runInTransaction(this.dataSource, (manager) =>
-      this.exportJobsService.createJob(manager, {
-        reportCode: dto.reportCode,
-        params: dto.params,
-        format: dto.format,
-        requestedBy,
-      }),
+    // READ COMMITTED, not this helper's REPEATABLE READ default: `createJob()`
+    // calls `FilesService.upload()` for CSV exports, which commits the new
+    // `file_object` row in its OWN separate, nested transaction. Under
+    // REPEATABLE READ, this transaction's snapshot is fixed before that
+    // nested commit, so the later `UPDATE rpt_export_job SET file_id = ...`
+    // fails its FK check against a row that (from this snapshot's point of
+    // view) doesn't exist yet, even though it's already durably committed —
+    // confirmed via a live 500 with Postgres's own log showing
+    // `fk_rpt_export_job_file_id ... is not present in table "file_object"`.
+    // READ COMMITTED re-checks visibility per-statement, so it sees the
+    // nested commit and the FK check passes.
+    const job = await runInTransaction(
+      this.dataSource,
+      (manager) =>
+        this.exportJobsService.createJob(manager, {
+          reportCode: dto.reportCode,
+          params: dto.params,
+          format: dto.format,
+          requestedBy,
+        }),
+      "READ COMMITTED",
     );
     return toView(job);
   }

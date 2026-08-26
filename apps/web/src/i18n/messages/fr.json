@@ -165,6 +165,10 @@
       "fixedAssetsVerifications": "Vérifications",
       "license": "Licence",
       "opsBackups": "Sauvegardes et Exploitation",
+      "reports": "Rapports",
+      "reportsCatalogue": "Catalogue",
+      "reportsSaved": "Rapports enregistrés",
+      "reportsSchedules": "Planifications",
       "guardians": "Parents"
     },
     "topbar": {
@@ -839,6 +843,10 @@
         "genericError": "Something went wrong. Please try again.",
         "glNotConfiguredTitle": "GL not configured",
         "glNotConfiguredDescription": "This invoice can't be posted because a required GL control account isn't configured. Contact your administrator.",
+        "syncToAccountingAction": "Sync to Accounting",
+        "syncingToAccounting": "Syncing…",
+        "syncToAccountingSuccess": "Synced successfully (ref: {providerRef}).",
+        "syncToAccountingFailed": "Sync failed: {error}",
         "creditNotesTitle": "Notes de crédit",
         "concessionsTitle": "Concessions",
         "voidDialog": {
@@ -2211,7 +2219,7 @@
       "newIntegrationTitle": "New integration",
       "newIntegrationDescription": "Choose a kind and enter its configuration. Credentials are encrypted at rest and can never be viewed again after saving.",
       "namePlaceholder": "e.g. Daraja Production",
-      "notYetConfigurable": "{kind} is not yet configurable in this UI. Only MPESA, QUICKBOOKS, XERO, and SAGE have real setup forms in this release.",
+      "notYetConfigurable": "{kind} is not yet configurable in this UI. Only MPESA, QUICKBOOKS, XERO, SAGE, SMTP, SMS, FCM, and WHATSAPP have real setup forms in this release.",
       "creating": "Creating…",
       "createButton": "Create integration",
       "editTrigger": "Edit",
@@ -2281,6 +2289,77 @@
         "clientSecretPlaceholder": "Sage app client secret",
         "refreshToken": "Refresh token",
         "refreshTokenPlaceholder": "OAuth2 refresh token from the authorization-code exchange",
+        "timeoutMs": "Timeout (ms)"
+      },
+      "smtpForm": {
+        "host": "SMTP host",
+        "hostPlaceholder": "smtp.example.com",
+        "port": "Port",
+        "portPlaceholder": "587",
+        "user": "Username",
+        "pass": "Password",
+        "fromAddress": "From address",
+        "fromAddressPlaceholder": "no-reply@example.com",
+        "fromName": "From name",
+        "secureLabel": "Use TLS/SSL"
+      },
+      "smsForm": {
+        "endpoint": "Gateway endpoint",
+        "endpointPlaceholder": "https://gateway.example.com/v1/send",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "timeoutMs": "Timeout (ms)",
+        "advancedSectionTitle": "Advanced (optional)",
+        "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"to\":\"{{recipient}}\",\"message\":\"{{body}}\"}",
+        "bodyTemplateHint": "JSON body sent to the gateway — {{recipient}} and {{body}} are substituted. Leave blank to use the default shape.",
+        "providerRefPath": "Provider ref path",
+        "costPath": "Cost path",
+        "segmentsPath": "Segments path"
+      },
+      "fcmForm": {
+        "projectId": "Firebase project ID",
+        "projectIdPlaceholder": "my-school-app",
+        "clientEmail": "Service account client email",
+        "clientEmailPlaceholder": "firebase-adminsdk@my-school-app.iam.gserviceaccount.com",
+        "privateKey": "Service account private key",
+        "privateKeyPlaceholder": "-----BEGIN PRIVATE KEY-----...",
+        "privateKeyHint": "The full PEM private key from the Firebase service account JSON file."
+      },
+      "whatsappForm": {
+        "endpoint": "WhatsApp Business API endpoint",
+        "endpointPlaceholder": "https://graph.facebook.com/v20.0/<phone-number-id>/messages",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "timeoutMs": "Timeout (ms)",
+        "advancedSectionTitle": "Advanced (optional)",
+        "bodyTemplate": "Request body template",
+        "bodyTemplatePlaceholder": "{\"messaging_product\":\"whatsapp\",\"to\":\"{{recipient}}\",\"type\":\"text\",\"text\":{\"body\":\"{{body}}\"}}",
+        "bodyTemplateHint": "JSON body sent to the WhatsApp provider — {{recipient}} and {{body}} are substituted. Leave blank to use the default shape.",
+        "providerRefPath": "Provider ref path",
+        "costPath": "Cost path",
+        "segmentsPath": "Segments path"
+      },
+      "bankFeedForm": {
+        "accountId": "Bank account ID",
+        "accountIdPlaceholder": "The bank_account this feed applies to",
+        "endpoint": "Feed endpoint",
+        "endpointPlaceholder": "https://api.example.com/v1/accounts/123/transactions?since={{since}}",
+        "dateField": "Date field",
+        "dateFieldPlaceholder": "e.g. date",
+        "descriptionField": "Description field",
+        "descriptionFieldPlaceholder": "e.g. narrative",
+        "amountField": "Amount field",
+        "amountFieldPlaceholder": "e.g. amount (signed: positive=in, negative=out)",
+        "refField": "Reference field",
+        "advancedSectionTitle": "Advanced (optional)",
+        "authHeaderName": "Auth header name",
+        "authHeaderNamePlaceholder": "e.g. Authorization",
+        "authHeaderValue": "Auth header value",
+        "transactionsPath": "Transactions path",
+        "transactionsPathPlaceholder": "Dot-path to the array in the response, e.g. data.transactions",
         "timeoutMs": "Timeout (ms)"
       }
     },
@@ -6130,6 +6209,10 @@
         "pageTitle": "Imports de relevés bancaires",
         "pageSubtitle": "Importez les lignes d'un relevé bancaire depuis un export CSV, associées à l'un des comptes de cet établissement.",
         "newImportTrigger": "Nouvel import",
+        "fetchFeedTrigger": "Récupérer maintenant",
+        "fetchingFeed": "Récupération…",
+        "fetchFeedResult": "Récupéré : {inserted} nouvelle(s) ligne(s), {duplicates} déjà vue(s).",
+        "fetchFeedGenericError": "Une erreur s'est produite lors de la récupération du flux. Veuillez réessayer.",
         "listTitle": "Historique des imports",
         "listDescription": "Chaque import de relevé effectué, tous comptes confondus.",
         "columns": {
@@ -8224,6 +8307,246 @@
       "running": "Vérification en cours…",
       "confirm": "Vérifier la restauration",
       "genericError": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "reports": {
+    "catalogue": {
+      "pageTitle": "Rapports",
+      "pageSubtitle": "Exécutez et exportez les rapports financiers et opérationnels de l'établissement.",
+      "domains": {
+        "accounting": "Comptabilité",
+        "billing": "Facturation",
+        "payments": "Paiements",
+        "expenses": "Dépenses",
+        "payroll": "Paie",
+        "procurement": "Achats",
+        "students": "Élèves",
+        "wallet": "Portefeuille",
+        "dashboard": "Tableau de bord",
+        "audit": "Audit"
+      }
+    },
+    "detail": {
+      "backToList": "Retour aux Rapports",
+      "paramsTitle": "Paramètres",
+      "runButton": "Exécuter le rapport",
+      "running": "Exécution…",
+      "runError": "Une erreur s'est produite lors de l'exécution de ce rapport. Veuillez réessayer.",
+      "resultsTitle": "Résultats",
+      "totalsTitle": "Totaux",
+      "yesLabel": "Oui",
+      "noLabel": "Non",
+      "generatedAtLabel": "Généré le {date}",
+      "exportButton": "Exporter en CSV",
+      "exporting": "Exportation…",
+      "exportError": "Une erreur s'est produite lors de l'exportation de ce rapport. Veuillez réessayer.",
+      "editingSavedParams": "Modification de \"{name}\"",
+      "updateSavedParamsButton": "Mettre à jour le rapport enregistré",
+      "updatingSavedParams": "Mise à jour…",
+      "savedParamsUpdated": "Rapport enregistré mis à jour.",
+      "updateSavedParamsError": "Une erreur s'est produite lors de la mise à jour de ce rapport enregistré. Veuillez réessayer.",
+      "saveParamsDialog": {
+        "trigger": "Enregistrer les paramètres",
+        "triggerAsNew": "Enregistrer sous un nouveau nom",
+        "copyNameSuggestion": "{name} (copie)",
+        "title": "Enregistrer ces paramètres",
+        "description": "Enregistrez les valeurs actuelles des paramètres pour pouvoir les recharger rapidement plus tard, depuis Rapports enregistrés.",
+        "nameLabel": "Nom",
+        "namePlaceholder": "ex. Trimestre 2 Classe 4",
+        "saving": "Enregistrement…",
+        "genericError": "Une erreur s'est produite lors de l'enregistrement de ces paramètres. Veuillez réessayer."
+      },
+      "scheduleDialog": {
+        "trigger": "Planifier",
+        "title": "Planifier ce rapport",
+        "description": "Exécute automatiquement ce rapport selon la planification ci-dessous et envoie le CSV par e-mail aux destinataires listés. Il faut tout de même déclencher \"Exécuter maintenant\" sur l'écran Planifications — il n'existe aucun planificateur automatique dans ce système.",
+        "cronLabel": "Planification",
+        "recipientsLabel": "Destinataires",
+        "recipientsPlaceholder": "Un e-mail par ligne, ou séparés par des virgules",
+        "recipientsHint": "{count} destinataire(s) valide(s) détecté(s)",
+        "formatNote": "Exporté en CSV — le seul format actuellement généré.",
+        "saving": "Enregistrement…",
+        "genericError": "Une erreur s'est produite lors de la planification de ce rapport. Veuillez réessayer."
+      }
+    },
+    "params": {
+      "asOfDate": "Date de référence",
+      "entityType": "Type d'entité",
+      "entityId": "ID de l'entité",
+      "actorId": "Utilisateur",
+      "fromDate": "Date de début",
+      "toDate": "Date de fin",
+      "periodId": "Période comptable",
+      "fromPeriodId": "Période comptable de début",
+      "toPeriodId": "Période comptable de fin",
+      "categoryId": "Catégorie",
+      "status": "Statut",
+      "accountId": "Compte comptable",
+      "runId": "Cycle de paie",
+      "studentId": "Élève",
+      "supplierId": "Fournisseur",
+      "walletId": "Portefeuille",
+      "termId": "Trimestre",
+      "academicYearId": "Année scolaire",
+      "routeId": "Itinéraire de transport",
+      "bankAccountId": "Compte bancaire",
+      "depreciationRunId": "Cycle d'amortissement",
+      "storeId": "Magasin",
+      "stockTakeId": "Inventaire"
+    },
+    "pickers": {
+      "period": {
+        "selectFiscalYearPlaceholder": "Sélectionner l'exercice",
+        "selectPeriodPlaceholder": "Sélectionner la période",
+        "chooseFiscalYearFirst": "Choisissez d'abord un exercice",
+        "periodOptionLabel": "Période {seq} ({startsOn} – {endsOn})"
+      },
+      "term": {
+        "selectAcademicYearPlaceholder": "Sélectionner l'année scolaire",
+        "selectTermPlaceholder": "Sélectionner le trimestre",
+        "chooseAcademicYearFirst": "Choisissez d'abord une année scolaire"
+      },
+      "academicYear": {
+        "loading": "Chargement des années scolaires…",
+        "placeholder": "Sélectionner une année scolaire"
+      },
+      "transportRoute": {
+        "loading": "Chargement des itinéraires de transport…",
+        "placeholder": "Sélectionner un itinéraire de transport",
+        "searchPlaceholder": "Rechercher des itinéraires de transport…",
+        "empty": "Aucun itinéraire de transport trouvé."
+      },
+      "account": {
+        "loading": "Chargement des comptes…",
+        "placeholder": "Sélectionner un compte",
+        "searchPlaceholder": "Rechercher des comptes…",
+        "empty": "Aucun compte trouvé."
+      },
+      "category": {
+        "loading": "Chargement des catégories…",
+        "placeholder": "Sélectionner une catégorie",
+        "searchPlaceholder": "Rechercher des catégories…",
+        "empty": "Aucune catégorie trouvée."
+      },
+      "payrollRun": {
+        "loading": "Chargement des cycles de paie…",
+        "placeholder": "Sélectionner un cycle de paie",
+        "searchPlaceholder": "Rechercher des cycles de paie…",
+        "empty": "Aucun cycle de paie trouvé."
+      },
+      "supplier": {
+        "loading": "Chargement des fournisseurs…",
+        "placeholder": "Sélectionner un fournisseur",
+        "searchPlaceholder": "Rechercher des fournisseurs…",
+        "empty": "Aucun fournisseur trouvé."
+      },
+      "user": {
+        "loading": "Chargement des utilisateurs…",
+        "placeholder": "Sélectionner un utilisateur",
+        "searchPlaceholder": "Rechercher des utilisateurs…",
+        "empty": "Aucun utilisateur trouvé."
+      },
+      "bankAccount": {
+        "loading": "Chargement des comptes bancaires…",
+        "placeholder": "Sélectionner un compte bancaire",
+        "searchPlaceholder": "Rechercher des comptes bancaires…",
+        "empty": "Aucun compte bancaire trouvé."
+      },
+      "depreciationRun": {
+        "loading": "Chargement des cycles d'amortissement…",
+        "placeholder": "Sélectionner un cycle d'amortissement",
+        "searchPlaceholder": "Rechercher des cycles d'amortissement…",
+        "empty": "Aucun cycle d'amortissement trouvé."
+      },
+      "store": {
+        "loading": "Chargement des magasins…",
+        "placeholder": "Sélectionner un magasin",
+        "searchPlaceholder": "Rechercher des magasins…",
+        "empty": "Aucun magasin trouvé."
+      },
+      "stockTake": {
+        "loading": "Chargement des inventaires…",
+        "placeholder": "Sélectionner un inventaire",
+        "searchPlaceholder": "Rechercher des inventaires…",
+        "empty": "Aucun inventaire trouvé."
+      }
+    },
+    "saved": {
+      "pageTitle": "Rapports enregistrés",
+      "pageSubtitle": "Vos propres jeux de paramètres enregistrés — rechargez-en un dans un rapport en un clic.",
+      "listTitle": "Mes rapports enregistrés",
+      "listDescription": "Enregistrés depuis le bouton \"Enregistrer les paramètres\" sur la page de n'importe quel rapport.",
+      "columns": { "report": "Rapport", "name": "Nom" },
+      "loadAction": "Charger",
+      "renameDialog": {
+        "title": "Renommer \"{name}\"",
+        "description": "Modifiez le nom de ce rapport enregistré.",
+        "nameLabel": "Nom",
+        "saving": "Enregistrement…",
+        "genericError": "Une erreur s'est produite lors du renommage de ce rapport enregistré. Veuillez réessayer."
+      },
+      "deleteDialog": {
+        "title": "Supprimer ce rapport enregistré ?",
+        "description": "Cela supprimera définitivement le jeu de paramètres enregistré \"{name}\". Cette action est irréversible.",
+        "deleting": "Suppression…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      }
+    },
+    "schedules": {
+      "pageTitle": "Planifications de rapports",
+      "pageSubtitle": "Rapports exécutés automatiquement et envoyés par e-mail en CSV aux destinataires choisis.",
+      "listTitle": "Mes planifications",
+      "listDescription": "Créées depuis le bouton \"Planifier\" sur la page de n'importe quel rapport.",
+      "columns": { "report": "Rapport", "cron": "Planification", "recipients": "Destinataires", "status": "Statut", "lastRun": "Dernière exécution" },
+      "active": "Active",
+      "inactive": "Inactive",
+      "neverRun": "Jamais exécutée",
+      "lastRunFailed": "échouée",
+      "recipientsCount": "{count} destinataire(s)",
+      "cronInput": {
+        "minuteLabel": "Minute",
+        "hourLabel": "Heure",
+        "dayOfMonthLabel": "Jour du mois",
+        "monthLabel": "Mois",
+        "dayOfWeekLabel": "Jour de la semaine",
+        "unusedSuffix": "(inutilisé)",
+        "invalidFieldError": "Chaque champ doit être \"*\" ou un nombre entier exact — aucune plage, liste ou étape.",
+        "helpText": "Seuls le jour du mois, le mois et le jour de la semaine déterminent réellement le déclenchement — minute et heure sont validées mais jamais utilisées, car la prochaine date d'exécution n'a pas d'heure. Le jour de la semaine va de 0=Dimanche à 6=Samedi.",
+        "presetMonthly": "Mensuel (le 1er)",
+        "presetWeekly": "Hebdomadaire (lundi)"
+      },
+      "editDialog": {
+        "title": "Modifier la planification",
+        "description": "Mettez à jour la planification, les destinataires ou l'état actif. Le rapport et ses paramètres ne peuvent pas être modifiés ici — créez plutôt une nouvelle planification.",
+        "cronLabel": "Planification",
+        "recipientsLabel": "Destinataires",
+        "recipientsPlaceholder": "Un e-mail par ligne, ou séparés par des virgules",
+        "recipientsHint": "{count} destinataire(s) valide(s) détecté(s)",
+        "isActiveLabel": "Active",
+        "isActiveHint": "Les planifications inactives sont silencieusement ignorées par \"Exécuter maintenant\".",
+        "saving": "Enregistrement…",
+        "genericError": "Une erreur s'est produite lors de la mise à jour de cette planification. Veuillez réessayer."
+      },
+      "deleteDialog": {
+        "title": "Supprimer cette planification ?",
+        "description": "Cela supprimera définitivement la planification de \"{reportCode}\". Cette action est irréversible.",
+        "deleting": "Suppression…",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer."
+      },
+      "runDue": {
+        "trigger": "Exécuter maintenant",
+        "title": "Exécuter les planifications dues",
+        "description": "Exécute chaque planification active dont la prochaine date d'exécution est arrivée, à la date ci-dessous, et envoie le CSV par e-mail aux destinataires de chaque planification. Il n'existe aucun planificateur automatique dans ce système — c'est le seul moyen pour qu'une planification s'exécute réellement.",
+        "asOfDateLabel": "À la date du",
+        "asOfDateHint": "Par défaut, aujourd'hui. Chaque planification active due à cette date ou avant sera exécutée.",
+        "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+        "noneWereDue": "Aucune planification n'était due à la date du {date}.",
+        "resultSummary": "{count} planification(s) exécutée(s).",
+        "resultOk": "Envoyé avec succès",
+        "resultFailed": "Échec",
+        "running": "Exécution…",
+        "runButton": "Exécuter"
+      }
     }
   }
 }

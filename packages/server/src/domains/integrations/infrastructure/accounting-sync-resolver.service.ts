@@ -35,16 +35,28 @@ export class AccountingSyncResolverService {
   ) {}
 
   async resolve(kind: AccountingSyncKind): Promise<AccountingSyncPort> {
+    return (await this.resolveWithConfigId(kind)).adapter;
+  }
+
+  /**
+   * Same resolution as `resolve()`, but also returns which `set_integration_config`
+   * row (if any) was actually used — `null` when no config of this kind is
+   * enabled and the `SyncLogOnlyAdapter` fallback was returned instead. Added
+   * for `AccountingSyncService.testConnection()`, which needs to know the
+   * config id to write a real test result back onto (`IntegrationConfigService.recordTestResult()`)
+   * — `pushEntity()`'s own use of `resolve()` has no such need and stays unchanged.
+   */
+  async resolveWithConfigId(kind: AccountingSyncKind): Promise<{ adapter: AccountingSyncPort; configId: string | null }> {
     const enabled = await this.findEnabled(kind);
-    if (!enabled) return this.syncLogOnlyAdapter;
+    if (!enabled) return { adapter: this.syncLogOnlyAdapter, configId: null };
 
     const cached = this.cache.get(kind);
-    if (cached?.configId === enabled.id) return cached.adapter;
+    if (cached?.configId === enabled.id) return { adapter: cached.adapter, configId: enabled.id };
 
     const config = await this.integrationConfigService.getDecryptedConfig(enabled.id);
     const adapter = this.build(kind, config);
     this.cache.set(kind, { configId: enabled.id, adapter });
-    return adapter;
+    return { adapter, configId: enabled.id };
   }
 
   private build(kind: AccountingSyncKind, config: Record<string, unknown>): AccountingSyncPort {

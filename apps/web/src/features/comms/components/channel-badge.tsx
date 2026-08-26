@@ -14,25 +14,31 @@ import { Badge, type BadgeProps } from "@/components/ui/badge";
  * field type is the closest real source of truth at this layer, mirroring
  * `ThemeStatusBadge`'s own `ThemeResponseDto["status"]` precedent.
  *
- * Only EMAIL/SMS/PUSH have real delivery adapters (confirmed by reading
- * `packages/server/src/platform/comms/infrastructure/*.ts` directly) —
- * WHATSAPP/INAPP are still valid, selectable values on `CreateTemplateDto`
- * (its own `@ApiProperty({ enum: COMM_CHANNELS })` lists all 5), but
- * anything sent through them today falls back to a log-only no-op adapter.
- * That distinction is surfaced here as visible subtext under the badge —
- * not hidden in a tooltip, since this app has no `Tooltip` primitive yet
- * (confirmed by listing `components/ui/`) — so an admin creating a
- * WHATSAPP/INAPP template knows upfront it won't actually deliver yet.
+ * EMAIL/SMS/PUSH/WHATSAPP all have real delivery adapters now (WHATSAPP
+ * joined the other three — see `AdapterResolverService.resolveWhatsapp()`,
+ * `platform/comms/infrastructure/adapter-resolver.service.ts`) — whether any
+ * of the four actually DELIVERS depends on a `set_integration_config` row of
+ * the matching kind being enabled, the exact same ambiguity EMAIL/SMS/PUSH
+ * already tolerate with no indicator here at all (this badge has no access
+ * to live config-enabled state — it's rendered wherever a bare channel value
+ * appears, e.g. a template list, decoupled from any specific config check).
+ * WHATSAPP is treated identically to those three for the same reason.
+ * INAPP is the one channel with NO adapter and none is planned — it's read
+ * entirely from `comm_message` by a future WebSocket/notification-badge
+ * consumer, never sent through this module's adapter machinery at all — so
+ * it alone keeps the permanent "log-only" subtext, surfaced here rather than
+ * a tooltip since this app has no `Tooltip` primitive yet (confirmed by
+ * listing `components/ui/`).
  */
 const CHANNEL_VARIANT: Record<string, NonNullable<BadgeProps["variant"]>> = {
   SMS: "soft-primary",
   EMAIL: "soft-primary",
   PUSH: "soft-primary",
-  WHATSAPP: "soft-warning",
+  WHATSAPP: "soft-primary",
   INAPP: "soft-warning",
 };
 
-const LOG_ONLY_CHANNELS = new Set<TemplateResponseDto["channel"]>(["WHATSAPP", "INAPP"]);
+const LOG_ONLY_CHANNELS = new Set<TemplateResponseDto["channel"]>(["INAPP"]);
 
 export function ChannelBadge({ channel }: { channel: TemplateResponseDto["channel"] }) {
   const t = useTranslations("communications.channels");

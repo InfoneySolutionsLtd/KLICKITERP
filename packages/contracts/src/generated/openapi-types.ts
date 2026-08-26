@@ -1257,6 +1257,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/comms/integrations/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** FR-SET-003.1 Test Connection for SMTP/SMS/FCM/WHATSAPP — exercises the resolved adapter's real harmless check */
+        post: operations["CommsTestConnectionController_testConnection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/approvals/workflow-definitions": {
         parameters: {
             query?: never;
@@ -7389,6 +7406,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/banking/statement-imports/fetch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fetch new transactions from this account's configured BANK integration feed and import them (same dedupe as a manual import) */
+        post: operations["StatementImportController_fetch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/banking/statement-imports/{id}": {
         parameters: {
             query?: never;
@@ -8557,7 +8591,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reports/audit-log": {
+    "/api/v1/reports/audit-log/search": {
         parameters: {
             query?: never;
             header?: never;
@@ -9819,6 +9853,14 @@ export interface components {
         SubmitBroadcastApprovalDto: {
             /** Format: uuid */
             approvalRef: string;
+        };
+        CommsTestConnectionDto: {
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP";
+        };
+        CommsTestConnectionResponseDto: {
+            ok: boolean;
+            message: string;
         };
         CreateWorkflowDefDto: {
             /** @description Open string namespace, e.g. BILLING_WAIVER, PAYMENT_VOUCHER */
@@ -13395,6 +13437,13 @@ export interface components {
             insertedCount: number;
             duplicateCount: number;
         };
+        FetchBankFeedDto: {
+            /**
+             * Format: uuid
+             * @description The bank_account to fetch new transactions for — must have an enabled BANK integration config whose own accountId field matches
+             */
+            accountId: string;
+        };
         BankStatementImportResponseDto: {
             /** Format: uuid */
             id: string;
@@ -16234,6 +16283,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    CommsTestConnectionController_testConnection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommsTestConnectionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommsTestConnectionResponseDto"];
+                };
             };
         };
     };
@@ -26493,6 +26565,29 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ImportBankStatementLinesDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBankStatementLinesResponseDto"];
+                };
+            };
+        };
+    };
+    StatementImportController_fetch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FetchBankFeedDto"];
             };
         };
         responses: {

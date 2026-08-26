@@ -119,6 +119,7 @@ describe("ReceiptsService", () => {
     getOrCreate: jest.Mock;
   };
   let documentVerificationService: { mint: jest.Mock; findByDocument: jest.Mock; verify: jest.Mock };
+  let outboxWriter: { write: jest.Mock };
   let service: ReceiptsService;
 
   beforeEach(() => {
@@ -164,6 +165,7 @@ describe("ReceiptsService", () => {
       findByDocument: jest.fn(async () => null),
       verify: jest.fn(async () => null),
     };
+    outboxWriter = { write: jest.fn(async () => undefined) };
 
     service = new ReceiptsService(
       receiptRepository as never,
@@ -182,6 +184,7 @@ describe("ReceiptsService", () => {
       allocationService as never,
       studentCreditService as never,
       documentVerificationService as never,
+      outboxWriter as never,
     );
   });
 
@@ -307,6 +310,13 @@ describe("ReceiptsService", () => {
 
       // Phase 6 Slice 12 (Part D) — no overpayment in this scenario, so no Credit Balance entry is issued.
       expect(studentCreditService.issue).not.toHaveBeenCalled();
+
+      expect(outboxWriter.write).toHaveBeenCalledTimes(1);
+      const [em, event] = outboxWriter.write.mock.calls[0];
+      expect(em).toBe(EM);
+      expect(event.eventType).toBe("payments.payment_received");
+      expect(event.aggregateId).toBe(receipt.id);
+      expect(event.payload).toMatchObject({ receiptId: receipt.id, receiptNumber: "PAY-000001", studentId: "student-1", cashierId: "cashier-1" });
     });
 
     it("increments bill_installment.settled_amount oldest-seq-first for the allocated invoice", async () => {

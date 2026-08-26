@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsIn, IsISO8601, IsObject, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsArray, IsBoolean, IsIn, IsISO8601, IsObject, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class CreateScheduleDto {
   @ApiProperty({ maxLength: 40 })
@@ -17,6 +17,8 @@ export class CreateScheduleDto {
   cron!: string;
 
   @ApiProperty({ type: [String], description: "Raw email addresses — non-email entries are skipped at delivery time" })
+  @IsArray()
+  @IsString({ each: true })
   recipients!: unknown;
 
   @ApiProperty({ enum: ["PDF", "XLSX", "CSV"] })
@@ -38,6 +40,8 @@ export class UpdateScheduleDto {
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   recipients?: unknown;
 
   @ApiPropertyOptional({ enum: ["PDF", "XLSX", "CSV"] })

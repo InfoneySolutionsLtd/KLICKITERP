@@ -14,7 +14,7 @@ export const CreateScheduleDtoSchema = z.object({
     reportCode: z.string().max(40),
     params: z.record(z.string(), z.unknown()),
     cron: z.string().max(30),
-    recipients: z.unknown(),
+    recipients: z.array(z.string()),
     format: z.enum(["PDF", "XLSX", "CSV"]),
 });
 export type CreateScheduleDto = z.infer<typeof CreateScheduleDtoSchema>;
@@ -22,7 +22,7 @@ export type CreateScheduleDto = z.infer<typeof CreateScheduleDtoSchema>;
 export const UpdateScheduleDtoSchema = z.object({
     params: z.record(z.string(), z.unknown()).optional(),
     cron: z.string().max(30).optional(),
-    recipients: z.unknown().optional(),
+    recipients: z.array(z.string()).optional(),
     format: z.enum(["PDF", "XLSX", "CSV"]).optional(),
     isActive: z.boolean().optional(),
 });

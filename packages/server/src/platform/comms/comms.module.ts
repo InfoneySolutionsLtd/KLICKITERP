@@ -13,6 +13,7 @@ import { BroadcastsController } from "./api/broadcasts.controller";
 import { DeviceTokensController } from "./api/device-tokens.controller";
 import { MessagesController } from "./api/messages.controller";
 import { OptoutsController } from "./api/optouts.controller";
+import { CommsTestConnectionController } from "./api/test-connection.controller";
 import { TemplatesController } from "./api/templates.controller";
 import { TriggerBindingsController } from "./api/trigger-bindings.controller";
 import { CommBroadcastEntity } from "./domain/comm-broadcast.entity";
@@ -64,6 +65,7 @@ import { CommTriggerBindingRepository } from "./infrastructure/comm-trigger-bind
     OptoutsController,
     BroadcastsController,
     MessagesController,
+    CommsTestConnectionController,
   ],
   providers: [
     OutboxWriterService,

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { EntityManager } from "typeorm";
+import { IntegrationConfigService } from "../../../platform/settings";
 import { AccountingSyncResolverService, AccountingSyncKind } from "../infrastructure/accounting-sync-resolver.service";
 import { AccountingSyncEntityKind, AccountingSyncTestResult } from "../infrastructure/ports/accounting-sync.port";
 import { IntgSyncLogEntity } from "../domain/intg-sync-log.entity";
@@ -34,6 +35,7 @@ export class AccountingSyncService {
   constructor(
     private readonly resolver: AccountingSyncResolverService,
     private readonly syncLogRepository: IntgSyncLogRepository,
+    private readonly integrationConfigService: IntegrationConfigService,
   ) {}
 
   async pushEntity(em: EntityManager, input: PushEntityInput): Promise<IntgSyncLogEntity> {
@@ -67,9 +69,26 @@ export class AccountingSyncService {
     );
   }
 
+  /**
+   * Real Test Connection for QUICKBOOKS/XERO/SAGE (FR-SET-003.1) — resolves
+   * the enabled config's real adapter and calls its own `testConnection()`.
+   * Also writes the result back onto the resolved `set_integration_config`
+   * row via `IntegrationConfigService.recordTestResult()`, the same
+   * `lastTestedAt`/`lastTestOk` columns the generic settings-owned stub
+   * route updates — `platform/settings`'s own `IntegrationConfigsController`
+   * previously never learned about a test run through THIS route, so its
+   * "last tested" badge stayed stale even after a real check succeeded here.
+   * `configId` is `null` when no config of this kind is enabled (the
+   * `SyncLogOnlyAdapter` fallback was tested instead) — nothing to write
+   * back to in that case.
+   */
   async testConnection(kind: AccountingSyncKind): Promise<AccountingSyncTestResult> {
-    const adapter = await this.resolver.resolve(kind);
-    return adapter.testConnection();
+    const { adapter, configId } = await this.resolver.resolveWithConfigId(kind);
+    const result = await adapter.testConnection();
+    if (configId) {
+      await this.integrationConfigService.recordTestResult(configId, result.ok);
+    }
+    return result;
   }
 
   async listLog(options: ListSyncLogOptions): Promise<[IntgSyncLogEntity[], number]> {

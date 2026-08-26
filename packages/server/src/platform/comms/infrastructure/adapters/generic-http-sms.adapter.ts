@@ -1,6 +1,7 @@
 import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { Money } from "../../../../shared/money/money";
+import { CommTestResult } from "../ports/comm-test-result";
 import { SendResult } from "../ports/send-result";
 import { SmsPort } from "../ports/sms.port";
 
@@ -59,6 +60,58 @@ export class GenericHttpSmsAdapter implements SmsPort {
       cost: this.config.costPath ? this.readCost(parsed, this.config.costPath) : undefined,
       segments: this.config.segmentsPath ? this.readNumber(parsed, this.config.segmentsPath) : undefined,
     };
+  }
+
+  /**
+   * Real check (FR-SET-003.1) — a lightweight `HEAD` reachability probe
+   * against the configured endpoint, deliberately NOT a real templated send:
+   * sending an actual SMS/WhatsApp message as a "connection test" has a
+   * real-world cost and side effect, so this tests *connectivity* (DNS/TCP/
+   * TLS, and that authentication headers are at least accepted at the
+   * transport level), not *delivery*. Any HTTP response at all — even a
+   * non-2xx one, e.g. 404/405 from a gateway that doesn't support `HEAD` —
+   * still proves the endpoint is genuinely reachable, so only network-level
+   * failures (DNS, connection refused, TLS handshake, timeout) count as `ok:false`.
+   */
+  async testConnection(): Promise<CommTestResult> {
+    try {
+      const status = await this.probe();
+      return { ok: true, message: `Reached ${this.config.endpoint} (HTTP ${status}) — connectivity only, no message sent` };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { ok: false, message: `Could not reach ${this.config.endpoint}: ${message}` };
+    }
+  }
+
+  private probe(): Promise<number> {
+    const url = new URL(this.config.endpoint);
+    const isHttps = url.protocol === "https:";
+    const doRequest = isHttps ? httpsRequest : httpRequest;
+    const headers: Record<string, string> = {};
+    if (this.config.authHeaderName && this.config.authHeaderValue) {
+      headers[this.config.authHeaderName] = this.config.authHeaderValue;
+    }
+
+    return new Promise<number>((resolve, reject) => {
+      const req = doRequest(
+        {
+          protocol: url.protocol,
+          hostname: url.hostname,
+          port: url.port || (isHttps ? 443 : 80),
+          path: `${url.pathname}${url.search}`,
+          method: "HEAD",
+          headers,
+          timeout: this.config.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+        },
+        (res) => {
+          res.resume(); // drain the (likely empty) body — we only care about reachability, not content
+          resolve(res.statusCode ?? 0);
+        },
+      );
+      req.on("timeout", () => req.destroy(new Error(`Connection timed out after ${this.config.timeoutMs ?? DEFAULT_TIMEOUT_MS}ms`)));
+      req.on("error", reject);
+      req.end();
+    });
   }
 
   private buildBody(recipient: string, body: string): string {

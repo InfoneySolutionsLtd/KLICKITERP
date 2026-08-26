@@ -3,6 +3,7 @@ import { EntityManager } from "typeorm";
 import { ConflictException } from "../../../shared/exceptions/conflict.exception";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
+import { OutboxWriterService } from "../../../shared/events/outbox-writer.service";
 import { generateUuidV7 } from "../../../shared/ids/uuid7";
 import { Money } from "../../../shared/money/money";
 import { GlAccountRepository, PostJournalLineDraft, PostingService } from "../../../accounting";
@@ -21,6 +22,7 @@ import { BillInvoiceLineRepository } from "../infrastructure/bill-invoice-line.r
 import { BillInvoiceRepository } from "../infrastructure/bill-invoice.repository";
 import { BillSponsorAwardRepository } from "../infrastructure/bill-sponsor-award.repository";
 import { BillStudentOptionalItemRepository } from "../infrastructure/bill-student-optional-item.repository";
+import { InvoicePostedEvent } from "../events/invoice-posted.event";
 import { FeeStructuresService } from "./fee-structures.service";
 import { resolveControlAccount } from "./gl-control-accounts.util";
 
@@ -188,6 +190,7 @@ export class InvoicingService {
     private readonly postingService: PostingService,
     private readonly numberingService: NumberingService,
     private readonly studentLedgerService: StudentLedgerService,
+    private readonly outboxWriter: OutboxWriterService,
   ) {}
 
   async generateInvoice(em: EntityManager, input: GenerateInvoiceInput): Promise<BillInvoiceEntity> {
@@ -545,6 +548,18 @@ export class InvoicingService {
       credit: Money.ZERO,
       memo: "Invoice posted",
     });
+
+    await this.outboxWriter.write(
+      em,
+      new InvoicePostedEvent(saved.id, {
+        invoiceId: saved.id,
+        invoiceNumber: saved.number,
+        studentId: saved.studentId,
+        termId: saved.termId,
+        total: saved.total.toDecimalString(),
+        postedBy,
+      }),
+    );
 
     return saved;
   }
