@@ -71,28 +71,43 @@ export async function listInvoiceLines(id: string): Promise<InvoiceLineResponseD
  * this is a scope boundary, not an oversight. Safe to ship as-is:
  * `AccountingSyncService.pushEntity()` always logs the outcome (success or a
  * real, visible failure), never silently swallows anything.
+ *
+ * `SyncPushDto.payload` is typed `@ApiProperty({type: Object})`/
+ * `Record<string, unknown>` server-side — `@nestjs/swagger` generates this as
+ * an unusable `{} & {[x: string]: undefined}` phantom type in the
+ * OpenAPI-derived body (no shape to infer from a plain `Object` annotation),
+ * the same class of gap `features/approvals/api/delegations.api.ts`'s own
+ * `UpdateDelegationRequestBody` doc comment documents. `SyncPushRequestBody`
+ * documents the real intended shape; the final `as never` is what actually
+ * gets past the broken generated type.
  */
+interface SyncPushRequestBody {
+  kind: AccountingSyncKind;
+  entityType: "INVOICE" | "PAYMENT" | "EXPENSE" | "CUSTOMER";
+  entityId: string;
+  payload: Record<string, unknown>;
+}
+
 export async function pushInvoiceToAccounting(
   invoice: InvoiceResponseDto,
   lines: InvoiceLineResponseDto[],
   kind: AccountingSyncKind,
 ): Promise<SyncLogResponseDto> {
+  const body: SyncPushRequestBody = {
+    kind,
+    entityType: "INVOICE",
+    entityId: invoice.id,
+    payload: {
+      invoiceNumber: invoice.number,
+      issueDate: invoice.issueDate,
+      dueDate: invoice.dueDate,
+      total: invoice.total,
+      balance: invoice.balance,
+      lines: lines.map((line) => ({ description: line.description, amount: line.amount })),
+    },
+  };
   return unwrapApiResult<SyncLogResponseDto>(
-    await apiClient.POST("/api/v1/integrations/sync/push", {
-      body: {
-        kind,
-        entityType: "INVOICE",
-        entityId: invoice.id,
-        payload: {
-          invoiceNumber: invoice.number,
-          issueDate: invoice.issueDate,
-          dueDate: invoice.dueDate,
-          total: invoice.total,
-          balance: invoice.balance,
-          lines: lines.map((line) => ({ description: line.description, amount: line.amount })),
-        },
-      },
-    }),
+    await apiClient.POST("/api/v1/integrations/sync/push", { body: body as never }),
   );
 }
 

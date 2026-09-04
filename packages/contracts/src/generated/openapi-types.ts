@@ -837,7 +837,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List files attached to an entity */
+        /** Browse files, optionally scoped to one entity or filtered by filename */
         get: operations["FilesController_list"];
         put?: never;
         /**
@@ -846,6 +846,24 @@ export interface paths {
          */
         post: operations["FilesController_upload"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/files/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a file's metadata by id */
+        get: operations["FilesController_findOne"];
+        put?: never;
+        post?: never;
+        /** Delete a file (removes the storage object, then the file_object row) */
+        delete: operations["FilesController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -863,23 +881,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/files/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete a file (removes the storage object, then the file_object row) */
-        delete: operations["FilesController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -9526,6 +9527,11 @@ export interface components {
             /** Format: uuid */
             updatedBy: string | null;
         };
+        FileListResponseDto: {
+            items: components["schemas"]["FileObjectResponseDto"][];
+            /** @description Total row count matching the applied filters, ignoring page/pageSize */
+            total: number;
+        };
         SignedUrlResponseDto: {
             url: string;
             expiresInSeconds: number;
@@ -15522,11 +15528,11 @@ export interface operations {
     };
     FilesController_list: {
         parameters: {
-            query: {
-                /** @description Polymorphic owner type, e.g. STUDENT */
-                entityType: string;
-                /** @description Polymorphic owner id */
-                entityId: string;
+            query?: {
+                entityType?: string;
+                entityId?: string;
+                /** @description Filename substring search */
+                q?: string;
             };
             header?: never;
             path?: never;
@@ -15539,7 +15545,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileObjectResponseDto"][];
+                    "application/json": components["schemas"]["FileListResponseDto"];
                 };
             };
         };
@@ -15577,6 +15583,46 @@ export interface operations {
             };
         };
     };
+    FilesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileObjectResponseDto"];
+                };
+            };
+        };
+    };
+    FilesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     FilesController_signedUrl: {
         parameters: {
             query?: {
@@ -15598,25 +15644,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SignedUrlResponseDto"];
                 };
-            };
-        };
-    };
-    FilesController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

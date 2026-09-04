@@ -16,6 +16,7 @@ describe("FilesService", () => {
     findById: jest.Mock;
     findByIdOrFail: jest.Mock;
     listByEntity: jest.Mock;
+    list: jest.Mock;
     create: jest.Mock;
     deleteById: jest.Mock;
   };
@@ -45,6 +46,7 @@ describe("FilesService", () => {
       findById: jest.fn(),
       findByIdOrFail: jest.fn(),
       listByEntity: jest.fn(),
+      list: jest.fn(),
       create: jest.fn(async (data: Partial<FileObjectEntity>) => ({ id: "file-1", ...data }) as FileObjectEntity),
       deleteById: jest.fn(async () => undefined),
     };
@@ -229,6 +231,38 @@ describe("FilesService", () => {
 
       expect(fileObjectRepository.listByEntity).toHaveBeenCalledWith("STUDENT", "student-1");
       expect(result).toBe(rows);
+    });
+  });
+
+  describe("list", () => {
+    it("converts page/pageSize into skip/take and passes every optional filter through", async () => {
+      const rows = [{ id: "file-1" } as FileObjectEntity];
+      fileObjectRepository.list.mockResolvedValue([rows, 1]);
+
+      const result = await service.list({ entityType: "STUDENT", entityId: "student-1", q: "report", page: 3, pageSize: 10 });
+
+      expect(fileObjectRepository.list).toHaveBeenCalledWith({
+        entityType: "STUDENT",
+        entityId: "student-1",
+        q: "report",
+        skip: 20,
+        take: 10,
+      });
+      expect(result).toEqual({ items: rows, total: 1 });
+    });
+
+    it("defaults to page 1 / pageSize 20 when neither is given, with every filter omitted", async () => {
+      fileObjectRepository.list.mockResolvedValue([[], 0]);
+
+      await service.list({});
+
+      expect(fileObjectRepository.list).toHaveBeenCalledWith({
+        entityType: undefined,
+        entityId: undefined,
+        q: undefined,
+        skip: 0,
+        take: 20,
+      });
     });
   });
 });

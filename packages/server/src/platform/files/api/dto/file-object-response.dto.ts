@@ -49,3 +49,12 @@ export class FileObjectResponseDto {
   @ApiProperty({ nullable: true, format: "uuid", type: String })
   updatedBy!: string | null;
 }
+
+/** `GET /files`'s real response envelope — a real `@nestjs/swagger`-decorated class, not a bare interface (an interface here would silently produce zero generated contract types, the same documented pitfall `platform/comms/api/messages.controller.ts`'s own `ListMessagesResponseDto` is the cautionary example of). Mirrors `UserListResponseDto`'s exact shape. */
+export class FileListResponseDto {
+  @ApiProperty({ type: [FileObjectResponseDto] })
+  items!: FileObjectResponseDto[];
+
+  @ApiProperty({ description: "Total row count matching the applied filters, ignoring page/pageSize" })
+  total!: number;
+}

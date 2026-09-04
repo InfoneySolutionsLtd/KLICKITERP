@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Banknote, Boxes, CheckSquare, ChevronDown, CreditCard, FileBarChart, GraduationCap, HandCoins, Landmark, LayoutDashboard, Layers, Megaphone, Package, Palette, Receipt, ServerCog, Settings, ShieldCheck, Truck, UserCog, Users, Wallet, WalletCards } from "lucide-react";
+import { Banknote, Boxes, CheckSquare, ChevronDown, CreditCard, FileBarChart, Folder, GraduationCap, HandCoins, Landmark, LayoutDashboard, Layers, Megaphone, Package, Palette, Receipt, ServerCog, Settings, ShieldCheck, TrendingUp, Truck, UserCog, Users, Wallet, WalletCards } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hasAnyRole } from "@/lib/permissions";
@@ -67,6 +67,15 @@ const NAV_ITEMS: NavItem[] = [
   // permissions, no permission-list endpoint exists to target them
   // precisely from a coarse role-name check).
   { href: "/students/classes", labelKey: "classes", icon: Layers, allowedRoles: [] },
+  // Student promotion batches — a real backend surface (`PromotionController`,
+  // FR-BILL-005) that had zero frontend anywhere. Same `allowedRoles: []`/
+  // `<QueryBoundary>`-is-the-real-gate reasoning as every other entry in
+  // this section: `students:promotion:execute` is the one, only permission
+  // on this controller, no permission-list endpoint exists to target it
+  // precisely from a coarse role-name check. `TrendingUp` (confirmed unused
+  // elsewhere in this file, and a real `lucide-react` export) — a
+  // grade-advancement glyph, distinct from every icon already claimed above.
+  { href: "/students/promotion-batches", labelKey: "studentsPromotionBatches", icon: TrendingUp, allowedRoles: [] },
   // Phase 6 Slice 3 (Billing core loop, Module 9) — same `allowedRoles: []`/
   // `<QueryBoundary>`-is-the-real-gate reasoning as `students`/`classes`
   // above: `billing:fee-category:view`/`billing:fee-structure:view`/
@@ -159,12 +168,30 @@ const NAV_ITEMS: NavItem[] = [
   // other entry above: `approvals:instance:view` is the real permission, no
   // permission-list endpoint exists to target it precisely from a coarse
   // role-name check. Points at the inbox (`GET /approvals/instances/inbox`)
-  // — this engine already backs 18 real domain codes (Payments' receipt
-  // reversals plus 17 more across Billing/Wallet/Procurement/Payroll/
+  // — this engine already backs 24 real domain codes (Payments' receipt
+  // reversals plus 23 more across Billing/Wallet/Procurement/Payroll/
   // Banking/Fixed Assets/Inventory/Expenses/GL, per the `0900` seed
   // migration), so this one nav entry is genuinely reusable beyond Payments,
   // not a Payments-specific link routed through a generic-sounding name.
-  { href: "/approvals", labelKey: "approvals", icon: CheckSquare, allowedRoles: [] },
+  //
+  // Converted from a flat leaf into a `children`-bearing dropdown (the same
+  // conversion Users/Billing/Wallet already went through) once the workflow
+  // admin UI shipped — `approvals:workflow:view`/`:manage` and
+  // `approvals:delegation:view`/`:manage` gate the 2 new children, same
+  // `allowedRoles: []`/`<QueryBoundary>`-is-the-real-gate reasoning as every
+  // other entry. `href` stays the inbox (its own first/most-used child, per
+  // this file's own established convention for a dropdown's own `href`).
+  {
+    href: "/approvals",
+    labelKey: "approvals",
+    icon: CheckSquare,
+    allowedRoles: [],
+    children: [
+      { href: "/approvals", labelKey: "approvalsInbox" },
+      { href: "/approvals/workflows", labelKey: "approvalsWorkflows" },
+      { href: "/approvals/delegations", labelKey: "approvalsDelegations" },
+    ],
+  },
   // Phase 6 Slice 11 (Part 2) — the Wallet module's first nav entry (Module
   // 11 had NO home in the flat nav at all before this pass). Styled as a
   // `children`-bearing dropdown FROM THE START (the same mechanism Billing
@@ -1047,6 +1074,20 @@ const NAV_ITEMS: NavItem[] = [
       { href: "/reports/schedules", labelKey: "reportsSchedules" },
     ],
   },
+  // Files module standalone browser — a real backend surface
+  // (`FilesController`, `platform/files`) that previously had no
+  // general-purpose UI anywhere, only per-entity inline widgets (voucher
+  // attachments, sponsor agreements, etc.). A new top-level, single LEAF
+  // item, same shape as `license`/`opsBackups` above (one screen, no
+  // `children` dropdown), inserted after Reports — the most-recently-shipped
+  // module before this one — per this file's own established "insert after
+  // the most-recently-shipped module" ordering convention. Same
+  // `allowedRoles: []`/`<QueryBoundary>`-is-the-real-gate reasoning as every
+  // other entry above: `files:file:view` is the real permission, no
+  // permission-list endpoint exists to target it precisely from a coarse
+  // role-name check. `Folder` (confirmed unused elsewhere in this file, and
+  // a real `lucide-react` export) — a clear semantic fit for a file browser.
+  { href: "/files", labelKey: "files", icon: Folder, allowedRoles: [] },
 ];
 
 /**

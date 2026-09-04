@@ -135,6 +135,26 @@ export class FilesService {
     return this.fileObjectRepository.listByEntity(entityType, entityId);
   }
 
+  /** The browsable, cross-entity list backing `GET /files` — mirrors `UsersService.list()`'s exact page/pageSize-to-skip/take shape. */
+  async list(options: {
+    entityType?: string;
+    entityId?: string;
+    q?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ items: FileObjectEntity[]; total: number }> {
+    const page = options.page ?? 1;
+    const pageSize = options.pageSize ?? 20;
+    const [items, total] = await this.fileObjectRepository.list({
+      entityType: options.entityType,
+      entityId: options.entityId,
+      q: options.q,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+    return { items, total };
+  }
+
   async findByIdOrFail(fileId: string): Promise<FileObjectEntity> {
     return this.fileObjectRepository.findByIdOrFail(fileId);
   }

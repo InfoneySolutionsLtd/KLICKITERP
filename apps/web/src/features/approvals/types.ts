@@ -1,4 +1,11 @@
-import type { ActionResponseDto, InstanceDetailResponseDto, InstanceResponseDto } from "@klickit/contracts";
+import type {
+  ActionResponseDto,
+  DelegationResponseDto,
+  InstanceDetailResponseDto,
+  InstanceResponseDto,
+  WorkflowDefResponseDto,
+  WorkflowVersionResponseDto,
+} from "@klickit/contracts";
 
 /**
  * Phase 6 Slice 5 (Approvals engine frontend) — the SAME class of codegen gap
@@ -33,6 +40,30 @@ export type InstanceDetail = Omit<InstanceDetailResponseDto, "submittedAt" | "de
   submittedAt: string;
   decidedAt: string | null;
   actions: Action[];
+};
+
+/**
+ * Same Date-vs-string codegen gap as `Instance`/`Action`/`InstanceDetail`
+ * above, applied to the 3 workflow-admin response DTOs (`WorkflowDefResponseDto`/
+ * `WorkflowVersionResponseDto`/`DelegationResponseDto` all declare
+ * `createdAt`/`updatedAt` as `z.coerce.date()` — same real wire shape: a
+ * plain ISO string). `LevelResponseDto`/`RoutingRuleResponseDto` carry no
+ * Date-typed fields at all, so no override type is needed for either — the
+ * raw `@klickit/contracts` types are used directly for those two.
+ */
+export type WorkflowDef = Omit<WorkflowDefResponseDto, "createdAt" | "updatedAt"> & {
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkflowVersion = Omit<WorkflowVersionResponseDto, "createdAt" | "updatedAt"> & {
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Delegation = Omit<DelegationResponseDto, "createdAt" | "updatedAt"> & {
+  createdAt: string;
+  updatedAt: string;
 };
 
 /**

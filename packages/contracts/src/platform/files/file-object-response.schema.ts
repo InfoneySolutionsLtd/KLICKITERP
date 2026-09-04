@@ -27,3 +27,9 @@ export const FileObjectResponseDtoSchema = z.object({
     updatedBy: z.string().nullable(),
 });
 export type FileObjectResponseDto = z.infer<typeof FileObjectResponseDtoSchema>;
+
+export const FileListResponseDtoSchema = z.object({
+    items: z.array(FileObjectResponseDtoSchema),
+    total: z.number(),
+});
+export type FileListResponseDto = z.infer<typeof FileListResponseDtoSchema>;

@@ -184,7 +184,6 @@ export * from "./platform/comms/update-template.schema";
 export * from "./platform/comms/update-trigger-binding.schema";
 export * from "./platform/document-verification/verify-document-response.schema";
 export * from "./platform/files/file-object-response.schema";
-export * from "./platform/files/list-files-query.schema";
 export * from "./platform/files/signed-url-query.schema";
 export * from "./platform/files/signed-url-response.schema";
 export * from "./platform/files/upload-file-fields.schema";

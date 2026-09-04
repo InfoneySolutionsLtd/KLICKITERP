@@ -169,7 +169,12 @@
       "reportsCatalogue": "Catalogue",
       "reportsSaved": "Saved Reports",
       "reportsSchedules": "Schedules",
-      "guardians": "Parents"
+      "guardians": "Parents",
+      "approvalsInbox": "Approvals Inbox",
+      "approvalsWorkflows": "Workflows",
+      "approvalsDelegations": "Delegations",
+      "studentsPromotionBatches": "Promotion Batches",
+      "files": "Files"
     },
     "topbar": {
       "searchPlaceholder": "Search…",
@@ -580,6 +585,74 @@
         "receivesBilling": "Receives billing",
         "unlink": "Unlink",
         "unlinkError": "Couldn't unlink this student. Please try again."
+      }
+    },
+    "promotionBatches": {
+      "list": {
+        "pageTitle": "Promotion Batches",
+        "pageSubtitle": "Year-end batches that moved students from one class to the next.",
+        "newBatchAction": "New Promotion Batch",
+        "listTitle": "Batches",
+        "listDescription": "Every promotion batch that has run.",
+        "columns": {
+          "fromYear": "From Year",
+          "toYear": "To Year",
+          "executedAt": "Executed",
+          "results": "Results"
+        },
+        "resultsSummary": "{promoted} promoted, {failed} failed"
+      },
+      "newForm": {
+        "backToList": "Back to promotion batches",
+        "pageTitle": "New Promotion Batch",
+        "pageSubtitle": "Move a group of students from their current class to the next, year over year.",
+        "scopeTitle": "Scope",
+        "fromYearLabel": "From Academic Year",
+        "toYearLabel": "To Academic Year",
+        "selectYear": "Select a year…",
+        "classesLabel": "Source Classes",
+        "selectClasses": "Select classes…",
+        "classesHint": "Active students in the selected classes become candidates below.",
+        "yearsRequiredError": "Select both the from and to academic years.",
+        "classesRequiredError": "Select at least one source class.",
+        "genericError": "Something went wrong. Please try again.",
+        "loadingCandidates": "Loading…",
+        "loadCandidatesButton": "Load Candidates",
+        "candidatesTitle": "Candidates ({count})",
+        "noBalanceInteractionHint": "This does not check outstanding fee balances or affect wallets — it only changes each student's class and stream.",
+        "noCandidates": "No active students found in the selected classes.",
+        "reviewAndSubmit": "Promote {count} Students",
+        "confirmDialog": {
+          "title": "Confirm promotion",
+          "body": "{count} students will be promoted from {fromYear} to {toYear}. This can't be undone.",
+          "confirmButton": "Promote Students"
+        },
+        "inFlightNoticeTitle": "Do not navigate away",
+        "inFlightNotice": "This promotion batch is running. Leaving this page won't stop it, but you won't see the result.",
+        "submitting": "Promoting…"
+      },
+      "candidatesTable": {
+        "student": "Student",
+        "currentClass": "Current Class",
+        "targetClass": "Target Class",
+        "targetStream": "Target Stream",
+        "exclude": "Exclude",
+        "noTargetClass": "No target class",
+        "graduatingBadge": "Graduating",
+        "noStream": "No stream"
+      },
+      "detail": {
+        "backToList": "Back to promotion batches",
+        "batchTitle": "{fromYear} → {toYear}",
+        "executedAtLabel": "Executed",
+        "summaryTitle": "Results"
+      },
+      "summaryTable": {
+        "totalRequestedLabel": "Total Requested",
+        "promotedCountLabel": "Promoted",
+        "failedCountLabel": "Failed",
+        "studentColumn": "Student",
+        "reasonColumn": "Reason"
       }
     }
   },
@@ -2193,6 +2266,190 @@
           "REJECT": "Rejected",
           "RETURN": "Returned"
         }
+      }
+    },
+    "workflows": {
+      "list": {
+        "pageTitle": "Approval Workflows",
+        "pageSubtitle": "Manage workflow definitions, publish new versions, and view approver configuration.",
+        "listTitle": "Workflow Definitions",
+        "listDescription": "Every domain code registered for approval routing.",
+        "searchPlaceholder": "Search by domain code or name…",
+        "noResultsMatchSearch": "No workflows match your search.",
+        "columns": {
+          "domainCode": "Domain Code",
+          "name": "Name",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "statusActive": "Active",
+        "statusInactive": "Inactive"
+      },
+      "createDialog": {
+        "trigger": "New Workflow",
+        "title": "Register a new workflow",
+        "description": "Creates a workflow definition for a domain code. You'll still need to publish a version with at least one level before anything can submit against it.",
+        "domainCodeLabel": "Domain Code",
+        "domainCodePlaceholder": "e.g. BILLING_WAIVER",
+        "domainCodeHint": "An open string namespace matching the code used by the submitting service. Cannot be changed after creation.",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Fee Waiver Approval",
+        "creating": "Creating…",
+        "createButton": "Create",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "editDialog": {
+        "title": "Edit \"{name}\"",
+        "description": "Update this workflow's name or active status.",
+        "domainCodeLabel": "Domain Code",
+        "nameLabel": "Name",
+        "isActiveLabel": "Active",
+        "isActiveHint": "Unchecking this archives the workflow. Existing in-flight approval requests are unaffected.",
+        "saving": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "detail": {
+        "backToList": "Back to workflows",
+        "backToDefinition": "Back to workflow",
+        "versionsTitle": "Versions",
+        "versionsDescription": "Version history for this workflow — publishing a new version supersedes the current one without deleting it.",
+        "publishNewVersionAction": "Publish New Version",
+        "currentBadge": "Current",
+        "supersededBadge": "Superseded",
+        "setCurrentAction": "Set as Current",
+        "columns": {
+          "version": "Version",
+          "status": "Status",
+          "createdAt": "Created",
+          "actions": "Actions"
+        },
+        "list": {
+          "statusActive": "Active",
+          "statusInactive": "Inactive"
+        }
+      },
+      "publish": {
+        "backToDefinition": "Back to workflow",
+        "pageTitle": "Publish New Version — {name}",
+        "pageSubtitleExisting": "Starting from version {version}'s current levels and routing rules. Publishing creates a new version and makes it current immediately.",
+        "pageSubtitleFirst": "This workflow has no published version yet. Add at least one level to publish its first version.",
+        "loading": "Loading…",
+        "levelsTitle": "Approval Levels",
+        "levelsDescription": "Executed in order, top to bottom. At least one level is required.",
+        "routingRulesTitle": "Routing Rules",
+        "routingRulesDescription": "Optional. Routes a request to a subset of levels based on its amount and/or the initiator's department. If no rules match (or none exist), all levels apply.",
+        "cancel": "Cancel",
+        "publishing": "Publishing…",
+        "publishButton": "Publish Version",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "versionDetail": {
+        "title": "Version {version}",
+        "levelsTitle": "Approval Levels",
+        "levelsDescription": "This version's real, published levels.",
+        "routingRulesTitle": "Routing Rules",
+        "routingRulesDescription": "This version's real, published routing rules."
+      },
+      "levelEditor": {
+        "seq": "Order",
+        "approverType": "Approver Type",
+        "approver": "Approver",
+        "mode": "Mode",
+        "quorum": "Quorum",
+        "approverTypeRole": "Role",
+        "approverTypeUsers": "Specific Users",
+        "approverTypeDeptHead": "Department Head",
+        "modeSequential": "Sequential",
+        "modeParallel": "Parallel",
+        "loadingRoles": "Loading roles…",
+        "selectRole": "Select a role…",
+        "searchRoles": "Search roles…",
+        "noRolesFound": "No roles found.",
+        "loadingUsers": "Loading users…",
+        "selectUsers": "Select users…",
+        "deptHeadHint": "Resolved automatically from the initiator's own department.",
+        "removeLevel": "Remove level",
+        "addLevel": "Add Level",
+        "incompleteRowsWarning": "One or more levels are missing a required approver — publishing is disabled until they're complete.",
+        "editTitle": "Edit Level {seq}",
+        "editDescription": "Fix this level's approver, mode, or quorum. To add or remove a level, publish a new version instead.",
+        "saving": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "routingRuleEditor": {
+        "minAmount": "Min Amount",
+        "maxAmount": "Max Amount",
+        "levelSubset": "Levels",
+        "department": "Department",
+        "noUpperBound": "No upper bound",
+        "allLevels": "All levels",
+        "anyDepartment": "Any department",
+        "loadingDepartments": "Loading departments…",
+        "searchDepartments": "Search departments…",
+        "noDepartmentsFound": "No departments found.",
+        "removeRule": "Remove rule",
+        "addRule": "Add Rule",
+        "noRulesHint": "No routing rules — every request under this workflow goes through all levels regardless of amount.",
+        "incompleteRowsWarning": "One or more rules are missing a minimum amount — publishing is disabled until they're complete.",
+        "levelOption": "Level {seq}",
+        "editTitle": "Edit Routing Rule",
+        "editDescription": "Fix this rule's amount range, levels, or department.",
+        "saving": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "delegations": {
+      "list": {
+        "pageTitle": "Delegations",
+        "pageSubtitle": "Date-bounded delegation of approval authority from one user to another.",
+        "listTitle": "Delegations",
+        "listDescription": "Every configured delegation, active or not.",
+        "searchPlaceholder": "Search by user or reason…",
+        "noResultsMatchSearch": "No delegations match your search.",
+        "columns": {
+          "fromUser": "From",
+          "toUser": "To",
+          "startsOn": "Starts",
+          "endsOn": "Ends",
+          "reason": "Reason",
+          "actions": "Actions"
+        }
+      },
+      "createDialog": {
+        "trigger": "New Delegation",
+        "title": "Create a delegation",
+        "description": "While active, the delegate can act on the delegator's behalf for approvals routed to them.",
+        "fromUserLabel": "From (delegator)",
+        "toUserLabel": "To (delegate)",
+        "startsOnLabel": "Starts On",
+        "endsOnLabel": "Ends On",
+        "reasonLabel": "Reason",
+        "reasonPlaceholder": "e.g. Annual leave",
+        "loadingUsers": "Loading users…",
+        "selectUser": "Select a user…",
+        "searchUsers": "Search users…",
+        "noUsersFound": "No users found.",
+        "creating": "Creating…",
+        "createButton": "Create",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "editDialog": {
+        "title": "Edit delegation",
+        "description": "Update this delegation's date range or reason.",
+        "fromUserLabel": "From (delegator)",
+        "toUserLabel": "To (delegate)",
+        "immutableUsersHint": "The delegator and delegate can't be changed here — delete this delegation and create a new one instead.",
+        "startsOnLabel": "Starts On",
+        "endsOnLabel": "Ends On",
+        "reasonLabel": "Reason",
+        "saving": "Saving…",
+        "genericError": "Something went wrong. Please try again."
+      },
+      "deleteDialog": {
+        "title": "Delete this delegation?",
+        "description": "This ends the delegation immediately. This can't be undone, though a new delegation can be created at any time.",
+        "deleting": "Deleting…",
+        "genericError": "Something went wrong. Please try again."
       }
     }
   },
@@ -8323,7 +8580,10 @@
         "students": "Students",
         "wallet": "Wallet",
         "dashboard": "Dashboard",
-        "audit": "Audit"
+        "audit": "Audit",
+        "banking": "Banking",
+        "inventory": "Inventory",
+        "fixed-assets": "Fixed Assets"
       }
     },
     "detail": {
@@ -8476,7 +8736,10 @@
       "pageSubtitle": "Your own saved parameter sets — load one back into a report in one click.",
       "listTitle": "My saved reports",
       "listDescription": "Saved from the \"Save parameters\" button on any report's own page.",
-      "columns": { "report": "Report", "name": "Name" },
+      "columns": {
+        "report": "Report",
+        "name": "Name"
+      },
       "loadAction": "Load",
       "renameDialog": {
         "title": "Rename \"{name}\"",
@@ -8497,7 +8760,13 @@
       "pageSubtitle": "Reports that run automatically and email a CSV to your chosen recipients.",
       "listTitle": "My schedules",
       "listDescription": "Created from the \"Schedule\" button on any report's own page.",
-      "columns": { "report": "Report", "cron": "Schedule", "recipients": "Recipients", "status": "Status", "lastRun": "Last Run" },
+      "columns": {
+        "report": "Report",
+        "cron": "Schedule",
+        "recipients": "Recipients",
+        "status": "Status",
+        "lastRun": "Last Run"
+      },
       "active": "Active",
       "inactive": "Inactive",
       "neverRun": "Never run",
@@ -8546,6 +8815,37 @@
         "resultFailed": "Failed",
         "running": "Running…",
         "runButton": "Run"
+      }
+    }
+  },
+  "files": {
+    "list": {
+      "pageTitle": "Files",
+      "pageSubtitle": "Every file uploaded anywhere in the system.",
+      "filtersTitle": "Filters",
+      "searchPlaceholder": "Search by filename…",
+      "filters": {
+        "entityTypeLabel": "Entity Type",
+        "entityTypePlaceholder": "e.g. STUDENT",
+        "entityIdLabel": "Entity ID",
+        "entityIdPlaceholder": "Full ID"
+      },
+      "listTitle": "Files",
+      "listDescription": "Every file matching the current filters.",
+      "openError": "Couldn't open this file. Please try again.",
+      "columns": {
+        "originalName": "File",
+        "entityType": "Entity Type",
+        "entityId": "Entity ID",
+        "sizeBytes": "Size",
+        "mime": "Type",
+        "createdAt": "Uploaded"
+      },
+      "deleteDialog": {
+        "title": "Delete this file?",
+        "description": "\"{name}\" will be permanently deleted. This can't be undone.",
+        "deleting": "Deleting…",
+        "genericError": "Something went wrong. Please try again."
       }
     }
   }

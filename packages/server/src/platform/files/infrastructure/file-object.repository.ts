@@ -28,6 +28,32 @@ export class FileObjectRepository {
     });
   }
 
+  /**
+   * The browsable, cross-entity list — every filter optional, matching
+   * `entityType`/`entityId` becoming genuinely nullable at the API surface
+   * (see `files.controller.ts`'s own doc comment). Copies
+   * `UsrUserRepository.list()`'s exact query-builder shape. `listByEntity()`
+   * above stays untouched, still used by `domains/expenses/application/vouchers.service.ts`.
+   */
+  async list(
+    options: { entityType?: string; entityId?: string; q?: string; skip?: number; take?: number } = {},
+  ): Promise<[FileObjectEntity[], number]> {
+    const qb = this.repo.createQueryBuilder("f");
+    if (options.entityType) {
+      qb.andWhere("f.entityType = :entityType", { entityType: options.entityType });
+    }
+    if (options.entityId) {
+      qb.andWhere("f.entityId = :entityId", { entityId: options.entityId });
+    }
+    if (options.q) {
+      qb.andWhere("f.originalName ILIKE :q", { q: `%${options.q}%` });
+    }
+    qb.orderBy("f.createdAt", "DESC");
+    if (options.skip !== undefined) qb.skip(options.skip);
+    if (options.take !== undefined) qb.take(options.take);
+    return qb.getManyAndCount();
+  }
+
   async create(data: Partial<FileObjectEntity>, manager?: EntityManager): Promise<FileObjectEntity> {
     const repo = manager?.getRepository(FileObjectEntity) ?? this.repo;
     return repo.save(repo.create(data));
