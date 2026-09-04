@@ -26,7 +26,7 @@ export const UpdateConcessionSchemeDtoSchema = z.object({
     kind: z.enum(["WAIVER", "DISCOUNT", "SCHOLARSHIP", "BURSARY"]).optional(),
     calc: z.enum(["PERCENT", "FIXED"]).optional(),
     value: z.string().regex(/^-?\d+(\.\d+)?$/).optional(),
-    categoryScope: z.array(z.string().uuid()).optional(),
+    categoryScope: z.array(z.string().uuid()).nullable().optional(),
     allowsStacking: z.boolean().optional(),
     glAccountId: z.string().uuid().optional(),
 });

@@ -95,34 +95,44 @@ export function ConcessionSchemeDialog({
       return;
     }
     try {
-      // Judgment call: an empty selection is sent as `undefined` (field
-      // omitted), never `[]` — `UpdateConcessionSchemeDto.categoryScope`
-      // only accepts `string[] | undefined` (confirmed by reading
-      // `concession-scheme.dto.ts`; there's no clean "explicitly clear back
-      // to unrestricted" value in the real contract), and the sibling
-      // `bill_sponsor_award.categoryScope` consumer in
-      // `invoicing.service.ts` treats a truthy-but-empty array as "matches
-      // no category" (`award.categoryScope && !includes(...)` — `[]` is
-      // truthy in JS), not "unrestricted". Rather than risk that same
-      // footgun on the scheme side, an empty chip selection here omits the
-      // field on update (server keeps whatever `categoryScope` the scheme
-      // already had) and stores `undefined` -> server-side `null` on
-      // create. Known gap: once a scheme has a non-empty scope, this dialog
-      // can't clear it back to "any category" — only narrow it further or
-      // pick a different set.
-      const payload = {
-        name,
-        kind,
-        calc,
-        value,
-        categoryScope: categoryScope.length > 0 ? categoryScope : undefined,
-        allowsStacking,
-        glAccountId,
-      };
       if (mode === "create") {
-        await createMutation.mutateAsync(payload);
+        // `CreateConcessionSchemeDto.categoryScope` is plain `string[] |
+        // undefined` (no `null`) — `ConcessionSchemesService.create()`
+        // already normalizes an omitted scope to `null` server-side
+        // (`input.categoryScope ?? null`), so an empty selection simply
+        // omits the field, nothing further to do here.
+        await createMutation.mutateAsync({
+          name,
+          kind,
+          calc,
+          value,
+          categoryScope: categoryScope.length > 0 ? categoryScope : undefined,
+          allowsStacking,
+          glAccountId,
+        });
       } else {
-        await updateMutation.mutateAsync(payload);
+        // `UpdateConcessionSchemeDto.categoryScope` is genuinely `string[] |
+        // null | undefined` (widened from `string[] | undefined` — see that
+        // DTO's own doc comment for why): `undefined` means "leave the
+        // current scope untouched", `null` explicitly clears it back to
+        // "any category". An empty chip selection is ambiguous on its own
+        // (never touched vs. deliberately cleared), so it's resolved by
+        // comparing against the scheme's own current scope: only send an
+        // explicit `null` when the scheme actually HAD a real scope that's
+        // now empty (a genuine clear); if it was already empty, omit the
+        // field entirely rather than sending a no-op `null` on every save.
+        const hadScope = (scheme?.categoryScope?.length ?? 0) > 0;
+        const categoryScopeChange: string[] | null | undefined =
+          categoryScope.length > 0 ? categoryScope : hadScope ? null : undefined;
+        await updateMutation.mutateAsync({
+          name,
+          kind,
+          calc,
+          value,
+          categoryScope: categoryScopeChange,
+          allowsStacking,
+          glAccountId,
+        });
       }
       onOpenChange(false);
     } catch (err) {

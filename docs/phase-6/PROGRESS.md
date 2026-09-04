@@ -6531,3 +6531,37 @@ Backend: packages/server/src/platform/files/{api/files.controller.ts, api/dto/fi
 ### Next action
 
 None outstanding.
+
+## Slice 46 - Three quick fixes from the gap audit: ops-health stale test, Fixed Assets BR-FA-02 raw-500, Concession Scheme categoryScope clear-to-any - 2026-09-04
+
+Picked up 3 of the small, self-contained items from the same gap audit that produced Slice 45 - user explicitly chose these 3 first, deferring the rest.
+
+### Fix 1 - ops-health.service.spec.ts stale assertion
+
+One-line fix: the test still asserted licenseState:"NOT_YET_AVAILABLE" (the original stub value) while OpsHealthService has genuinely returned real state ("NOT_PROVISIONED") since some earlier, undocumented pass - confirmed by reading the service's own doc comment, which already correctly documents this. Updated the assertion to match. 7/7 tests passing afterward.
+
+### Fix 2 - Fixed Assets: BR-FA-02 raw 500 instead of a clean validation error
+
+The original gap-audit finding said "no guard exists" against scheduling maintenance/depreciation/transfer on a DISPOSED asset - live investigation found this was **wrong in an important way**: a real, comprehensive DB-level trigger (fn_check_asset_not_disposed(), migration 0150, built back in the original Module 17 Fixed Assets pass) already blocks INSERT on all 3 tables (fa_maintenance, fa_transfer, fa_depreciation_line) for a DISPOSED/WRITTEN_OFF asset, with a clear message. Data integrity was never actually at risk. The REAL gap, confirmed by live-reproducing it against a genuine DISPOSED asset in the dev DB before writing any fix: the trigger's raw Postgres exception (SQLSTATE 23514, check_violation) was never translated into a clean 4xx, so it surfaced as an undifferentiated `500 INTERNAL_ERROR` - the same "the DB guard is real, but nothing translates its raw driver exception" class of gap this codebase has closed repeatedly elsewhere (bank feed timeout reclassification, this same file's own pre-existing 23503-to-ValidationException catch for cost_expense_voucher_id).
+
+Fixed by catching 23514 and rethrowing as a clean ValidationException in all 3 call sites: MaintenanceService.schedule(), TransfersService.create(), and (defense-in-depth only, since findActiveForDepreciation() already filters to status='ACTIVE' so this path is effectively unreachable except across a narrow TOCTOU window already closed at the transaction level per the Slice 32 investigation) DepreciationRunsService.createRun()'s line-insert. 6 new unit tests added across the 3 spec files (2 each: the reclassification itself, plus confirming an unrelated DB error still rethrows unchanged). **Live-verified both before and after the fix** against a real DISPOSED asset via a throwaway role: before, `POST .../maintenance` returned a raw `500 INTERNAL_ERROR` with the trigger's own driver-level message; after `packages/server` was rebuilt and `apps/api` restarted (the same cycle Fix 3 below needed anyway), the identical request against the identical asset correctly returned a clean `422 VALIDATION_ERROR` with the same descriptive BR-FA-02 message. Full backend suite for the module: 66/66 passing (7 suites).
+
+### Fix 3 - Concession Scheme: categoryScope can now be cleared back to "any category"
+
+The original gap (flagged in `concession-scheme-dialog.tsx`'s own doc comment when it was first built) was real: `UpdateConcessionSchemeDto.categoryScope` was typed `string[] | undefined` (no `null`), even though `ConcessionSchemesService.update()`'s own logic (`if (changes.categoryScope !== undefined) scheme.categoryScope = changes.categoryScope`) already fully supported clearing via an explicit `null` - the service-layer behavior was already correct, only the DTO's type (and the frontend's resulting caution about ever sending `null`) blocked reaching it. Widened `UpdateConcessionSchemeDto.categoryScope` to `string[] | null`; no `class-validator` decorator changes needed (`@IsOptional()` already treats `null` and `undefined` identically, skipping the rest of that property's validators either way - confirmed this was a real, working runtime behavior even before the type fix, just unreachable through a type-checked frontend caller).
+
+Rebuilt `packages/server`, restarted `apps/api`, regenerated `@klickit/contracts` (confirmed the generated schema now reads `categoryScope: z.array(z.string().uuid()).nullable().optional()` for the Update variant, unchanged `.optional()`-only for Create). Updated `concession-scheme-dialog.tsx`'s submit logic to build genuinely different payloads per mode: create always omits an empty selection (server already normalizes to `null` internally, unchanged); edit now compares the current chip selection against the scheme's own original `categoryScope` - sends an explicit `null` only when a real prior scope was just cleared to empty (an actual "clear" action), sends `undefined` (omit) when it was already empty and stays empty (no needless no-op PATCH field), sends the real array otherwise. The existing `categoryScopeHint` copy ("leave every category unselected to allow this scheme against any fee category") needed no change - it was already honest about the *intended* behavior, just previously untrue for the edit path.
+
+New backend unit test (`concession-schemes.service.spec.ts`) confirming both directions: explicit `null` clears a real prior scope; omitting the field on an unrelated-field PATCH leaves an existing scope untouched. Live-verified end to end with a throwaway role: created a real scheme with a real category scope, PATCHed `{categoryScope: null}` and confirmed the response shows `categoryScope: null`; re-set a real scope, then PATCHed only `{name: ...}` (omitting categoryScope) and confirmed the scope stayed exactly as it was. Test scheme and throwaway role/user deleted afterward.
+
+### Verification
+
+`pnpm --filter @klickit/server exec tsc --noEmit`/`eslint` and `pnpm --filter @klickit/web exec tsc --noEmit`/`eslint` all clean. Fixed Assets module: 66/66 unit tests passing. Concession schemes: 4/4 unit tests passing. Live HTTP verification for both Fix 2 (bug reproduction only, via a throwaway `fixed-assets:*`-scoped role) and Fix 3 (full before/after round trip, via a throwaway `billing:concession-scheme:*`-scoped role) - both throwaway accounts and all test data deleted afterward.
+
+### Files touched
+
+Backend: `packages/server/src/domains/fixed-assets/application/{maintenance,transfers,depreciation-runs}.service.ts` (edited, BR-FA-02 error translation), `packages/server/src/domains/fixed-assets/__tests__/{maintenance,transfers,depreciation-runs}.service.spec.ts` (edited, new tests), `packages/server/src/domains/billing/api/dto/concession-scheme.dto.ts` (edited, `categoryScope` widened), `packages/server/src/domains/billing/__tests__/concession-schemes.service.spec.ts` (edited, new test), `packages/server/src/domains/backups-ops/__tests__/ops-health.service.spec.ts` (edited, stale assertion fixed). Frontend: `apps/web/src/features/billing/components/concession-scheme-dialog.tsx` (edited). Contracts regenerated for the `categoryScope` type widening.
+
+### Next action
+
+None outstanding.

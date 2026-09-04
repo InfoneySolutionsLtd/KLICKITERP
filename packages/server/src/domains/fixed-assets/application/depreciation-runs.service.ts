@@ -18,6 +18,9 @@ import { divideMoneyByInt } from "./money-divide.util";
 /** `appr_workflow_def.domain_code` monthly depreciation runs submit under — the `0900` seed registers a single-level System-Admin workflow under this code (`seedSingleLevelWorkflow()`). */
 export const DEPRECIATION_APPROVAL_DOMAIN_CODE = "DEPRECIATION";
 
+/** Postgres check_violation SQLSTATE — see `maintenance.service.ts`'s own `PG_CHECK_VIOLATION` doc comment for the full BR-FA-02 story. */
+const PG_CHECK_VIOLATION = "23514";
+
 /**
  * THE monthly depreciation engine (FR-FA-003.1, BR-FA-01). One
  * `fa_depreciation_run` per `gl_period` (`uq_fa_depreciation_run_period_id`),
@@ -118,10 +121,31 @@ export class DepreciationRunsService {
       }
 
       const nbvAfter = asset.cost.subtract(asset.accumDepreciation.add(charge));
-      await this.lineRepository.create(
-        { runId: run.id, assetId: asset.id, amount: charge, nbvAfter },
-        em,
-      );
+      try {
+        await this.lineRepository.create(
+          { runId: run.id, assetId: asset.id, amount: charge, nbvAfter },
+          em,
+        );
+      } catch (error) {
+        // `findActiveForDepreciation()` already filters to `status='ACTIVE'`,
+        // so BR-FA-02's `fn_check_asset_not_disposed()` trigger (migration
+        // `0150`) should never actually fire here in practice — this is
+        // defense-in-depth against the narrow TOCTOU window between that
+        // SELECT and this INSERT (already closed at the transaction level
+        // by this codebase's own `runInTransaction()` REPEATABLE READ +
+        // retry-on-`40001` convention, per the Slice 32 investigation that
+        // confirmed this same race doesn't actually exist for Fixed Assets
+        // disposal), kept here purely so a genuinely unexpected hit still
+        // surfaces as a clean 4xx instead of a raw 500 — same translation
+        // `maintenance.service.ts`/`transfers.service.ts` apply for the
+        // exact same trigger.
+        if (isCheckViolation(error)) {
+          throw new ValidationException(
+            `BR-FA-02: asset ${asset.id} cannot receive further transactions — status changed to disposed/written-off since this run started`,
+          );
+        }
+        throw error;
+      }
     }
 
     return run;
@@ -304,6 +328,13 @@ export class DepreciationRunsService {
   async list(filter: ListFaDepreciationRunsFilter = {}): Promise<FaDepreciationRunEntity[]> {
     return this.runRepository.list(filter);
   }
+}
+
+function isCheckViolation(error: unknown): boolean {
+  const code =
+    (error as { code?: string; driverError?: { code?: string } })?.code ??
+    (error as { driverError?: { code?: string } })?.driverError?.code;
+  return code === PG_CHECK_VIOLATION;
 }
 
 /**

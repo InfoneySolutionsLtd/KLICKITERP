@@ -52,6 +52,20 @@ describe("MaintenanceService", () => {
       await service.schedule(em, { assetId: "asset-1", kind: "PLANNED" }, "user-1");
       expect(maintenanceRepository.create).toHaveBeenCalledWith(expect.objectContaining({ downtimeNote: "" }), em);
     });
+
+    it("reclassifies BR-FA-02's real trg_fa_maintenance_no_txn_after_disposal check_violation (23514) into a clean ValidationException, never a raw 500", async () => {
+      assetRepository.findByIdOrFail.mockResolvedValue(makeAsset({ status: "DISPOSED" }));
+      maintenanceRepository.create.mockRejectedValueOnce({ code: "23514" });
+
+      await expect(service.schedule(em, { assetId: "asset-1", kind: "REPAIR" }, "user-1")).rejects.toBeInstanceOf(ValidationException);
+      expect(assetRepository.save).not.toHaveBeenCalled(); // the asset's status must NOT flip to UNDER_MAINTENANCE when the insert itself was rejected
+    });
+
+    it("still rethrows an unrelated DB error unchanged (only 23514 is reclassified)", async () => {
+      const dbError = new Error("connection reset");
+      maintenanceRepository.create.mockRejectedValueOnce(dbError);
+      await expect(service.schedule(em, { assetId: "asset-1", kind: "REPAIR" }, "user-1")).rejects.toBe(dbError);
+    });
   });
 
   describe("complete", () => {

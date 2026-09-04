@@ -62,6 +62,16 @@ describe("ConcessionSchemesService", () => {
     expect(glAccountRepository.findByIdOrFail).toHaveBeenCalledWith("acc-10");
   });
 
+  it("update: explicit null clears categoryScope back to unrestricted, but omitting the field leaves it untouched", async () => {
+    repo.findByIdOrFail.mockResolvedValue(makeScheme({ categoryScope: ["cat-1", "cat-2"] }));
+    const cleared = await service.update("scheme-1", { categoryScope: null }, "actor-1");
+    expect(cleared.categoryScope).toBeNull();
+
+    repo.findByIdOrFail.mockResolvedValue(makeScheme({ categoryScope: ["cat-1", "cat-2"] }));
+    const untouched = await service.update("scheme-1", { name: "Renamed" }, "actor-1");
+    expect(untouched.categoryScope).toEqual(["cat-1", "cat-2"]);
+  });
+
   it("deactivate/activate toggle is_active", async () => {
     expect((await service.deactivate("scheme-1", "actor-1")).isActive).toBe(false);
     expect((await service.activate("scheme-1", "actor-1")).isActive).toBe(true);

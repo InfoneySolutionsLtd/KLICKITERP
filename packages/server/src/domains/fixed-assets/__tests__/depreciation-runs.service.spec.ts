@@ -118,6 +118,20 @@ describe("DepreciationRunsService", () => {
       await expect(service.createRun(em, "period-1")).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it("reclassifies BR-FA-02's real trg_fa_depreciation_line_no_txn_after_disposal check_violation (23514) into a clean ValidationException, never a raw 500 (defense-in-depth against the SELECT-then-INSERT TOCTOU window, since findActiveForDepreciation already filters to status='ACTIVE')", async () => {
+      assetRepository.findActiveForDepreciation.mockResolvedValue([makeAsset()]);
+      lineRepository.create.mockRejectedValueOnce({ code: "23514" });
+
+      await expect(service.createRun(em, "period-1")).rejects.toBeInstanceOf(ValidationException);
+    });
+
+    it("still rethrows an unrelated DB error unchanged (only 23514 is reclassified)", async () => {
+      assetRepository.findActiveForDepreciation.mockResolvedValue([makeAsset()]);
+      const dbError = new Error("connection reset");
+      lineRepository.create.mockRejectedValueOnce(dbError);
+      await expect(service.createRun(em, "period-1")).rejects.toBe(dbError);
+    });
+
     it("SL: charges (cost-residual)/life_months for a fully in-service asset, no proration", async () => {
       // depreciableBase = 61000 - 1000 = 60000; 60000/60 = 1000.00 exactly
       assetRepository.findActiveForDepreciation.mockResolvedValue([makeAsset()]);

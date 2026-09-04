@@ -57,7 +57,7 @@ describe("OpsHealthService", () => {
     expect(summary.disk.usedPercent).toBe(75);
     expect(summary.lastBackup.found).toBe(false);
     expect(typeof summary.appVersion).toBe("string");
-    expect(summary.licenseState).toBe("NOT_YET_AVAILABLE");
+    expect(summary.licenseState).toBe("NOT_PROVISIONED");
     expect(summary.queueDepths.note).toMatch(/N\/A/);
     expect(summary.logLevel.settable).toBe(false);
     expect(summary.generatedAt).toEqual(expect.any(String));

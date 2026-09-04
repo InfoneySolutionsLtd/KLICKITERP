@@ -11,12 +11,17 @@ export interface CreateFaTransferInput {
   toCustodianUserId?: string | null;
 }
 
+/** Postgres check_violation SQLSTATE — see `maintenance.service.ts`'s own `PG_CHECK_VIOLATION` doc comment for the full BR-FA-02 story. */
+const PG_CHECK_VIOLATION = "23514";
+
 /**
  * `fa_transfer` — an asset's location/custodian handover event. BR-FA-02's
  * `fn_check_asset_not_disposed()` trigger (migration `0150`) already blocks
- * inserting a transfer against a disposed/written-off asset; this service
- * adds no further pre-check ahead of it (there's no cheap check beyond
- * re-reading the asset it's about to re-read anyway for `from*` capture).
+ * inserting a transfer against a disposed/written-off asset — the data is
+ * genuinely protected — but its raw SQLSTATE was never translated into a
+ * clean client error (confirmed live: a real `500 INTERNAL_ERROR`, same
+ * class of gap fixed the same pass in `maintenance.service.ts`), so
+ * `create()` now catches it and rethrows as a `ValidationException`.
  */
 @Injectable()
 export class TransfersService {
@@ -29,20 +34,30 @@ export class TransfersService {
   async create(em: EntityManager, input: CreateFaTransferInput, actorId: string | null): Promise<FaTransferEntity> {
     const asset = await this.assetRepository.findByIdOrFail(input.assetId, em);
 
-    const transfer = await this.transferRepository.create(
-      {
-        assetId: input.assetId,
-        fromLocation: asset.location,
-        fromCustodianUserId: asset.custodianUserId,
-        toLocation: input.toLocation,
-        toCustodianUserId: input.toCustodianUserId ?? null,
-        ackBy: null,
-        at: new Date(),
-        createdBy: actorId,
-        updatedBy: actorId,
-      },
-      em,
-    );
+    let transfer: FaTransferEntity;
+    try {
+      transfer = await this.transferRepository.create(
+        {
+          assetId: input.assetId,
+          fromLocation: asset.location,
+          fromCustodianUserId: asset.custodianUserId,
+          toLocation: input.toLocation,
+          toCustodianUserId: input.toCustodianUserId ?? null,
+          ackBy: null,
+          at: new Date(),
+          createdBy: actorId,
+          updatedBy: actorId,
+        },
+        em,
+      );
+    } catch (error) {
+      if (isCheckViolation(error)) {
+        throw new ValidationException(
+          `BR-FA-02: asset ${input.assetId} cannot receive further transactions — status=${asset.status} (disposed/written-off assets accept no new transfers)`,
+        );
+      }
+      throw error;
+    }
 
     asset.location = input.toLocation;
     asset.custodianUserId = input.toCustodianUserId ?? null;
@@ -70,4 +85,11 @@ export class TransfersService {
   async listByAsset(assetId: string): Promise<FaTransferEntity[]> {
     return this.transferRepository.findByAssetId(assetId);
   }
+}
+
+function isCheckViolation(error: unknown): boolean {
+  const code =
+    (error as { code?: string; driverError?: { code?: string } })?.code ??
+    (error as { driverError?: { code?: string } })?.driverError?.code;
+  return code === PG_CHECK_VIOLATION;
 }

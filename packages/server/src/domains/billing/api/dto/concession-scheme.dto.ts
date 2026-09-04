@@ -64,11 +64,26 @@ export class UpdateConcessionSchemeDto {
   @Matches(DECIMAL_PATTERN)
   value?: string;
 
+  /**
+   * `string[] | null` — genuinely nullable, not just optional. `null`
+   * explicitly clears the scheme back to "any category"
+   * (`ConcessionSchemesService.update()`'s own `changes.categoryScope !==
+   * undefined` check already treats `null` this way; only `undefined`
+   * means "leave the current scope untouched"). This DTO's own type
+   * previously omitted `| null`, which — combined with the frontend never
+   * sending a literal `null` out of caution — meant there was no way to
+   * actually reach this already-working service-layer behavior through the
+   * API: a real, confirmed "the DB/service supports it, the DTO's type
+   * just never allowed asking for it" gap, not a validation rule that
+   * needed changing (`@IsOptional()` already treats `null` the same as
+   * `undefined` — skips the rest of this property's validators either
+   * way — so no decorator change was needed, only the type).
+   */
   @ApiPropertyOptional({ type: [String], nullable: true })
   @IsOptional()
   @IsArray()
   @IsUUID(undefined, { each: true })
-  categoryScope?: string[];
+  categoryScope?: string[] | null;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -66,6 +66,20 @@ describe("TransfersService", () => {
       await service.create(em, { assetId: "asset-1", toLocation: "Library" }, "user-1");
       expect(assetRepository.save).toHaveBeenCalledWith(expect.objectContaining({ custodianUserId: null }), em);
     });
+
+    it("reclassifies BR-FA-02's real trg_fa_transfer_no_txn_after_disposal check_violation (23514) into a clean ValidationException, never a raw 500", async () => {
+      assetRepository.findByIdOrFail.mockResolvedValue(makeAsset({ status: "DISPOSED" }));
+      transferRepository.create.mockRejectedValueOnce({ code: "23514" });
+
+      await expect(service.create(em, { assetId: "asset-1", toLocation: "IT Office" }, "user-1")).rejects.toBeInstanceOf(ValidationException);
+      expect(assetRepository.save).not.toHaveBeenCalled(); // the asset's location/custodian must NOT change when the insert itself was rejected
+    });
+
+    it("still rethrows an unrelated DB error unchanged (only 23514 is reclassified)", async () => {
+      const dbError = new Error("connection reset");
+      transferRepository.create.mockRejectedValueOnce(dbError);
+      await expect(service.create(em, { assetId: "asset-1", toLocation: "IT Office" }, "user-1")).rejects.toBe(dbError);
+    });
   });
 
   describe("acknowledge", () => {

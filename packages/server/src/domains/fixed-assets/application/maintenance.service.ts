@@ -10,6 +10,22 @@ const DEFAULT_DOWNTIME_NOTE = "";
 /** Postgres foreign_key_violation SQLSTATE — see `assets.service.ts`'s own `isUniqueViolation` for the same driver-error-shape-reading pattern (there for `23505`, here for `23503`). */
 const PG_FOREIGN_KEY_VIOLATION = "23503";
 
+/**
+ * Postgres check_violation SQLSTATE — raised by `fn_check_asset_not_disposed()`
+ * (migration `0150`, BR-FA-02) whenever an app-layer caller doesn't
+ * pre-check `asset.status`, same as here: `schedule()` never checked it
+ * (confirmed live — scheduling maintenance against a real DISPOSED asset
+ * surfaced as a raw, unhandled `500 INTERNAL_ERROR` before this fix), even
+ * though the underlying data was always genuinely protected (the trigger
+ * blocks the INSERT unconditionally; no maintenance row and no status flip
+ * ever actually happened). This is the same "the DB guard is real, but its
+ * raw driver exception was never translated into a clean 4xx" gap this
+ * codebase has closed repeatedly elsewhere (`BankFeedImportService`'s
+ * timeout reclassification, this same file's own `isForeignKeyViolation`
+ * catch just below).
+ */
+const PG_CHECK_VIOLATION = "23514";
+
 export interface ScheduleMaintenanceInput {
   assetId: string;
   kind: FaMaintenanceKind;
@@ -52,19 +68,29 @@ export class MaintenanceService {
   async schedule(em: EntityManager, input: ScheduleMaintenanceInput, actorId: string | null): Promise<FaMaintenanceEntity> {
     const asset = await this.assetRepository.findByIdOrFail(input.assetId, em);
 
-    const maintenance = await this.maintenanceRepository.create(
-      {
-        assetId: input.assetId,
-        kind: input.kind,
-        scheduledOn: input.scheduledOn ?? null,
-        doneOn: null,
-        costExpenseVoucherId: null,
-        downtimeNote: input.downtimeNote ?? DEFAULT_DOWNTIME_NOTE,
-        createdBy: actorId,
-        updatedBy: actorId,
-      },
-      em,
-    );
+    let maintenance: FaMaintenanceEntity;
+    try {
+      maintenance = await this.maintenanceRepository.create(
+        {
+          assetId: input.assetId,
+          kind: input.kind,
+          scheduledOn: input.scheduledOn ?? null,
+          doneOn: null,
+          costExpenseVoucherId: null,
+          downtimeNote: input.downtimeNote ?? DEFAULT_DOWNTIME_NOTE,
+          createdBy: actorId,
+          updatedBy: actorId,
+        },
+        em,
+      );
+    } catch (error) {
+      if (isCheckViolation(error)) {
+        throw new ValidationException(
+          `BR-FA-02: asset ${input.assetId} cannot receive further transactions — status=${asset.status} (disposed/written-off assets accept no new maintenance)`,
+        );
+      }
+      throw error;
+    }
 
     asset.status = "UNDER_MAINTENANCE";
     asset.updatedBy = actorId;
@@ -133,4 +159,11 @@ function isForeignKeyViolation(error: unknown): boolean {
     (error as { code?: string; driverError?: { code?: string } })?.code ??
     (error as { driverError?: { code?: string } })?.driverError?.code;
   return code === PG_FOREIGN_KEY_VIOLATION;
+}
+
+function isCheckViolation(error: unknown): boolean {
+  const code =
+    (error as { code?: string; driverError?: { code?: string } })?.code ??
+    (error as { driverError?: { code?: string } })?.driverError?.code;
+  return code === PG_CHECK_VIOLATION;
 }
