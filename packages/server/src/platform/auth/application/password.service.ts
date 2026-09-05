@@ -62,7 +62,7 @@ export class PasswordService {
         to: destination,
         channel: user.email ? "EMAIL" : "SMS",
         subject: "Password reset",
-        body: `A password reset was requested for your Klickit account. Token: ${token} (expires in ${Math.round(this.config.passwordResetTtlSeconds / 60)} minutes). If this wasn't you, ignore this message.`,
+        body: `A password reset was requested for your Klickit account. Use this link to set a new password (expires in ${Math.round(this.config.passwordResetTtlSeconds / 60)} minutes): ${this.config.webAppUrl}/reset-password?token=${token}\n\nIf this wasn't you, ignore this message.`,
       });
     }
     return { sent: true };

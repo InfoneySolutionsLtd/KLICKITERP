@@ -14,7 +14,9 @@ import { UsrApiKeyRepository } from "./infrastructure/usr-api-key.repository";
 import { PermissionResolutionRepository } from "./infrastructure/permission-resolution.repository";
 import { AuthAuditLogRepository } from "./infrastructure/audit-log.repository";
 import { JwtTokenService } from "./infrastructure/jwt-token.service";
-import { NOTIFICATION_PORT, LogOnlyAdapter } from "./infrastructure/notification-port";
+import { NOTIFICATION_PORT } from "./infrastructure/notification-port";
+import { CommsNotificationAdapter } from "./infrastructure/comms-notification.adapter";
+import { CommsModule } from "../comms";
 import { JwtAuthGuard } from "./infrastructure/guards/jwt-auth.guard";
 import { PermissionsGuard } from "./infrastructure/guards/permissions.guard";
 import { AuthorityGuard } from "./infrastructure/guards/authority.guard";
@@ -53,6 +55,13 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
  * once for the whole app; see that file's doc comment for the full
  * consolidation write-up (this was one of several modules that used to
  * open its own redundant Redis connection).
+ *
+ * **Imports `CommsModule` (`platform/comms`)** so `NOTIFICATION_PORT` can be
+ * bound to a real `CommsNotificationAdapter` instead of the `LogOnlyAdapter`
+ * stub — see that adapter's own doc comment. `module-deps.json`'s
+ * `platform/auth` entry was updated to allow this, the same precedent
+ * `domains/reporting`/`domains/procurement`/`domains/integrations` already
+ * set for importing `platform/comms`.
  */
 @Module({
   imports: [
@@ -63,10 +72,11 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
       UsrPasswordHistoryEntity,
       UsrApiKeyEntity,
     ]),
+    CommsModule,
   ],
   controllers: [AuthController, ApiKeysController],
   providers: [
-    { provide: NOTIFICATION_PORT, useClass: LogOnlyAdapter },
+    { provide: NOTIFICATION_PORT, useClass: CommsNotificationAdapter },
     AuthUsrUserRepository,
     UsrSessionRepository,
     UsrLoginEventRepository,

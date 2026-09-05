@@ -4,12 +4,13 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ChangePasswordDtoSchema } from "@klickit/contracts";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Reveal } from "@/components/patterns/reveal";
+import { AuthCard, authInputClass, authSubmitButtonClass } from "../_components/auth-card";
 import { useChangePassword } from "@/hooks/use-auth";
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -61,12 +62,8 @@ export default function ChangePasswordPage() {
 
   return (
     <Reveal>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-foreground">{t("title")}</CardTitle>
-          <CardDescription>{t("subtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <AuthCard title={t("title")} description={t("subtitle")}>
+        <div className="space-y-5">
           <Alert variant="warning">
             <AlertDescription>{t("securityNote")}</AlertDescription>
           </Alert>
@@ -83,23 +80,46 @@ export default function ChangePasswordPage() {
               )}
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">{t("currentPasswordLabel")}</Label>
-                <Input id="currentPassword" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                <PasswordInput
+                  id="currentPassword"
+                  autoComplete="current-password"
+                  className={authInputClass}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">{t("newPasswordLabel")}</Label>
-                <Input id="newPassword" type="password" autoComplete="new-password" minLength={10} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                <PasswordInput
+                  id="newPassword"
+                  autoComplete="new-password"
+                  minLength={10}
+                  className={authInputClass}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">{t("confirmPasswordLabel")}</Label>
-                <Input id="confirmPassword" type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                <PasswordInput
+                  id="confirmPassword"
+                  autoComplete="new-password"
+                  className={authInputClass}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
               </div>
-              <Button type="submit" className="w-full" disabled={mutation.isPending}>
+              <Button type="submit" className={authSubmitButtonClass} disabled={mutation.isPending}>
                 {mutation.isPending ? t("submitting") : t("submit")}
+                {!mutation.isPending && <ArrowRight className="size-4" />}
               </Button>
             </form>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </AuthCard>
     </Reveal>
   );
 }

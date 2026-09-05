@@ -44,7 +44,8 @@
       "submit": "Sign in",
       "submitting": "Signing in…",
       "invalidCredentials": "Invalid username/email or password.",
-      "genericError": "Sign in failed. Please try again."
+      "genericError": "Sign in failed. Please try again.",
+      "forgotPasswordLink": "Forgot password?"
     },
     "twoFactor": {
       "title": "Two-factor verification",
@@ -69,7 +70,36 @@
       "mismatch": "Passwords don't match.",
       "tooShort": "Password must be at least 10 characters.",
       "success": "Password changed. Continuing to your dashboard…"
-    }
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "subtitle": "Enter your username or email and we'll send you a link to reset your password.",
+      "identifierLabel": "Username or email",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "successMessage": "If an account exists for that username or email, we've sent a link to reset your password.",
+      "backToLogin": "Back to sign in",
+      "genericError": "Something went wrong. Please try again."
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account.",
+      "newPasswordLabel": "New password",
+      "confirmPasswordLabel": "Confirm new password",
+      "submit": "Reset password",
+      "submitting": "Saving…",
+      "mismatch": "Passwords don't match.",
+      "tooShort": "Password must be at least 10 characters.",
+      "successMessage": "Your password has been reset. You can now sign in with your new password.",
+      "continueToLogin": "Continue to sign in",
+      "invalidLinkMessage": "This reset link is invalid or missing its token. Request a new one below.",
+      "requestNewLink": "Request a new link",
+      "genericError": "Something went wrong. Please try again."
+    },
+    "copyrightPrefix": "© {year}",
+    "copyrightKlickit": "Klickit Education",
+    "copyrightProductPrefix": "A Product By",
+    "copyrightInfoney": "Infoney Solutions Limited"
   },
   "shell": {
     "productName": "Klickit Finance ERP",

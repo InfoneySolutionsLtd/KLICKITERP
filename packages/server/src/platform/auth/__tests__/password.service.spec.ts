@@ -10,7 +10,7 @@ describe("PasswordService", () => {
   let userRepository: { findById: jest.Mock; findByIdentifier: jest.Mock; save: jest.Mock };
   let passwordHistoryRepository: { findRecent: jest.Mock; record: jest.Mock };
   let sessionRepository: { revokeAllForUser: jest.Mock };
-  let config: { passwordResetTtlSeconds: number };
+  let config: { passwordResetTtlSeconds: number; webAppUrl: string };
   let notifications: { send: jest.Mock };
   let redis: FakeRedis;
   let service: PasswordService;
@@ -30,7 +30,7 @@ describe("PasswordService", () => {
     };
     passwordHistoryRepository = { findRecent: jest.fn(async () => []), record: jest.fn() };
     sessionRepository = { revokeAllForUser: jest.fn() };
-    config = { passwordResetTtlSeconds: 1800 };
+    config = { passwordResetTtlSeconds: 1800, webAppUrl: "http://localhost:3002" };
     notifications = { send: jest.fn() };
     redis = new FakeRedis();
 
@@ -79,7 +79,7 @@ describe("PasswordService", () => {
     it("resetPassword validates the token, sets the password, and invalidates all sessions", async () => {
       await service.forgotPassword("jdoe");
       const body = notifications.send.mock.calls[0][0].body as string;
-      const token = /Token: (\S+)/.exec(body)![1];
+      const token = /[?&]token=(\S+)/.exec(body)![1];
 
       await service.resetPassword(token, "brand-new-password-2");
 

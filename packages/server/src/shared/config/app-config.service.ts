@@ -173,6 +173,11 @@ export class AppConfigService {
     return Number(process.env.AUTH_PASSWORD_RESET_TTL_SEC ?? 1800);
   }
 
+  /** Base URL of the `apps/web` frontend — used to build outbound links in emails (currently just the password-reset link; `PasswordService.forgotPassword()`). */
+  get webAppUrl(): string {
+    return process.env.WEB_APP_URL ?? "http://localhost:3002";
+  }
+
   /**
    * MinIO (S3-compatible) object store — docs/phase-3/01-system-architecture.md
    * C4 diagram ("MinIO (S3) files, exports, backups") and
