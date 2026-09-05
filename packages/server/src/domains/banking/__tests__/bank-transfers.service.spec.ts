@@ -38,7 +38,7 @@ function makeGlAccount(overrides: Partial<GlAccountEntity> = {}): GlAccountEntit
 describe("BankTransfersService", () => {
   let transferRepository: { findByIdOrFail: jest.Mock; create: jest.Mock; save: jest.Mock; list: jest.Mock };
   let bankAccountRepository: { findByIdOrFail: jest.Mock };
-  let glAccountRepository: { findByControlDomain: jest.Mock };
+  let glAccountRepository: { findByControlDomain: jest.Mock; findByCodeOrFail: jest.Mock };
   let postingService: { post: jest.Mock };
   let numberingService: { allocate: jest.Mock };
   let approvalEngine: { submit: jest.Mock };
@@ -60,7 +60,10 @@ describe("BankTransfersService", () => {
         return makeBankAccount({ id });
       }),
     };
-    glAccountRepository = { findByControlDomain: jest.fn(async () => [makeGlAccount()]) };
+    glAccountRepository = {
+      findByControlDomain: jest.fn(async () => [makeGlAccount()]),
+      findByCodeOrFail: jest.fn(async () => makeGlAccount({ id: "bank-charges-acc", code: "5100", controlDomain: null })),
+    };
     postingService = { post: jest.fn(async () => ({ id: "journal-1", lines: [] })) };
     numberingService = { allocate: jest.fn(async () => "BTR-000001") };
     approvalEngine = { submit: jest.fn(async () => ({ id: "approval-1" })) };
@@ -92,6 +95,47 @@ describe("BankTransfersService", () => {
       const result = await service.create(em, { fromAccountId: "from-acc", toAccountId: "to-acc", amount: Money.fromInt(1000) }, "actor-1");
       expect(result.status).toBe("DRAFT");
       expect(result.number).toMatch(/^DRAFT-/);
+    });
+
+    it("rejects a negative feeAmount", async () => {
+      await expect(
+        service.create(
+          em,
+          { fromAccountId: "from-acc", toAccountId: "to-acc", amount: Money.fromInt(1000), feeAmount: Money.fromInt(-5) },
+          "actor-1",
+        ),
+      ).rejects.toBeInstanceOf(ValidationException);
+    });
+
+    it("persists feeAmount/referenceNo/expectedClearingDate when given, defaults to null when omitted", async () => {
+      const withDetails = await service.create(
+        em,
+        {
+          fromAccountId: "from-acc",
+          toAccountId: "to-acc",
+          amount: Money.fromInt(1000),
+          feeAmount: Money.fromInt(50),
+          referenceNo: "WIRE-REF-001",
+          expectedClearingDate: "2026-09-10",
+        },
+        "actor-1",
+      );
+      expect(withDetails.feeAmount).toEqual(Money.fromInt(50));
+      expect(withDetails.referenceNo).toBe("WIRE-REF-001");
+      expect(withDetails.expectedClearingDate).toBe("2026-09-10");
+
+      const withoutDetails = await service.create(em, { fromAccountId: "from-acc", toAccountId: "to-acc", amount: Money.fromInt(1000) }, "actor-1");
+      expect(withoutDetails.feeAmount).toBeNull();
+      expect(withoutDetails.referenceNo).toBeNull();
+      expect(withoutDetails.expectedClearingDate).toBeNull();
+    });
+  });
+
+  describe("updateReferenceNo()", () => {
+    it("sets referenceNo regardless of status — pure metadata, no status guard", async () => {
+      transferRepository.findByIdOrFail.mockResolvedValue(makeTransfer({ status: "POSTED", referenceNo: null }));
+      const result = await service.updateReferenceNo(em, "transfer-1", "WIRE-REF-999", "actor-1");
+      expect(result.referenceNo).toBe("WIRE-REF-999");
     });
   });
 
@@ -167,6 +211,40 @@ describe("BankTransfersService", () => {
       expect(result.number).toBe("BTR-000001");
       expect(result.status).toBe("POSTED");
       expect(result.journalId).toBe("journal-1");
+    });
+
+    it("emits exactly 4 lines when feeAmount is null/unset (no fee leg)", async () => {
+      transferRepository.findByIdOrFail.mockResolvedValue(makeTransfer({ status: "APPROVED", amount: Money.fromInt(1000), feeAmount: null }));
+      await service.post(em, "transfer-1", "poster-1");
+      const draft = postingService.post.mock.calls[0][1];
+      expect(draft.lines).toHaveLength(4);
+    });
+
+    it("appends a balanced 2-line fee pair (Debit Bank Charges Expense / Credit source account) when feeAmount is set and non-zero", async () => {
+      transferRepository.findByIdOrFail.mockResolvedValue(
+        makeTransfer({ status: "APPROVED", amount: Money.fromInt(1000), feeAmount: Money.fromInt(50) }),
+      );
+      await service.post(em, "transfer-1", "poster-1");
+      expect(glAccountRepository.findByCodeOrFail).toHaveBeenCalledWith("5100", em);
+      const draft = postingService.post.mock.calls[0][1];
+      expect(draft.lines).toHaveLength(6);
+
+      const [feeDebit, feeCredit] = draft.lines.slice(4);
+      expect(feeDebit).toEqual(expect.objectContaining({ accountId: "bank-charges-acc", debit: Money.fromInt(50), credit: Money.ZERO }));
+      expect(feeCredit).toEqual(expect.objectContaining({ accountId: "gl-from", debit: Money.ZERO, credit: Money.fromInt(50) }));
+
+      const totalDebit = draft.lines.reduce((sum: Money, l: { debit: Money }) => sum.add(l.debit), Money.ZERO);
+      const totalCredit = draft.lines.reduce((sum: Money, l: { credit: Money }) => sum.add(l.credit), Money.ZERO);
+      expect(totalDebit.equals(totalCredit)).toBe(true);
+    });
+
+    it("does not append a fee leg when feeAmount is exactly zero", async () => {
+      transferRepository.findByIdOrFail.mockResolvedValue(
+        makeTransfer({ status: "APPROVED", amount: Money.fromInt(1000), feeAmount: Money.ZERO }),
+      );
+      await service.post(em, "transfer-1", "poster-1");
+      const draft = postingService.post.mock.calls[0][1];
+      expect(draft.lines).toHaveLength(4);
     });
   });
 });

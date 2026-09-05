@@ -11,7 +11,7 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 // still matching this file's own token classes/shape (`rounded-lg`/`rounded-xl` trigger+content,
 // `focus-visible:ring-ring`, etc.) so it reads as the same design system, not a bolted-on one.
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -68,32 +68,113 @@ const SelectScrollDownButton = React.forwardRef<
 ));
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
 
+/**
+ * `searchable` (Phase 6 — dropdown search UX pass) opts a `<SelectContent>`
+ * into a live-filter search box pinned above its option list. Deliberately
+ * NOT a data-driven `options`/`onFilter` API (unlike `<MultiSelect>` above)
+ * — every existing call site in this app composes `<SelectContent>` via
+ * `<SelectItem>` children mapped from its own query data, and rewriting
+ * 100+ call sites into a new props shape just to add search was both far
+ * riskier and unnecessary. Instead this filters the ALREADY-RENDERED DOM:
+ * Radix stamps every `SelectItem` with `role="option"` and every
+ * `SelectGroup` with `role="group"`, so a plain `useEffect` keyed on the
+ * query can hide/show real elements by their own rendered text content —
+ * works unchanged for flat lists, grouped lists, and lists inside a
+ * `<SelectLabel>` group, with zero changes to any existing call site's
+ * children.
+ *
+ * Only opt a `<SelectContent>` into this where its item list is genuinely
+ * dynamic/can grow long (classes, students, GL accounts, suppliers,
+ * employees, items, cost centers, departments, banks, etc.) — a short,
+ * hardcoded enum list (status, yes/no, boarding type, day-of-week) should
+ * NOT get a search box; it adds visual noise for a list a user can already
+ * scan in one glance.
+ */
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-md",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
-        className,
-      )}
-      position={position}
-      {...props}
-    >
-      <SelectScrollUpButton />
-      <SelectPrimitive.Viewport
-        className={cn("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]")}
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & { searchable?: boolean; searchPlaceholder?: string }
+>(({ className, children, position = "popper", searchable, searchPlaceholder, ...props }, ref) => {
+  const [query, setQuery] = React.useState("");
+  const viewportRef = React.useRef<HTMLDivElement>(null);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    // Radix moves focus to the selected/first item as soon as Content
+    // mounts — stealing it back on the next frame (rather than a plain
+    // `autoFocus`, which loses this exact race) is the standard workaround
+    // for adding a real input into a Radix Select's content.
+    if (searchable) requestAnimationFrame(() => searchInputRef.current?.focus());
+  }, [searchable]);
+
+  React.useEffect(() => {
+    if (!searchable) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const q = query.trim().toLowerCase();
+
+    const options = viewport.querySelectorAll<HTMLElement>('[role="option"]');
+    options.forEach((option) => {
+      const matches = q === "" || (option.textContent ?? "").toLowerCase().includes(q);
+      option.style.display = matches ? "" : "none";
+    });
+
+    const groups = viewport.querySelectorAll<HTMLElement>('[role="group"]');
+    groups.forEach((group) => {
+      const hasVisibleOption = Array.from(group.querySelectorAll<HTMLElement>('[role="option"]')).some((o) => o.style.display !== "none");
+      group.style.display = hasVisibleOption ? "" : "none";
+    });
+  });
+
+  return (
+    <SelectPrimitive.Portal>
+      <SelectPrimitive.Content
+        ref={ref}
+        className={cn(
+          "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-md",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
+          className,
+        )}
+        position={position}
+        {...props}
       >
-        {children}
-      </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-));
+        <SelectScrollUpButton />
+        {searchable && (
+          <div className="sticky top-0 z-10 border-b border-border bg-popover p-1.5" onPointerDown={(e) => e.stopPropagation()}>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                // Radix's Content has its own keydown handling (arrow-key
+                // navigation, single-letter typeahead) that would otherwise
+                // intercept normal typing in this input — stopping
+                // propagation for everything except Escape (which should
+                // still close the whole Select as usual) hands real
+                // keyboard control back to this field.
+                onKeyDown={(e) => {
+                  if (e.key !== "Escape") e.stopPropagation();
+                }}
+                placeholder={searchPlaceholder}
+                autoComplete="off"
+                className="h-8 w-full rounded-md border border-input bg-background pl-7 pr-2 text-sm placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+          </div>
+        )}
+        <SelectPrimitive.Viewport
+          ref={viewportRef}
+          className={cn("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]")}
+        >
+          {children}
+        </SelectPrimitive.Viewport>
+        <SelectScrollDownButton />
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  );
+});
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 const SelectLabel = React.forwardRef<

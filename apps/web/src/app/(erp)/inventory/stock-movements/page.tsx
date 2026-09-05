@@ -35,6 +35,7 @@ import { ItemCombobox, type SelectedInventoryItem } from "@/features/inventory/c
  */
 export default function StockMovementsPage() {
   const t = useTranslations("inventory.stockMovements");
+  const tCommon = useTranslations("common");
   const [storeId, setStoreId] = React.useState("");
   const [item, setItem] = React.useState<SelectedInventoryItem | null>(null);
 
@@ -76,7 +77,7 @@ export default function StockMovementsPage() {
                 <SelectTrigger className="sm:w-64">
                   <SelectValue placeholder={storesQuery.isLoading ? t("loadingStores") : t("storePlaceholder")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   {(storesQuery.data ?? []).map((store) => (
                     <SelectItem key={store.id} value={store.id}>
                       {store.name}

@@ -222,7 +222,7 @@ export function FeeStructureCreateDialog({ open, onOpenChange }: { open: boolean
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={NO_STREAM_VALUE}>{t("anyStream")}</SelectItem>
                   {streamsQuery.data?.map((stream) => (
                     <SelectItem key={stream.id} value={stream.id}>
@@ -255,7 +255,7 @@ export function FeeStructureCreateDialog({ open, onOpenChange }: { open: boolean
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={NO_FEE_GROUP_VALUE}>{t("anyFeeGroup")}</SelectItem>
                   {feeGroupsQuery.data?.map((fg) => (
                     <SelectItem key={fg.id} value={fg.id}>

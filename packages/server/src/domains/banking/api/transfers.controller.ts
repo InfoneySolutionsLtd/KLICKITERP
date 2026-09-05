@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
@@ -7,7 +7,7 @@ import { runInTransaction } from "../../../shared/database/tx";
 import { Money } from "../../../shared/money/money";
 import { BankTransfersService } from "../application/bank-transfers.service";
 import { BankTransferEntity, BankTransferStatus } from "../domain/bank-transfer.entity";
-import { BankTransferResponseDto, CreateBankTransferDto } from "./dto/transfer.dto";
+import { BankTransferResponseDto, CreateBankTransferDto, UpdateBankTransferReferenceDto } from "./dto/transfer.dto";
 import { AuthenticatedRequest } from "./request-context";
 
 function toView(entity: BankTransferEntity): BankTransferResponseDto {
@@ -20,6 +20,9 @@ function toView(entity: BankTransferEntity): BankTransferResponseDto {
     status: entity.status,
     approvalRef: entity.approvalRef,
     journalId: entity.journalId,
+    feeAmount: entity.feeAmount?.toDecimalString() ?? null,
+    referenceNo: entity.referenceNo,
+    expectedClearingDate: entity.expectedClearingDate,
   };
 }
 
@@ -50,11 +53,29 @@ export class TransfersController {
           fromAccountId: dto.fromAccountId,
           toAccountId: dto.toAccountId,
           amount: Money.fromDecimalString(dto.amount),
+          feeAmount: dto.feeAmount ? Money.fromDecimalString(dto.feeAmount) : undefined,
+          referenceNo: dto.referenceNo,
+          expectedClearingDate: dto.expectedClearingDate,
         },
         req.user?.sub ?? null,
       ),
     );
     return toView(created);
+  }
+
+  @Patch(":id/reference")
+  @RequirePermission("banking:transfer:create")
+  @ApiOperation({ summary: "Set/update a transfer's bank-assigned reference number, at any status" })
+  @ApiResponse({ status: 200, type: BankTransferResponseDto })
+  async updateReference(
+    @Param("id") id: string,
+    @Body() dto: UpdateBankTransferReferenceDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<BankTransferResponseDto> {
+    const transfer = await runInTransaction(this.dataSource, (manager) =>
+      this.transfersService.updateReferenceNo(manager, id, dto.referenceNo, req.user?.sub ?? null),
+    );
+    return toView(transfer);
   }
 
   @Get()

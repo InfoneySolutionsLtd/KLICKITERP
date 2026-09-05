@@ -34,6 +34,7 @@ export function PromotionCandidatesTable({
   classes: ClassResponseDto[];
 }) {
   const t = useTranslations("students.promotionBatches.candidatesTable");
+  const tCommon = useTranslations("common");
   const classById = React.useMemo(() => new Map(classes.map((c) => [c.id, c])), [classes]);
   const classOptions = React.useMemo(
     () => [...classes].sort((a, b) => a.level - b.level).map((c) => ({ value: c.id, label: c.name })),
@@ -92,7 +93,7 @@ export function PromotionCandidatesTable({
                     <SelectTrigger>
                       <SelectValue placeholder={t("noTargetClass")} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent searchable searchPlaceholder={tCommon("search")}>
                       <SelectItem value={NONE_SENTINEL}>{t("noTargetClass")}</SelectItem>
                       {classOptions.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>

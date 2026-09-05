@@ -135,7 +135,7 @@ export default function TransfersPage() {
                 <SelectTrigger className="sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_VALUE}>{t("allStores")}</SelectItem>
                   {(storesQuery.data ?? []).map((store) => (
                     <SelectItem key={store.id} value={store.id}>
@@ -151,7 +151,7 @@ export default function TransfersPage() {
                 <SelectTrigger className="sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_VALUE}>{t("allStores")}</SelectItem>
                   {(storesQuery.data ?? []).map((store) => (
                     <SelectItem key={store.id} value={store.id}>

@@ -165,7 +165,7 @@ export default function PayrollEmployeesPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={t("filters.allDepartments")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SENTINEL}>{t("filters.allDepartments")}</SelectItem>
                   {(departmentsQuery.data ?? []).map((d) => (
                     <SelectItem key={d.id} value={d.id}>

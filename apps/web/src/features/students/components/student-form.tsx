@@ -438,7 +438,7 @@ export function StudentForm({ mode, student }: { mode: "create" | "edit"; studen
                 <SelectTrigger>
                   <SelectValue placeholder={t("selectFeeGroup")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={NO_FEE_GROUP_VALUE}>{t("selectFeeGroup")}</SelectItem>
                   {feeGroupsQuery.data?.map((fg) => (
                     <SelectItem key={fg.id} value={fg.id}>

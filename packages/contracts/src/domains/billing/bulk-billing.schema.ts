@@ -17,14 +17,29 @@ export const BulkGenerateDtoSchema = z.object({
 });
 export type BulkGenerateDto = z.infer<typeof BulkGenerateDtoSchema>;
 
+export const BulkGenerateSuccessDtoSchema = z.object({
+    studentId: z.string(),
+    invoiceIds: z.array(z.string()),
+    categoryIds: z.array(z.string()),
+    alreadyBilledCategoryIds: z.array(z.string()).optional(),
+});
+export type BulkGenerateSuccessDto = z.infer<typeof BulkGenerateSuccessDtoSchema>;
+
 export const BulkGenerateFailureDtoSchema = z.object({
     studentId: z.string(),
     error: z.string(),
 });
 export type BulkGenerateFailureDto = z.infer<typeof BulkGenerateFailureDtoSchema>;
 
+export const BulkGenerateSkipDtoSchema = z.object({
+    studentId: z.string(),
+    reason: z.string(),
+});
+export type BulkGenerateSkipDto = z.infer<typeof BulkGenerateSkipDtoSchema>;
+
 export const BulkGenerateResultDtoSchema = z.object({
-    succeeded: z.array(z.string()),
+    succeeded: z.array(BulkGenerateSuccessDtoSchema),
     failed: z.array(BulkGenerateFailureDtoSchema),
+    skipped: z.array(BulkGenerateSkipDtoSchema),
 });
 export type BulkGenerateResultDto = z.infer<typeof BulkGenerateResultDtoSchema>;

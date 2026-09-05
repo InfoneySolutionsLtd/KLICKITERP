@@ -38,6 +38,7 @@ import { TransferLineEditor } from "./transfer-line-editor";
  */
 export function TransferForm() {
   const t = useTranslations("inventory.transfers.create");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [fromStoreId, setFromStoreId] = React.useState("");
   const [toStoreId, setToStoreId] = React.useState("");
@@ -82,7 +83,7 @@ export function TransferForm() {
               <SelectTrigger>
                 <SelectValue placeholder={storesQuery.isLoading ? t("loadingStores") : t("storePlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {(storesQuery.data ?? []).map((store) => (
                   <SelectItem key={store.id} value={store.id}>
                     {store.name}
@@ -97,7 +98,7 @@ export function TransferForm() {
               <SelectTrigger>
                 <SelectValue placeholder={storesQuery.isLoading ? t("loadingStores") : t("storePlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {(storesQuery.data ?? []).map((store) => (
                   <SelectItem key={store.id} value={store.id}>
                     {store.name}

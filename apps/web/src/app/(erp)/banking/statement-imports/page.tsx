@@ -113,7 +113,7 @@ export default function StatementImportsPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={t("filters.allAccounts")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SENTINEL}>{t("filters.allAccounts")}</SelectItem>
                   {(accountsQuery.data ?? []).map((a) => (
                     <SelectItem key={a.id} value={a.id}>

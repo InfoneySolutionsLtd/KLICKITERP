@@ -14,8 +14,16 @@ export const CreateBankTransferDtoSchema = z.object({
     fromAccountId: z.string().uuid(),
     toAccountId: z.string().uuid(),
     amount: z.string().regex(/^-?\d+(\.\d+)?$/),
+    feeAmount: z.string().regex(/^-?\d+(\.\d+)?$/).optional(),
+    referenceNo: z.string().max(60).optional(),
+    expectedClearingDate: z.string().optional(),
 });
 export type CreateBankTransferDto = z.infer<typeof CreateBankTransferDtoSchema>;
+
+export const UpdateBankTransferReferenceDtoSchema = z.object({
+    referenceNo: z.string().max(60),
+});
+export type UpdateBankTransferReferenceDto = z.infer<typeof UpdateBankTransferReferenceDtoSchema>;
 
 export const BankTransferResponseDtoSchema = z.object({
     id: z.string(),
@@ -26,5 +34,8 @@ export const BankTransferResponseDtoSchema = z.object({
     status: z.string(),
     approvalRef: z.string().nullable(),
     journalId: z.string().nullable(),
+    feeAmount: z.string().nullable(),
+    referenceNo: z.string().nullable(),
+    expectedClearingDate: z.string().nullable(),
 });
 export type BankTransferResponseDto = z.infer<typeof BankTransferResponseDtoSchema>;

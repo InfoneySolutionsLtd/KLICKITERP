@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
+import { EntityManager, Not, Repository } from "typeorm";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { BillInvoiceEntity } from "../domain/bill-invoice.entity";
 
@@ -50,6 +50,25 @@ export class BillInvoiceRepository {
   /** Phase 6 Slice 3b — `FeeStructuresService.delete()`'s safety check: how many invoices (any status) still reference this structure. */
   async countByFeeStructureId(feeStructureId: string, manager?: EntityManager): Promise<number> {
     return (manager?.getRepository(BillInvoiceEntity) ?? this.repo).count({ where: { feeStructureId } });
+  }
+
+  /**
+   * Bulk Billing "regenerate like previous term" — the single most recent
+   * non-VOID invoice for a student in a given term, `createdAt DESC` (the
+   * chronological order invoices were actually entered), first row wins.
+   * `status <> 'VOID'` via TypeORM's `Not()` operator is safe here (unlike
+   * this file's `balance`-comparison methods) since `status` is a plain
+   * varchar column with no `Money` transformer to worry about.
+   */
+  async findMostRecentNonVoidByStudentAndTerm(
+    studentId: string,
+    termId: string,
+    manager?: EntityManager,
+  ): Promise<BillInvoiceEntity | null> {
+    return (manager?.getRepository(BillInvoiceEntity) ?? this.repo).findOne({
+      where: { studentId, termId, status: Not("VOID") },
+      order: { createdAt: "DESC" },
+    });
   }
 
   /** BR-BILL-04 idempotency lookup: the live (non-VOID) structure-generated invoice for a (student, term, structure). */

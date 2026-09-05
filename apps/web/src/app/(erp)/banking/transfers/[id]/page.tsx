@@ -14,6 +14,7 @@ import { formatMoney } from "@/lib/money";
 import { useAccount as useBankAccount } from "@/features/banking/hooks/use-accounts";
 import { isDraftPlaceholderNumber, useTransfer } from "@/features/banking/hooks/use-transfers";
 import { TransferStatusActions } from "@/features/banking/components/transfer-status-actions";
+import { EditTransferReferenceDialog } from "@/features/banking/components/edit-transfer-reference-dialog";
 
 const STATUS_BADGE_VARIANT: Record<string, BadgeProps["variant"]> = {
   DRAFT: "soft-secondary",
@@ -93,6 +94,25 @@ function TransferDetailCard({ transfer }: { transfer: BankTransferResponseDto })
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("amountLabel")}</p>
             <p className="text-sm font-semibold text-foreground">{formatMoney(transfer.amount)}</p>
+          </div>
+          {transfer.feeAmount && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("feeAmountLabel")}</p>
+              <p className="text-sm text-foreground">{formatMoney(transfer.feeAmount)}</p>
+            </div>
+          )}
+          {transfer.expectedClearingDate && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("expectedClearingDateLabel")}</p>
+              <p className="text-sm text-foreground">{transfer.expectedClearingDate}</p>
+            </div>
+          )}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("referenceNoLabel")}</p>
+            <div className="flex items-center gap-1">
+              <p className="text-sm text-foreground">{transfer.referenceNo ?? t("referenceNoNotSet")}</p>
+              <EditTransferReferenceDialog transferId={transfer.id} currentValue={transfer.referenceNo} />
+            </div>
           </div>
         </div>
 

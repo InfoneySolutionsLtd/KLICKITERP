@@ -2585,6 +2585,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/billing/transport-routes/regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate this term's transport billing from each student's own route in the preceding term */
+        post: operations["TransportBillingController_regenerate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/billing/transport-routes/{routeId}/expenses": {
         parameters: {
             query?: never;
@@ -7030,6 +7047,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/banking/transfers/{id}/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set/update a transfer's bank-assigned reference number, at any status */
+        patch: operations["TransfersController_updateReference"];
+        trace?: never;
+    };
     "/api/v1/banking/transfers/{id}": {
         parameters: {
             query?: never;
@@ -7109,6 +7143,126 @@ export interface paths {
         put?: never;
         /** Post an APPROVED transfer (realizes P-32's 2-leg TRANSFER_CLEARING journal) */
         post: operations["TransfersController_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List external bank transfers, optionally filtered by status/sourceAccountId */
+        get: operations["ExternalTransfersController_list"];
+        put?: never;
+        /** Create a DRAFT external bank transfer to a beneficiary the school does not own an account for */
+        post: operations["ExternalTransfersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an external bank transfer by id */
+        get: operations["ExternalTransfersController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set/update a transfer's bank-assigned reference number, at any status */
+        patch: operations["ExternalTransfersController_updateReference"];
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a DRAFT external transfer for approval (EXTERNAL_BANK_TRANSFERS workflow) */
+        post: operations["ExternalTransfersController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record APPROVED for a PENDING_APPROVAL external transfer (interim manual-trigger pattern) */
+        post: operations["ExternalTransfersController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually record a rejection for a PENDING_APPROVAL external transfer (reverts to DRAFT) */
+        post: operations["ExternalTransfersController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post an APPROVED external transfer (realizes P-35's 2-or-4-line journal) */
+        post: operations["ExternalTransfersController_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10697,6 +10851,36 @@ export interface components {
             succeeded: components["schemas"]["BillTransportSuccessDto"][];
             failed: components["schemas"]["BillTransportFailureDto"][];
         };
+        RegenerateTransportBillingDto: {
+            /**
+             * Format: uuid
+             * @description The TARGET term to regenerate transport billing into
+             */
+            termId: string;
+            /**
+             * Format: uuid
+             * @description Narrow to students who rode this route in the preceding term
+             */
+            routeId?: string;
+        };
+        TransportRegenerateSuccessDto: {
+            /** Format: uuid */
+            studentId: string;
+            invoiceIds: string[];
+            /** Format: uuid */
+            routeId: string;
+        };
+        TransportRegenerateSkipDto: {
+            /** Format: uuid */
+            studentId: string;
+            /** @description Why nothing was generated for this student (not an error) */
+            reason: string;
+        };
+        TransportRegenerateResultDto: {
+            succeeded: components["schemas"]["TransportRegenerateSuccessDto"][];
+            failed: components["schemas"]["BillTransportFailureDto"][];
+            skipped: components["schemas"]["TransportRegenerateSkipDto"][];
+        };
         LogTransportExpenseDto: {
             /** @enum {string} */
             payeeType: "SUPPLIER" | "STAFF" | "OTHER";
@@ -10984,7 +11168,7 @@ export interface components {
             /** Format: uuid */
             termId: string;
             /** @enum {string} */
-            source: "STRUCTURE" | "ADHOC" | "RECURRING" | "DEBIT_NOTE";
+            source: "STRUCTURE" | "ADHOC" | "RECURRING" | "DEBIT_NOTE" | "CARRIED_FORWARD";
             adhocLines?: components["schemas"]["GenerateInvoiceAdhocLineDto"][];
             /** Format: date */
             issueDate?: string;
@@ -11061,19 +11245,38 @@ export interface components {
             concessionAmount: string;
         };
         BulkGenerateDto: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description The TARGET term to generate invoices into
+             */
             termId: string;
             classIds?: string[];
             streamIds?: string[];
+        };
+        BulkGenerateSuccessDto: {
+            /** Format: uuid */
+            studentId: string;
+            invoiceIds: string[];
+            /** @description The carried-forward fee categories actually billed */
+            categoryIds: string[];
+            /** @description Set only on a PARTIAL skip — carried-forward categories this student already had a real invoice line for this term, so they were left out */
+            alreadyBilledCategoryIds?: string[];
         };
         BulkGenerateFailureDto: {
             /** Format: uuid */
             studentId: string;
             error: string;
         };
+        BulkGenerateSkipDto: {
+            /** Format: uuid */
+            studentId: string;
+            /** @description Why nothing was generated for this student (not an error) */
+            reason: string;
+        };
         BulkGenerateResultDto: {
-            succeeded: string[];
+            succeeded: components["schemas"]["BulkGenerateSuccessDto"][];
             failed: components["schemas"]["BulkGenerateFailureDto"][];
+            skipped: components["schemas"]["BulkGenerateSkipDto"][];
         };
         BulkGenerateAdhocInvoicesDto: {
             /** Format: uuid */
@@ -13351,6 +13554,15 @@ export interface components {
             toAccountId: string;
             /** @description Decimal string */
             amount: string;
+            /** @description Decimal string — a transfer fee, if the bank charges one */
+            feeAmount?: string;
+            /** @description The bank's own transaction reference, if already known */
+            referenceNo?: string;
+            /**
+             * Format: date
+             * @description ISO date string (YYYY-MM-DD) — informational only
+             */
+            expectedClearingDate?: string;
         };
         BankTransferResponseDto: {
             /** Format: uuid */
@@ -13368,6 +13580,73 @@ export interface components {
             approvalRef: Record<string, never> | null;
             /** Format: uuid */
             journalId: Record<string, never> | null;
+            /** @description Decimal string */
+            feeAmount: string | null;
+            referenceNo: Record<string, never> | null;
+            /** Format: date */
+            expectedClearingDate: string | null;
+        };
+        UpdateBankTransferReferenceDto: {
+            /** @description The bank's own transaction reference for this transfer */
+            referenceNo: string;
+        };
+        CreateBankExternalTransferDto: {
+            /**
+             * Format: uuid
+             * @description The school's own bank account money leaves from
+             */
+            sourceAccountId: string;
+            /** @description The real named external beneficiary — a vendor, a refund recipient, any named party */
+            beneficiaryName: string;
+            beneficiaryBankName: string;
+            beneficiaryBranch?: string | null;
+            beneficiaryAccountNo: string;
+            /**
+             * Format: uuid
+             * @description The GL account this payment is for (an EXPENSE-class account, picked by the creator)
+             */
+            debitAccountId: string;
+            /** @description Decimal string */
+            amount: string;
+            /** @description Decimal string — a transfer fee, if the bank charges one */
+            feeAmount?: string;
+            /** @description The bank's own transaction reference, if already known */
+            referenceNo?: string;
+            /**
+             * Format: date
+             * @description ISO date string (YYYY-MM-DD) — informational only
+             */
+            expectedClearingDate?: string;
+        };
+        BankExternalTransferResponseDto: {
+            /** Format: uuid */
+            id: string;
+            number: string;
+            /** Format: uuid */
+            sourceAccountId: string;
+            beneficiaryName: string;
+            beneficiaryBankName: string;
+            beneficiaryBranch: Record<string, never> | null;
+            beneficiaryAccountNo: string;
+            /** Format: uuid */
+            debitAccountId: string;
+            /** @description Decimal string */
+            amount: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "POSTED";
+            /** Format: uuid */
+            approvalRef: Record<string, never> | null;
+            /** Format: uuid */
+            journalId: Record<string, never> | null;
+            /** @description Decimal string */
+            feeAmount: string | null;
+            referenceNo: Record<string, never> | null;
+            /** Format: date */
+            expectedClearingDate: string | null;
+        };
+        UpdateBankExternalTransferReferenceDto: {
+            /** @description The bank's own transaction reference for this transfer */
+            referenceNo: string;
         };
         CreateDepositOrWithdrawalDto: {
             /** Format: uuid */
@@ -18728,6 +19007,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BillTransportResultDto"];
+                };
+            };
+        };
+    };
+    TransportBillingController_regenerate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegenerateTransportBillingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransportRegenerateResultDto"];
                 };
             };
         };
@@ -26072,6 +26374,31 @@ export interface operations {
             };
         };
     };
+    TransfersController_updateReference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBankTransferReferenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankTransferResponseDto"];
+                };
+            };
+        };
+    };
     TransfersController_findOne__banking: {
         parameters: {
             query?: never;
@@ -26173,6 +26500,181 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BankTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_list: {
+        parameters: {
+            query: {
+                status: string;
+                sourceAccountId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"][];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBankExternalTransferDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_updateReference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBankExternalTransferReferenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransfersController_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferResponseDto"];
                 };
             };
         };

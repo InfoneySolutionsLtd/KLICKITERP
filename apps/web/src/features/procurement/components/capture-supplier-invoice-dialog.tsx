@@ -198,7 +198,7 @@ export function CaptureSupplierInvoiceDialog() {
                 <SelectTrigger>
                   <SelectValue placeholder={!supplierId ? t("pickSupplierFirstPlaceholder") : t("selectPoPlaceholder")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value="__none__">{t("adHocOption")}</SelectItem>
                   {(poQuery.data ?? [])
                     .filter((po) => !isDraftPlaceholderNumber(po.number))

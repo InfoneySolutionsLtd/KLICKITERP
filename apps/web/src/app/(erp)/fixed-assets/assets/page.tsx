@@ -211,7 +211,7 @@ export default function FixedAssetsPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={t("filters.allCategories")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SENTINEL}>{t("filters.allCategories")}</SelectItem>
                   {(categoriesQuery.data ?? []).map((c) => (
                     <SelectItem key={c.id} value={c.id}>
@@ -251,7 +251,7 @@ export default function FixedAssetsPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={t("filters.allCustodians")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SENTINEL}>{t("filters.allCustodians")}</SelectItem>
                   {(usersQuery.data?.items ?? []).map((u) => (
                     <SelectItem key={u.id} value={u.id}>

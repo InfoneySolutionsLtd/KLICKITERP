@@ -1,4 +1,9 @@
-import type { BillTransportRouteDto, BillTransportResultDto } from "@klickit/contracts";
+import type {
+  BillTransportRouteDto,
+  BillTransportResultDto,
+  RegenerateTransportBillingDto,
+  TransportRegenerateResultDto,
+} from "@klickit/contracts";
 import { apiClient } from "@/lib/api-client";
 import { unwrapApiResult } from "@/lib/api-error";
 
@@ -14,5 +19,20 @@ import { unwrapApiResult } from "@/lib/api-error";
 export async function billTransportRoute(dto: BillTransportRouteDto): Promise<BillTransportResultDto> {
   return unwrapApiResult<BillTransportResultDto>(
     await apiClient.POST("/api/v1/billing/transport-routes/bill", { body: dto }),
+  );
+}
+
+/**
+ * `POST billing/transport-routes/regenerate` — "regenerate like previous
+ * term" for Transport, mirroring `bulk-billing.api.ts`'s own redesigned
+ * carried-forward algorithm: for every student who had real transport
+ * billing in the term immediately preceding `dto.termId`, generates a new
+ * invoice on that SAME route, priced at the route's CURRENT amount.
+ * `dto.routeId` optionally narrows to one route's prior riders. Same
+ * permission as `billTransportRoute()` (`billing:transport-route:bill`).
+ */
+export async function regenerateTransportBilling(dto: RegenerateTransportBillingDto): Promise<TransportRegenerateResultDto> {
+  return unwrapApiResult<TransportRegenerateResultDto>(
+    await apiClient.POST("/api/v1/billing/transport-routes/regenerate", { body: dto }),
   );
 }

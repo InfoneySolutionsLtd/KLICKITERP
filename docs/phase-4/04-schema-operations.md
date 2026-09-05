@@ -330,7 +330,7 @@ All are `REFRESH MATERIALIZED VIEW CONCURRENTLY` with unique indexes; never writ
 | Licensing (license.*) | 4 |
 | **Total tables** | **129** (+5 materialized views) |
 
-**Phase 4 self-checks performed:** every FRD entity has a table; every BR with an "Enforced: DB" marker has a named constraint/trigger here (cross-referenced inline); every FR access path in the performance envelope has a named index (DB-003 §6 and equivalents); all four DR-001…008 data standards realized; posting map P-01…P-34 fully expressible against `gl_account.control_domain` mappings.
+**Phase 4 self-checks performed:** every FRD entity has a table; every BR with an "Enforced: DB" marker has a named constraint/trigger here (cross-referenced inline); every FR access path in the performance envelope has a named index (DB-003 §6 and equivalents); all four DR-001…008 data standards realized; posting map P-01…P-35 fully expressible against `gl_account.control_domain` mappings, except P-35 (external bank transfer) whose debit side is a creator-picked plain `gl_account` rather than a control-domain lookup — no clearing account applies since an arbitrary external beneficiary has no second, known account to net against (BR-BANK-05).
 
 ---
 

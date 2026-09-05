@@ -40,6 +40,7 @@ export function requisitionFiltersToParams(filters: RequisitionFiltersState): Li
 export function RequisitionFilters({ value, onChange }: { value: RequisitionFiltersState; onChange: (next: RequisitionFiltersState) => void }) {
   const t = useTranslations("procurement.requisitions.filters");
   const tStatuses = useTranslations("procurement.requisitions.statuses");
+  const tCommon = useTranslations("common");
   const departmentsQuery = useDepartments();
 
   function handleStatusChange(next: string) {
@@ -76,7 +77,7 @@ export function RequisitionFilters({ value, onChange }: { value: RequisitionFilt
           <SelectTrigger>
             <SelectValue placeholder={t("allDepartments")} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent searchable searchPlaceholder={tCommon("search")}>
             <SelectItem value={ALL_SENTINEL}>{t("allDepartments")}</SelectItem>
             {(departmentsQuery.data ?? []).map((department) => (
               <SelectItem key={department.id} value={department.id}>

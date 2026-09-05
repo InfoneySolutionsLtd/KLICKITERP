@@ -10,6 +10,8 @@ export { BankAccountEntity, BANK_ACCOUNT_KINDS } from "./domain/bank-account.ent
 export type { BankAccountKind } from "./domain/bank-account.entity";
 export { BankTransferEntity, BANK_TRANSFER_STATUSES } from "./domain/bank-transfer.entity";
 export type { BankTransferStatus } from "./domain/bank-transfer.entity";
+export { BankExternalTransferEntity, BANK_EXTERNAL_TRANSFER_STATUSES } from "./domain/bank-external-transfer.entity";
+export type { BankExternalTransferStatus } from "./domain/bank-external-transfer.entity";
 export { BankDepositEntity, BANK_DEPOSIT_WITHDRAWAL_STATUSES } from "./domain/bank-deposit.entity";
 export type { BankDepositWithdrawalStatus } from "./domain/bank-deposit.entity";
 export { BankWithdrawalEntity } from "./domain/bank-withdrawal.entity";
@@ -33,6 +35,8 @@ export { BankAccountRepository } from "./infrastructure/bank-account.repository"
 export type { ListBankAccountsFilter } from "./infrastructure/bank-account.repository";
 export { BankTransferRepository } from "./infrastructure/bank-transfer.repository";
 export type { ListBankTransfersFilter } from "./infrastructure/bank-transfer.repository";
+export { BankExternalTransferRepository } from "./infrastructure/bank-external-transfer.repository";
+export type { ListBankExternalTransfersFilter } from "./infrastructure/bank-external-transfer.repository";
 export { BankDepositRepository } from "./infrastructure/bank-deposit.repository";
 export type { ListBankDepositsFilter } from "./infrastructure/bank-deposit.repository";
 export { BankWithdrawalRepository } from "./infrastructure/bank-withdrawal.repository";
@@ -53,6 +57,11 @@ export { BankAccountsService } from "./application/bank-accounts.service";
 export type { CreateBankAccountInput, UpdateBankAccountInput } from "./application/bank-accounts.service";
 export { BankTransfersService, BANK_TRANSFERS_APPROVAL_DOMAIN_CODE } from "./application/bank-transfers.service";
 export type { CreateBankTransferInput } from "./application/bank-transfers.service";
+export {
+  BankExternalTransfersService,
+  EXTERNAL_BANK_TRANSFERS_APPROVAL_DOMAIN_CODE,
+} from "./application/bank-external-transfers.service";
+export type { CreateBankExternalTransferInput } from "./application/bank-external-transfers.service";
 export { DepositsService, BANK_DEPOSITS_APPROVAL_DOMAIN_CODE } from "./application/deposits.service";
 export type { CreateBankDepositInput } from "./application/deposits.service";
 export { WithdrawalsService, BANK_WITHDRAWALS_APPROVAL_DOMAIN_CODE } from "./application/withdrawals.service";

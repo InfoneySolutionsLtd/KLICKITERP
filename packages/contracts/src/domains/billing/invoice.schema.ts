@@ -20,7 +20,7 @@ export type GenerateInvoiceAdhocLineDto = z.infer<typeof GenerateInvoiceAdhocLin
 export const GenerateInvoiceDtoSchema = z.object({
     studentId: z.string().uuid(),
     termId: z.string().uuid(),
-    source: z.enum(["STRUCTURE", "ADHOC", "RECURRING", "DEBIT_NOTE"]),
+    source: z.enum(["STRUCTURE", "ADHOC", "RECURRING", "DEBIT_NOTE", "CARRIED_FORWARD"]),
     adhocLines: z.array(GenerateInvoiceAdhocLineDtoSchema).min(1).optional(),
     issueDate: z.string().optional(),
     dueDate: z.string().optional(),

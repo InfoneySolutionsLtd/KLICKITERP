@@ -46,7 +46,13 @@ export type {
   GenerateInvoiceSource,
 } from "./application/invoicing.service";
 export { BulkBillingService } from "./application/bulk-billing.service";
-export type { BulkGenerateFilter, BulkGenerateFailure, BulkGenerateResult } from "./application/bulk-billing.service";
+export type {
+  BulkGenerateFilter,
+  BulkGenerateSuccess,
+  BulkGenerateFailure,
+  BulkGenerateSkip,
+  BulkGenerateResult,
+} from "./application/bulk-billing.service";
 export { resolveControlAccount } from "./application/gl-control-accounts.util";
 export { CreditNotesService, BILLING_CREDIT_NOTE_APPROVAL_DOMAIN_CODE } from "./application/credit-notes.service";
 export type { CreateCreditNoteInput, CreateCreditNoteLineInput } from "./application/credit-notes.service";

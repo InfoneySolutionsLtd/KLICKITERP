@@ -542,6 +542,10 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   { code: "banking:transfer:create", module: "banking", description: "Create/view a DRAFT bank transfer and submit it for approval", isWrite: true },
   { code: "banking:transfer:decide", module: "banking", description: "Manually record a PENDING_APPROVAL transfer's approve/reject decision", isWrite: true },
   { code: "banking:transfer:post", module: "banking", description: "Post an APPROVED transfer (realizes P-32's 2-leg TRANSFER_CLEARING journal)", isWrite: true },
+  // banking:external-transfer:* (Module 16 — bank_external_transfer, P-35, wire to a beneficiary the school does not own an account for)
+  { code: "banking:external-transfer:create", module: "banking", description: "Create/view a DRAFT external bank transfer and submit it for approval", isWrite: true },
+  { code: "banking:external-transfer:decide", module: "banking", description: "Manually record a PENDING_APPROVAL external transfer's approve/reject decision", isWrite: true },
+  { code: "banking:external-transfer:post", module: "banking", description: "Post an APPROVED external transfer (realizes P-35's 2-or-4-line journal)", isWrite: true },
   // banking:deposit:* (Module 16 — bank_deposit, FR-BANK-002.1)
   { code: "banking:deposit:create", module: "banking", description: "Create/view a DRAFT bank deposit and submit it for approval", isWrite: true },
   { code: "banking:deposit:decide", module: "banking", description: "Manually record a PENDING_APPROVAL deposit's approve/reject decision", isWrite: true },

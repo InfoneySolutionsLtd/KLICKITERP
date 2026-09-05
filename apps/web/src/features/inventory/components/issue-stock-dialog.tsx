@@ -119,7 +119,7 @@ export function IssueStockDialog() {
               <SelectTrigger>
                 <SelectValue placeholder={storesQuery.isLoading ? t("loadingStores") : t("storePlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {(storesQuery.data ?? []).map((store) => (
                   <SelectItem key={store.id} value={store.id}>
                     {store.name}
@@ -141,7 +141,7 @@ export function IssueStockDialog() {
               <SelectTrigger>
                 <SelectValue placeholder={departmentsQuery.isLoading ? t("loadingDepartments") : t("departmentPlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 <SelectItem value={NO_DEPARTMENT_VALUE}>{t("noDepartment")}</SelectItem>
                 {(departmentsQuery.data ?? []).map((department) => (
                   <SelectItem key={department.id} value={department.id}>

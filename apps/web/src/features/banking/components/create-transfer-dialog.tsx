@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/patterns/money-input";
 import { ApiError } from "@/lib/api-error";
@@ -37,6 +38,9 @@ export function CreateTransferDialog() {
   const [fromAccountId, setFromAccountId] = React.useState("");
   const [toAccountId, setToAccountId] = React.useState("");
   const [amount, setAmount] = React.useState<string | null>(null);
+  const [feeAmount, setFeeAmount] = React.useState<string | null>(null);
+  const [referenceNo, setReferenceNo] = React.useState("");
+  const [expectedClearingDate, setExpectedClearingDate] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 
   const createMutation = useCreateTransfer();
@@ -46,6 +50,9 @@ export function CreateTransferDialog() {
     setFromAccountId("");
     setToAccountId("");
     setAmount(null);
+    setFeeAmount(null);
+    setReferenceNo("");
+    setExpectedClearingDate("");
     setError(null);
   }
 
@@ -67,7 +74,14 @@ export function CreateTransferDialog() {
   async function handleSubmit() {
     if (!canSubmit || !amount) return;
     setError(null);
-    const dto: CreateBankTransferDto = { fromAccountId, toAccountId, amount };
+    const dto: CreateBankTransferDto = {
+      fromAccountId,
+      toAccountId,
+      amount,
+      feeAmount: feeAmount ?? undefined,
+      referenceNo: referenceNo.trim() || undefined,
+      expectedClearingDate: expectedClearingDate || undefined,
+    };
     try {
       const created = await createMutation.mutateAsync(dto);
       setOpen(false);
@@ -126,6 +140,21 @@ export function CreateTransferDialog() {
           <div className="space-y-1.5">
             <Label required>{t("amountLabel")}</Label>
             <MoneyInput value={amount ?? ""} onValueChange={setAmount} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t("feeAmountLabel")}</Label>
+            <MoneyInput value={feeAmount ?? ""} onValueChange={setFeeAmount} />
+            <p className="text-xs text-muted-foreground">{t("feeAmountHint")}</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t("referenceNoLabel")}</Label>
+            <Input value={referenceNo} onChange={(e) => setReferenceNo(e.target.value)} maxLength={60} />
+            <p className="text-xs text-muted-foreground">{t("referenceNoHint")}</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t("expectedClearingDateLabel")}</Label>
+            <Input type="date" value={expectedClearingDate} onChange={(e) => setExpectedClearingDate(e.target.value)} />
+            <p className="text-xs text-muted-foreground">{t("expectedClearingDateHint")}</p>
           </div>
         </div>
 

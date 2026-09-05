@@ -84,7 +84,7 @@ export function SpendDialog({ walletId, studentId }: { walletId: string; student
               <SelectTrigger>
                 <SelectValue placeholder={t("selectServicePoint")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {servicePoints
                   .filter((sp) => sp.isActive)
                   .map((sp) => (

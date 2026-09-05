@@ -634,14 +634,18 @@ const NAV_ITEMS: NavItem[] = [
   // the ACTION and the broader one gating everything else, the mirror image
   // of Reconciliation's own split — never client-side hidden here either,
   // same reasoning as every other narrower action-level permission above).
-  // **THIS IS THE BANKING DROPDOWN'S FINAL SHAPE — 8 children, no more
-  // planned.** Module 16 (Banking)'s entire real backend surface confirmed
-  // present under `packages/server/src/domains/banking/api/` (Accounts,
-  // Transfers, Deposits, Withdrawals, Statement Import, Reconciliation,
-  // Cheque Books, Cheque Leaves) now has a real, working, verified frontend
-  // screen reachable from this one completed dropdown — the same "FINAL
-  // shape, no more planned" closure Expenses' own 5-child dropdown (Slice 20
-  // Part 4) already declared for its own module.
+  // Previously declared "FINAL SHAPE — 8 children, no more planned" (the
+  // note below predates this addition). P-35 (External Bank Transfer
+  // feature, 2026-09-04) added a genuinely new capability — paying a
+  // beneficiary the school does NOT own a `bank_account` for, which
+  // `bank_transfer`'s own inter-account transfer structurally cannot
+  // represent (see `bank-external-transfer.entity.ts`'s doc comment) — so
+  // this dropdown gained a 9th child rather than staying closed. Module 16
+  // (Banking)'s entire real backend surface confirmed present under
+  // `packages/server/src/domains/banking/api/` (Accounts, Transfers,
+  // External Transfers, Deposits, Withdrawals, Statement Import,
+  // Reconciliation, Cheque Books, Cheque Leaves) now has a real, working,
+  // verified frontend screen reachable from this dropdown.
   {
     href: "/banking/accounts",
     labelKey: "banking",
@@ -650,6 +654,7 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { href: "/banking/accounts", labelKey: "bankingAccounts" },
       { href: "/banking/transfers", labelKey: "bankingTransfers" },
+      { href: "/banking/external-transfers", labelKey: "bankingExternalTransfers" },
       { href: "/banking/deposits", labelKey: "bankingDeposits" },
       { href: "/banking/withdrawals", labelKey: "bankingWithdrawals" },
       { href: "/banking/statement-imports", labelKey: "bankingStatementImports" },

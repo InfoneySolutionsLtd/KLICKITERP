@@ -51,6 +51,7 @@ const STATUS_BADGE_VARIANT: Record<string, BadgeProps["variant"]> = {
 export default function ChequeLeavesPage() {
   const t = useTranslations("banking.chequeLeaves.list");
   const tStatuses = useTranslations("banking.chequeLeaves.statuses");
+  const tCommon = useTranslations("common");
   const [status, setStatus] = React.useState<BankChequeLeafStatus | "">("");
   const [bookId, setBookId] = React.useState("");
 
@@ -107,7 +108,7 @@ export default function ChequeLeavesPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={t("filters.allBooks")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SENTINEL}>{t("filters.allBooks")}</SelectItem>
                   {(booksQuery.data ?? []).map((b) => (
                     <SelectItem key={b.id} value={b.id}>

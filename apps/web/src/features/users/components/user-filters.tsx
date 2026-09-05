@@ -25,6 +25,7 @@ export const EMPTY_USER_FILTERS: UserFiltersValue = { departmentId: null, status
 export function UserFilters({ value, onChange }: { value: UserFiltersValue; onChange: (value: UserFiltersValue) => void }) {
   const t = useTranslations("users.list");
   const tStatus = useTranslations("users.status");
+  const tCommon = useTranslations("common");
   const departmentsQuery = useDepartments();
   const departments = departmentsQuery.data ?? [];
 
@@ -37,7 +38,7 @@ export function UserFilters({ value, onChange }: { value: UserFiltersValue; onCh
         <SelectTrigger className="sm:w-56">
           <SelectValue placeholder={t("allDepartments")} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent searchable searchPlaceholder={tCommon("search")}>
           <SelectItem value={ALL_DEPARTMENTS_VALUE}>{t("allDepartments")}</SelectItem>
           {departments.map((d) => (
             <SelectItem key={d.id} value={d.id}>

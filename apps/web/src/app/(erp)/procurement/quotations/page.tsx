@@ -41,6 +41,7 @@ import { QuotationComparison } from "@/features/procurement/components/quotation
  */
 function QuotationsPageContent() {
   const t = useTranslations("procurement.quotations.comparison");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
   const requisitionId = searchParams.get("requisitionId") ?? undefined;
@@ -67,7 +68,7 @@ function QuotationsPageContent() {
                   <SelectTrigger className="max-w-sm">
                     <SelectValue placeholder={t("selectRequisitionPlaceholder")} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder={tCommon("search")}>
                     {requisitions.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {r.number}

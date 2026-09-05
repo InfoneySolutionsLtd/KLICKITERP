@@ -128,7 +128,7 @@ export default function ContractsPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={t("filters.allSuppliers")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SENTINEL}>{t("filters.allSuppliers")}</SelectItem>
                   {(suppliersQuery.data ?? []).map((s) => (
                     <SelectItem key={s.id} value={s.id}>

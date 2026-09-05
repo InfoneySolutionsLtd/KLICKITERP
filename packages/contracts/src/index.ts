@@ -33,6 +33,7 @@ export * from "./domains/banking/account.schema";
 export * from "./domains/banking/cheque-book.schema";
 export * from "./domains/banking/cheque-leaf.schema";
 export * from "./domains/banking/deposit-withdrawal.schema";
+export * from "./domains/banking/external-transfer.schema";
 export * from "./domains/banking/reconciliation.schema";
 export * from "./domains/banking/statement-import.schema";
 export * from "./domains/banking/transfer.schema";

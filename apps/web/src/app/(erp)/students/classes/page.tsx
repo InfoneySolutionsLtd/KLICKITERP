@@ -159,7 +159,7 @@ export default function ClassesAndStreamsPage() {
               <SelectTrigger className="w-52">
                 <SelectValue placeholder={t("selectClassForStreams")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {classesQuery.data?.map((klass) => (
                   <SelectItem key={klass.id} value={klass.id}>
                     {klass.name}

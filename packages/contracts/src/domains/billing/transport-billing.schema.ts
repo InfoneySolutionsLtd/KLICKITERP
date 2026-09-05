@@ -35,3 +35,29 @@ export const BillTransportResultDtoSchema = z.object({
     failed: z.array(BillTransportFailureDtoSchema),
 });
 export type BillTransportResultDto = z.infer<typeof BillTransportResultDtoSchema>;
+
+export const RegenerateTransportBillingDtoSchema = z.object({
+    termId: z.string().uuid(),
+    routeId: z.string().uuid().optional(),
+});
+export type RegenerateTransportBillingDto = z.infer<typeof RegenerateTransportBillingDtoSchema>;
+
+export const TransportRegenerateSuccessDtoSchema = z.object({
+    studentId: z.string(),
+    invoiceIds: z.array(z.string()),
+    routeId: z.string(),
+});
+export type TransportRegenerateSuccessDto = z.infer<typeof TransportRegenerateSuccessDtoSchema>;
+
+export const TransportRegenerateSkipDtoSchema = z.object({
+    studentId: z.string(),
+    reason: z.string(),
+});
+export type TransportRegenerateSkipDto = z.infer<typeof TransportRegenerateSkipDtoSchema>;
+
+export const TransportRegenerateResultDtoSchema = z.object({
+    succeeded: z.array(TransportRegenerateSuccessDtoSchema),
+    failed: z.array(BillTransportFailureDtoSchema),
+    skipped: z.array(TransportRegenerateSkipDtoSchema),
+});
+export type TransportRegenerateResultDto = z.infer<typeof TransportRegenerateResultDtoSchema>;

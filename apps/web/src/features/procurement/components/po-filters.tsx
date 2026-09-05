@@ -40,6 +40,7 @@ export function poFiltersToParams(filters: PoFiltersState): ListPurchaseOrdersFi
 export function PoFilters({ value, onChange }: { value: PoFiltersState; onChange: (next: PoFiltersState) => void }) {
   const t = useTranslations("procurement.purchaseOrders.filters");
   const tStatuses = useTranslations("procurement.purchaseOrders.statuses");
+  const tCommon = useTranslations("common");
   const suppliersQuery = useSuppliers();
 
   function handleStatusChange(next: string) {
@@ -76,7 +77,7 @@ export function PoFilters({ value, onChange }: { value: PoFiltersState; onChange
           <SelectTrigger>
             <SelectValue placeholder={t("allSuppliers")} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent searchable searchPlaceholder={tCommon("search")}>
             <SelectItem value={ALL_SENTINEL}>{t("allSuppliers")}</SelectItem>
             {(suppliersQuery.data ?? []).map((supplier) => (
               <SelectItem key={supplier.id} value={supplier.id}>

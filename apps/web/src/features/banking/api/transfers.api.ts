@@ -129,3 +129,10 @@ export async function rejectTransfer(id: string): Promise<BankTransferResponseDt
 export async function postTransfer(id: string): Promise<BankTransferResponseDto> {
   return unwrapApiResult<BankTransferResponseDto>(await apiClient.POST("/api/v1/banking/transfers/{id}/post", { params: { path: { id } } }));
 }
+
+/** Pure metadata, settable at ANY status — a real bank wire reference is often only known after the transfer has already cleared. */
+export async function updateTransferReference(id: string, referenceNo: string): Promise<BankTransferResponseDto> {
+  return unwrapApiResult<BankTransferResponseDto>(
+    await apiClient.PATCH("/api/v1/banking/transfers/{id}/reference", { params: { path: { id } }, body: { referenceNo } }),
+  );
+}

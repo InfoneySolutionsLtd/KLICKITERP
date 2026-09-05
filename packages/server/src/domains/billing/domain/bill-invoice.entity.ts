@@ -31,12 +31,13 @@ export const BILL_INVOICE_STATUSES: readonly BillInvoiceStatus[] = [
 /** Statuses at/after which `trg_bill_invoice_immutable` freezes financial columns. */
 export const BILL_INVOICE_IMMUTABLE_STATUSES: readonly BillInvoiceStatus[] = ["POSTED", "PARTIALLY_PAID", "PAID"];
 
-export type BillInvoiceSource = "STRUCTURE" | "ADHOC" | "RECURRING" | "DEBIT_NOTE";
+export type BillInvoiceSource = "STRUCTURE" | "ADHOC" | "RECURRING" | "DEBIT_NOTE" | "CARRIED_FORWARD";
 export const BILL_INVOICE_SOURCES: readonly BillInvoiceSource[] = [
   "STRUCTURE",
   "ADHOC",
   "RECURRING",
   "DEBIT_NOTE",
+  "CARRIED_FORWARD",
 ];
 
 /**
@@ -68,7 +69,25 @@ export const BILL_INVOICE_SOURCES: readonly BillInvoiceSource[] = [
  * pointer comment. `uq_bill_invoice_structure_p` (BR-BILL-04 idempotency —
  * "a student may receive at most one structure-generated invoice per (term,
  * structure version)") IS expressible via `@Index`'s `where` option since it
- * needs no `INCLUDE` clause, so it's declared below.
+ * needs no `INCLUDE` clause, so it's declared below. Deliberately scoped to
+ * `source = 'STRUCTURE'` only: `CARRIED_FORWARD` (see below) always has a
+ * null `fee_structure_id` (it goes through the `adhocLines` path, same as
+ * `ADHOC`/`RECURRING`), so a partial index keyed on that column would never
+ * actually fire for it; duplicate-per-category protection for
+ * `CARRIED_FORWARD` instead reuses the same application-level
+ * `BillInvoiceLineRepository.listAlreadyBilledCategoryIds()` guard `ADHOC`
+ * already relies on (see `BulkBillingService.generateForStudent()`).
+ *
+ * `CARRIED_FORWARD` (migration `0253`, Bulk Billing's "regenerate like
+ * previous term" feature) follows the exact same "reporting-distinctness
+ * only" precedent `RECURRING` already set: `InvoicingService.generateInvoice()`
+ * needed zero changes for it, since it's generated via the same generic
+ * `adhocLines` branch every non-STRUCTURE source already uses.
+ * `BulkBillingService.bulkGenerate()` is the only writer: per student, it
+ * carries forward the fee-category set from their own most recent invoice in
+ * the immediately preceding term, re-priced against the CURRENT PUBLISHED
+ * fee structure's amount for the target term, never the prior invoice's own
+ * peso amount.
  */
 @Entity("bill_invoice")
 @Index("uq_bill_invoice_number", ["number"], { unique: true })
@@ -78,7 +97,7 @@ export const BILL_INVOICE_SOURCES: readonly BillInvoiceSource[] = [
   where: `"source" = 'STRUCTURE' AND "status" <> 'VOID'`,
 })
 @Check("ck_bill_invoice_status", `"status" IN ('DRAFT','PENDING_APPROVAL','APPROVED','POSTED','PARTIALLY_PAID','PAID','VOID')`)
-@Check("ck_bill_invoice_source", `"source" IN ('STRUCTURE','ADHOC','RECURRING','DEBIT_NOTE')`)
+@Check("ck_bill_invoice_source", `"source" IN ('STRUCTURE','ADHOC','RECURRING','DEBIT_NOTE','CARRIED_FORWARD')`)
 // `ck_bill_invoice_due_after_issue` (due_date >= issue_date) dropped by
 // migration `0232` (Phase 6 Slice 10 correction) — a due date genuinely CAN
 // precede the issue date: an invoice generated today for a fee category
@@ -124,7 +143,7 @@ export class BillInvoiceEntity extends MutableBaseEntity {
   @Column({ type: "varchar", length: 18, name: "status" })
   status!: BillInvoiceStatus;
 
-  @Column({ type: "varchar", length: 12, name: "source" })
+  @Column({ type: "varchar", length: 20, name: "source" })
   source!: BillInvoiceSource;
 
   @Column({

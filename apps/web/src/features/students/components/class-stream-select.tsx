@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActiveClasses, useClasses } from "../hooks/use-classes";
 import { useStreamsForClass } from "../hooks/use-streams";
@@ -49,6 +50,7 @@ export function ClassStreamSelect({
   disabled,
   className,
 }: ClassStreamSelectProps) {
+  const tCommon = useTranslations("common");
   const allClasses = useClasses();
   const activeClasses = useActiveClasses();
   const classesQuery = activeClassesOnly ? activeClasses : allClasses;
@@ -72,7 +74,7 @@ export function ClassStreamSelect({
         <SelectTrigger className="sm:w-52">
           <SelectValue placeholder={classPlaceholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent searchable searchPlaceholder={tCommon("search")}>
           {classAllLabel && <SelectItem value={EMPTY_VALUE}>{classAllLabel}</SelectItem>}
           {classesQuery.data?.map((klass) => (
             <SelectItem key={klass.id} value={klass.id}>

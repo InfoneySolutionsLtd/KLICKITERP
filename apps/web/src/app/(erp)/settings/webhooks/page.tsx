@@ -35,6 +35,7 @@ const DELIVERY_STATUSES: readonly WebhookDeliveryStatus[] = ["PENDING", "DELIVER
  */
 export default function WebhooksSettingsPage() {
   const t = useTranslations("settings.webhooks");
+  const tCommon = useTranslations("common");
   const subscriptionsQuery = useWebhookSubscriptions();
 
   const [page, setPage] = React.useState(1);
@@ -103,7 +104,7 @@ export default function WebhooksSettingsPage() {
                 <SelectTrigger className="w-64">
                   <SelectValue placeholder={t("deliveries.allSubscriptions")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_SUBSCRIPTIONS_VALUE}>{t("deliveries.allSubscriptions")}</SelectItem>
                   {subscriptionsQuery.data?.map((s) => (
                     <SelectItem key={s.id} value={s.id}>

@@ -92,7 +92,7 @@ export function CreateRequisitionDialog() {
               <SelectTrigger>
                 <SelectValue placeholder={departmentsQuery.isLoading ? t("loadingDepartments") : t("selectDepartmentPlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {(departmentsQuery.data ?? []).map((department) => (
                   <SelectItem key={department.id} value={department.id}>
                     {department.name}

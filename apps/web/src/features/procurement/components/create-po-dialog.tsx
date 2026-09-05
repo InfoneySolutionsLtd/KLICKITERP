@@ -210,7 +210,7 @@ export function CreatePoDialog({ requisitionId: lockedRequisitionId }: { requisi
                 <SelectTrigger>
                   <SelectValue placeholder={approvedRequisitionsQuery.isLoading ? t("loadingRequisitions") : t("selectRequisitionPlaceholder")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   {(approvedRequisitionsQuery.data ?? []).map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.number}

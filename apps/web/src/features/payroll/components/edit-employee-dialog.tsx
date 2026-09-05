@@ -212,7 +212,7 @@ export function EditEmployeeDialog({ employee }: { employee: PyrlEmployeeRespons
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   {(departmentsQuery.data ?? []).map((d) => (
                     <SelectItem key={d.id} value={d.id}>
                       {d.name}

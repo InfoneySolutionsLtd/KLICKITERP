@@ -30,4 +30,33 @@ export class BillTransportBillingLineRepository {
       .getRawMany();
     return rows[0]?.total ?? "0";
   }
+
+  /**
+   * "Regenerate like previous term" (`TransportBillingService.
+   * regenerateLikePreviousTerm()`) — every real (non-VOID) transport billing
+   * line for a given term, joined through to the parent invoice to filter by
+   * `term_id`/`status` (this entity carries no `term_id` of its own). Used
+   * for BOTH lookups that method needs: the preceding term's billed
+   * students+routes (optionally narrowed to one route), and the target
+   * term's already-billed student set (no route filter) for the duplicate
+   * guard. "Most recent row per student" is reduced in the SERVICE, in JS —
+   * same simple-reduction convention `bulk-billing.service.ts`'s own
+   * `categoryCache` already establishes, rather than a SQL `DISTINCT ON`.
+   */
+  async listByTermAndOptionalRoute(
+    termId: string,
+    routeId: string | undefined,
+    manager?: EntityManager,
+  ): Promise<{ studentId: string; routeId: string; createdAt: Date }[]> {
+    const repo = manager?.getRepository(BillTransportBillingLineEntity) ?? this.repo;
+    const qb = repo
+      .createQueryBuilder("btl")
+      .innerJoin("btl.invoiceLine", "line")
+      .innerJoin("line.invoice", "invoice")
+      .select(["btl.studentId AS \"studentId\"", "btl.routeId AS \"routeId\"", "btl.createdAt AS \"createdAt\""])
+      .where("invoice.termId = :termId", { termId })
+      .andWhere("invoice.status <> 'VOID'");
+    if (routeId) qb.andWhere("btl.routeId = :routeId", { routeId });
+    return qb.getRawMany();
+  }
 }

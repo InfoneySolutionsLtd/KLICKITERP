@@ -157,7 +157,7 @@ export default function NewUserPage() {
                 <SelectTrigger>
                   <SelectValue placeholder={departmentsQuery.isLoading ? t("loadingDepartments") : t("noDepartment")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={NO_DEPARTMENT_VALUE}>{t("noDepartment")}</SelectItem>
                   {(departmentsQuery.data ?? []).map((d) => (
                     <SelectItem key={d.id} value={d.id}>

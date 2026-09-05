@@ -15,6 +15,7 @@ import {
   computeSha256,
   createTarArchive,
   dumpDatabase,
+  extractTarArchive,
   restoreDatabase,
 } from "../infrastructure/backup-executor";
 
@@ -100,6 +101,64 @@ describe("backup-executor", () => {
       expect(result.sizeBytes).toBeGreaterThan(0);
 
       await fs.rm(workDir, { recursive: true, force: true });
+    });
+  });
+
+  describe("--force-local (GNU tar colon-as-remote-host workaround)", () => {
+    it("createTarArchive() passes --force-local so Windows' Git-bundled GNU tar doesn't treat a drive-letter path as a remote host:path spec", async () => {
+      let capturedArgs: string[] = [];
+      execFile.mockImplementation((_cmd: string, args: string[], _opts: unknown, cb: (...a: unknown[]) => void) => {
+        capturedArgs = args;
+        cb(null, "", "");
+      });
+
+      const workDir = await fs.mkdtemp(path.join(os.tmpdir(), "bkp-exec-tar-"));
+      const filePath = path.join(workDir, "a.txt");
+      await fs.writeFile(filePath, "x");
+      const outputPath = path.join(workDir, "out.tar");
+      await fs.writeFile(outputPath, "stub-tar-bytes"); // execFile is mocked, so tar never really creates this — pre-create it so the post-exec fs.stat() succeeds
+
+      await createTarArchive([filePath], outputPath);
+
+      expect(capturedArgs[0]).toBe("--force-local");
+      expect(capturedArgs).toContain(outputPath);
+      expect(capturedArgs).toContain(path.dirname(filePath));
+
+      await fs.rm(workDir, { recursive: true, force: true });
+    });
+
+    it("extractTarArchive() passes --force-local for the same reason createTarArchive() does", async () => {
+      let capturedArgs: string[] = [];
+      execFile.mockImplementation((_cmd: string, args: string[], _opts: unknown, cb: (...a: unknown[]) => void) => {
+        capturedArgs = args;
+        cb(null, "", "");
+      });
+
+      const workDir = await fs.mkdtemp(path.join(os.tmpdir(), "bkp-exec-untar-"));
+      const archivePath = path.join(workDir, "in.tar");
+      const destDir = path.join(workDir, "dest");
+
+      await extractTarArchive(archivePath, destDir);
+
+      expect(capturedArgs[0]).toBe("--force-local");
+      expect(capturedArgs).toContain(archivePath);
+      expect(capturedArgs).toContain(destDir);
+
+      await fs.rm(workDir, { recursive: true, force: true });
+    });
+
+    it("restoreDatabase() passes --no-owner --no-acl so restoring into a target owned by a different role doesn't fail on the dump's own ALTER OWNER/GRANT statements", async () => {
+      let capturedArgs: string[] = [];
+      execFile.mockImplementation((_cmd: string, args: string[], _opts: unknown, cb: (...a: unknown[]) => void) => {
+        capturedArgs = args;
+        cb(null, "", "");
+      });
+
+      await restoreDatabase(CONNECTION, "/tmp/dump.dump");
+
+      expect(capturedArgs).toEqual(
+        expect.arrayContaining(["--clean", "--if-exists", "--no-owner", "--no-acl"]),
+      );
     });
   });
 

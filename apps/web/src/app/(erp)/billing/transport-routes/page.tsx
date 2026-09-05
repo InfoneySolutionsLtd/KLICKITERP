@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TransportRouteResponseDto } from "@klickit/contracts";
-import { Eye, Plus, Receipt } from "lucide-react";
+import { Eye, Plus, Receipt, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +74,12 @@ export default function TransportRoutesPage() {
             <Link href="/billing/transport-routes/bill">
               <Receipt className="size-4" />
               {t("billTransport")}
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/billing/transport-routes/regenerate">
+              <RotateCcw className="size-4" />
+              {t("regenerateTransport")}
             </Link>
           </Button>
           <Button onClick={() => setCreateOpen(true)}>

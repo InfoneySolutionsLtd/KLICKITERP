@@ -45,3 +45,44 @@ export class BillTransportResultDto {
   @ApiProperty({ type: [BillTransportFailureDto] })
   failed!: BillTransportFailureDto[];
 }
+
+export class RegenerateTransportBillingDto {
+  @ApiProperty({ format: "uuid", description: "The TARGET term to regenerate transport billing into" })
+  @IsUUID()
+  termId!: string;
+
+  @ApiPropertyOptional({ format: "uuid", description: "Narrow to students who rode this route in the preceding term" })
+  @IsOptional()
+  @IsUUID()
+  routeId?: string;
+}
+
+export class TransportRegenerateSuccessDto {
+  @ApiProperty({ format: "uuid" })
+  studentId!: string;
+
+  @ApiProperty({ type: [String] })
+  invoiceIds!: string[];
+
+  @ApiProperty({ format: "uuid" })
+  routeId!: string;
+}
+
+export class TransportRegenerateSkipDto {
+  @ApiProperty({ format: "uuid" })
+  studentId!: string;
+
+  @ApiProperty({ description: "Why nothing was generated for this student (not an error)" })
+  reason!: string;
+}
+
+export class TransportRegenerateResultDto {
+  @ApiProperty({ type: [TransportRegenerateSuccessDto] })
+  succeeded!: TransportRegenerateSuccessDto[];
+
+  @ApiProperty({ type: [BillTransportFailureDto] })
+  failed!: BillTransportFailureDto[];
+
+  @ApiProperty({ type: [TransportRegenerateSkipDto] })
+  skipped!: TransportRegenerateSkipDto[];
+}

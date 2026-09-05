@@ -9,7 +9,7 @@ import { NumberingService } from "../../../platform/settings";
 import { BankTransferEntity } from "../domain/bank-transfer.entity";
 import { BankAccountRepository } from "../infrastructure/bank-account.repository";
 import { BankTransferRepository, ListBankTransfersFilter } from "../infrastructure/bank-transfer.repository";
-import { resolveTransferClearingAccount } from "./gl-banking-accounts.util";
+import { resolveBankChargesExpenseAccount, resolveTransferClearingAccount } from "./gl-banking-accounts.util";
 
 /** `appr_workflow_def.domain_code` this module submits `bank_transfer`s under — the `0900` seed registers a single-level System-Admin workflow under this code (`seedSingleLevelWorkflow()`), same "amount-tiered chains start single-level, real tiers are future work" treatment every prior amount-tiered chain in this codebase has gotten (e.g. `SUPPLIER_PAYMENTS`/`EXPENSES`). */
 export const BANK_TRANSFERS_APPROVAL_DOMAIN_CODE = "BANK_TRANSFERS";
@@ -18,6 +18,9 @@ export interface CreateBankTransferInput {
   fromAccountId: string;
   toAccountId: string;
   amount: Money;
+  feeAmount?: Money;
+  referenceNo?: string | null;
+  expectedClearingDate?: string | null;
 }
 
 /**
@@ -64,6 +67,9 @@ export class BankTransfersService {
         "ck_bank_transfer_accounts_distinct: fromAccountId and toAccountId must differ (defense-in-depth ahead of the DB CHECK)",
       );
     }
+    if (input.feeAmount && input.feeAmount.isNegative()) {
+      throw new ValidationException("ck_bank_transfer_fee_amount_nonneg: feeAmount must be >= 0");
+    }
     await this.bankAccountRepository.findByIdOrFail(input.fromAccountId, em);
     await this.bankAccountRepository.findByIdOrFail(input.toAccountId, em);
 
@@ -80,11 +86,33 @@ export class BankTransfersService {
         status: "DRAFT",
         approvalRef: null,
         journalId: null,
+        feeAmount: input.feeAmount ?? null,
+        referenceNo: input.referenceNo ?? null,
+        expectedClearingDate: input.expectedClearingDate ?? null,
         createdBy: actorId,
         updatedBy: actorId,
       },
       em,
     );
+  }
+
+  /**
+   * Pure metadata — no status guard, unlike every other mutation on this
+   * entity. A real bank wire reference is often only assigned after the
+   * transfer has already cleared (which may be well after this ERP's own
+   * DRAFT->POSTED workflow completes), so this must be settable regardless
+   * of `status`.
+   */
+  async updateReferenceNo(
+    em: EntityManager,
+    transferId: string,
+    referenceNo: string,
+    actorId: string | null,
+  ): Promise<BankTransferEntity> {
+    const transfer = await this.transferRepository.findByIdOrFail(transferId, em);
+    transfer.referenceNo = referenceNo;
+    transfer.updatedBy = actorId;
+    return this.transferRepository.save(transfer, em);
   }
 
   async findByIdOrFail(id: string): Promise<BankTransferEntity> {
@@ -145,7 +173,13 @@ export class BankTransfersService {
     return this.transferRepository.save(transfer, em);
   }
 
-  /** P-32 — requires `APPROVED`. See class doc comment for the exact 2-leg mechanism. */
+  /**
+   * P-32 — requires `APPROVED`. See class doc comment for the exact 2-leg
+   * mechanism. When `feeAmount` is set and non-zero, 2 extra lines are
+   * appended (Debit Bank Charges Expense / Credit source account) — this
+   * pair is independently balanced, so the whole journal stays balanced by
+   * construction regardless of whether a fee is present.
+   */
   async post(em: EntityManager, transferId: string, postedBy: string): Promise<BankTransferEntity> {
     const transfer = await this.transferRepository.findByIdOrFail(transferId, em);
     if (transfer.status !== "APPROVED") {
@@ -158,6 +192,63 @@ export class BankTransfersService {
     const toAccount = await this.bankAccountRepository.findByIdOrFail(transfer.toAccountId, em);
     const clearingAccount = await resolveTransferClearingAccount(this.glAccountRepository, em);
 
+    const lines = [
+      {
+        accountId: clearingAccount.id,
+        debit: transfer.amount,
+        credit: Money.ZERO,
+        memo: "P-32 transfer clearing (leg 1 — source side)",
+        entityRefType: "bank_transfer",
+        entityRefId: transfer.id,
+      },
+      {
+        accountId: fromAccount.glAccountId,
+        debit: Money.ZERO,
+        credit: transfer.amount,
+        memo: `P-32 source account (${fromAccount.name})`,
+        entityRefType: "bank_transfer",
+        entityRefId: transfer.id,
+      },
+      {
+        accountId: toAccount.glAccountId,
+        debit: transfer.amount,
+        credit: Money.ZERO,
+        memo: `P-32 destination account (${toAccount.name})`,
+        entityRefType: "bank_transfer",
+        entityRefId: transfer.id,
+      },
+      {
+        accountId: clearingAccount.id,
+        debit: Money.ZERO,
+        credit: transfer.amount,
+        memo: "P-32 transfer clearing (leg 2 — destination side)",
+        entityRefType: "bank_transfer",
+        entityRefId: transfer.id,
+      },
+    ];
+
+    if (transfer.feeAmount && !transfer.feeAmount.isZero()) {
+      const bankChargesAccount = await resolveBankChargesExpenseAccount(this.glAccountRepository, em);
+      lines.push(
+        {
+          accountId: bankChargesAccount.id,
+          debit: transfer.feeAmount,
+          credit: Money.ZERO,
+          memo: "P-32 transfer fee (Bank Charges Expense)",
+          entityRefType: "bank_transfer",
+          entityRefId: transfer.id,
+        },
+        {
+          accountId: fromAccount.glAccountId,
+          debit: Money.ZERO,
+          credit: transfer.feeAmount,
+          memo: `P-32 transfer fee — charged to source account (${fromAccount.name})`,
+          entityRefType: "bank_transfer",
+          entityRefId: transfer.id,
+        },
+      );
+    }
+
     const journal = await this.postingService.post(em, {
       journalDate: new Date().toISOString().slice(0, 10),
       sourceModule: "banking",
@@ -167,40 +258,7 @@ export class BankTransfersService {
       journalType: "MANUAL",
       postedBy,
       approvalRef: transfer.approvalRef,
-      lines: [
-        {
-          accountId: clearingAccount.id,
-          debit: transfer.amount,
-          credit: Money.ZERO,
-          memo: "P-32 transfer clearing (leg 1 — source side)",
-          entityRefType: "bank_transfer",
-          entityRefId: transfer.id,
-        },
-        {
-          accountId: fromAccount.glAccountId,
-          debit: Money.ZERO,
-          credit: transfer.amount,
-          memo: `P-32 source account (${fromAccount.name})`,
-          entityRefType: "bank_transfer",
-          entityRefId: transfer.id,
-        },
-        {
-          accountId: toAccount.glAccountId,
-          debit: transfer.amount,
-          credit: Money.ZERO,
-          memo: `P-32 destination account (${toAccount.name})`,
-          entityRefType: "bank_transfer",
-          entityRefId: transfer.id,
-        },
-        {
-          accountId: clearingAccount.id,
-          debit: Money.ZERO,
-          credit: transfer.amount,
-          memo: "P-32 transfer clearing (leg 2 — destination side)",
-          entityRefType: "bank_transfer",
-          entityRefId: transfer.id,
-        },
-      ],
+      lines,
     });
 
     const number = await this.numberingService.allocate(em, "BANK_TRANSFER");

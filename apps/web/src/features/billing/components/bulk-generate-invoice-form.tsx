@@ -160,6 +160,7 @@ interface GenerateSummary {
  */
 export function BulkGenerateInvoiceForm() {
   const t = useTranslations("billing.bulkGenerate");
+  const tCommon = useTranslations("common");
   const classesQuery = useActiveClasses();
 
   const [academicYearId, setAcademicYearId] = React.useState<string | null>(null);
@@ -452,7 +453,7 @@ export function BulkGenerateInvoiceForm() {
               <SelectTrigger className="sm:w-64">
                 <SelectValue placeholder={t("selectClass")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {classesQuery.data?.map((klass) => (
                   <SelectItem key={klass.id} value={klass.id}>
                     {klass.name}

@@ -74,6 +74,7 @@ interface BillSummary {
  */
 export function BillTransportForm() {
   const t = useTranslations("billing.transportRoutes.billForm");
+  const tCommon = useTranslations("common");
   const classesQuery = useActiveClasses();
   const routesQuery = useTransportRoutes();
 
@@ -288,7 +289,7 @@ export function BillTransportForm() {
               <SelectTrigger className="sm:w-64">
                 <SelectValue placeholder={t("selectClass")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {classesQuery.data?.map((klass) => (
                   <SelectItem key={klass.id} value={klass.id}>
                     {klass.name}
@@ -304,7 +305,7 @@ export function BillTransportForm() {
               <SelectTrigger className="sm:w-64">
                 <SelectValue placeholder={t("selectRoute")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {activeRoutes.map((route) => (
                   <SelectItem key={route.id} value={route.id}>
                     {route.name} ({formatMoney(route.amount)})

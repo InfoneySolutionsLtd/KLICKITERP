@@ -1,7 +1,7 @@
 import { Check, Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { MutableBaseEntity } from "../../../shared/database/mutable-base.entity";
 import { Money } from "../../../shared/money/money";
-import { RequiredMoneyTransformer } from "../../../shared/money/money.transformer";
+import { MoneyTransformer, RequiredMoneyTransformer } from "../../../shared/money/money.transformer";
 import { GlJournalEntity } from "../../../accounting";
 import { BankAccountEntity } from "./bank-account.entity";
 
@@ -32,12 +32,25 @@ export const BANK_TRANSFER_STATUSES: readonly BankTransferStatus[] = [
  * this foundation pass's `mayImport` for parity/forward-looking readiness
  * only (same judgement call every other module this size has made); no
  * entity anywhere in this codebase ever takes a real FK to `appr_instance`.
+ *
+ * `reference_no`/`expected_clearing_date`/`fee_amount` (migration `0250`,
+ * "real wire detail" fields) — `reference_no` is pure metadata, never read
+ * by `PostingService`, independently patchable at any status via
+ * `BankTransfersService.updateReferenceNo()` since a real bank wire
+ * reference is often only known after the transfer has already cleared.
+ * `expected_clearing_date` is informational only — no job or automation
+ * anywhere reads it, a known, deliberate limitation. `fee_amount`, unlike
+ * the other two, DOES feed P-32 posting (an extra Debit Bank Charges
+ * Expense / Credit source-account leg, see `bank-transfers.service.ts`'s
+ * own `post()` doc comment) so — like `amount` — it is create-time-only,
+ * no edit endpoint.
  */
 @Entity("bank_transfer")
 @Index("uq_bank_transfer_number", ["number"], { unique: true })
 @Check("ck_bank_transfer_amount_positive", `"amount" > 0`)
 @Check("ck_bank_transfer_status", `"status" IN ('DRAFT','PENDING_APPROVAL','APPROVED','POSTED')`)
 @Check("ck_bank_transfer_accounts_distinct", `"from_account_id" <> "to_account_id"`)
+@Check("ck_bank_transfer_fee_amount_nonneg", `"fee_amount" IS NULL OR "fee_amount" >= 0`)
 export class BankTransferEntity extends MutableBaseEntity {
   @Column({ type: "varchar", length: 30, name: "number" })
   number!: string;
@@ -78,4 +91,20 @@ export class BankTransferEntity extends MutableBaseEntity {
   @ManyToOne(() => GlJournalEntity, { nullable: true, onDelete: "RESTRICT" })
   @JoinColumn({ name: "journal_id" })
   journal?: GlJournalEntity | null;
+
+  @Column({ type: "varchar", length: 60, name: "reference_no", nullable: true })
+  referenceNo!: string | null;
+
+  @Column({ type: "date", name: "expected_clearing_date", nullable: true })
+  expectedClearingDate!: string | null;
+
+  @Column({
+    type: "numeric",
+    precision: 18,
+    scale: 4,
+    name: "fee_amount",
+    nullable: true,
+    transformer: MoneyTransformer,
+  })
+  feeAmount!: Money | null;
 }

@@ -127,7 +127,7 @@ export default function FeeStructuresPage() {
               <SelectTrigger className="w-52">
                 <SelectValue placeholder={t("filters.selectClass")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {classesQuery.data?.map((klass) => (
                   <SelectItem key={klass.id} value={klass.id}>
                     {klass.name}

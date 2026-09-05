@@ -140,7 +140,7 @@ export default function ItemsPage() {
                 <SelectTrigger className="sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   <SelectItem value={ALL_VALUE}>{t("allCategories")}</SelectItem>
                   {(categoriesQuery.data ?? []).map((c) => (
                     <SelectItem key={c.id} value={c.id}>

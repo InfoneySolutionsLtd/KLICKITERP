@@ -123,7 +123,7 @@ export function CreateStockTakeDialog() {
               <SelectTrigger>
                 <SelectValue placeholder={storesQuery.isLoading ? t("loadingStores") : t("storePlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder={tCommon("search")}>
                 {(storesQuery.data ?? []).map((store) => (
                   <SelectItem key={store.id} value={store.id}>
                     {store.name}

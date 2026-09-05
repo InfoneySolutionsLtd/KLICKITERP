@@ -346,6 +346,21 @@ describe("FeeStructuresService", () => {
       await expect(service.delete("structure-1", "actor-1")).rejects.toThrow(/3 invoice\(s\)/);
       expect(feeStructureRepository.delete).not.toHaveBeenCalled();
     });
+
+    it("blocks deleting a PUBLISHED structure outright, even with zero invoices, and never even checks the invoice count", async () => {
+      feeStructureRepository.findByIdOrFail.mockResolvedValue(makeStructure({ status: "PUBLISHED" }));
+      invoiceRepository.countByFeeStructureId.mockResolvedValue(0);
+      await expect(service.delete("structure-1", "actor-1")).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.delete("structure-1", "actor-1")).rejects.toThrow(/PUBLISHED/);
+      expect(invoiceRepository.countByFeeStructureId).not.toHaveBeenCalled();
+      expect(feeStructureRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it("blocks deleting a SUPERSEDED structure the same way", async () => {
+      feeStructureRepository.findByIdOrFail.mockResolvedValue(makeStructure({ status: "SUPERSEDED" }));
+      await expect(service.delete("structure-1", "actor-1")).rejects.toBeInstanceOf(ConflictException);
+      expect(feeStructureRepository.delete).not.toHaveBeenCalled();
+    });
   });
 
   describe("listCategoriesForScope", () => {

@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/api-error";
 import { listStreamsForClass } from "@/features/students/api/streams.api";
 import { useClasses } from "@/features/students/hooks/use-classes";
 import { AcademicYearTermSelect } from "./academic-year-term-select";
+import { useTerms } from "../hooks/use-academic-calendar";
 import { useBulkBilling } from "../hooks/use-bulk-billing";
 
 /**
@@ -27,40 +28,48 @@ import { useBulkBilling } from "../hooks/use-bulk-billing";
 const DANGER_CONFIRM_WORD = "BILL ALL STUDENTS";
 
 interface BulkBillingSummary {
-  succeeded: string[];
+  succeeded: { studentId: string; invoiceIds: string[]; categoryIds: string[]; alreadyBilledCategoryIds?: string[] }[];
   failed: { studentId: string; error: string }[];
+  skipped: { studentId: string; reason: string }[];
 }
 
 /**
- * Phase 6 Billing sub-features batch, Part 8 (FINAL part) — Bulk Billing's
- * main form: `<AcademicYearTermSelect>` for the required `termId`, a
- * `classIds` `<MultiSelect>` (copying `fee-structure-create-dialog.tsx`'s
- * own existing multi-class-picker pattern verbatim — `useClasses()` +
- * `MultiSelect`, no new infrastructure invented), and a `streamIds`
- * `<MultiSelect>` populated as the UNION of `listStreamsForClass(classId)`
- * calls across whichever classes are currently selected (`useQueries()`,
- * the same fan-out pattern `integrity-run-findings.tsx` already
- * establishes) — there is no unscoped "list all streams" endpoint anywhere
- * in this codebase (`StreamsController.listByClass()` requires `classId`,
- * confirmed by reading it directly), so the streams picker is empty/disabled
- * with an explanatory hint whenever zero classes are selected; a `useEffect`
- * prunes any selected stream id that falls out of the current union whenever
- * the class selection changes, so a stale stream id is never silently sent.
- * A direct, structural consequence of this pruning: `streamIds` can never be
- * non-empty while `classIds` is empty through this UI, so the "unscoped"
- * check below only needs to look at `classIds`, but checks both anyway for
- * defense in depth against a future change to that invariant.
+ * Bulk Billing, redesigned (2026-09-04) as "regenerate like previous term"
+ * — see `bulk-billing.api.ts`'s own doc comment for the full algorithm.
+ * `<AcademicYearTermSelect>` picks the TARGET term, a `classIds`
+ * `<MultiSelect>` (copying `fee-structure-create-dialog.tsx`'s own existing
+ * multi-class-picker pattern verbatim — `useClasses()` + `MultiSelect`, no
+ * new infrastructure invented), and a `streamIds` `<MultiSelect>` populated
+ * as the UNION of `listStreamsForClass(classId)` calls across whichever
+ * classes are currently selected (`useQueries()`, the same fan-out pattern
+ * `integrity-run-findings.tsx` already establishes) — there is no unscoped
+ * "list all streams" endpoint anywhere in this codebase, so the streams
+ * picker is empty/disabled with an explanatory hint whenever zero classes
+ * are selected; a `useEffect` prunes any selected stream id that falls out
+ * of the current union whenever the class selection changes. Kept
+ * unchanged from the pre-redesign form — population-scoping risk is the
+ * same regardless of what algorithm actually generates the invoices.
+ *
+ * **New: resolve the PRECEDING term client-side, with zero new endpoint.**
+ * `useTerms(academicYearId)` is the SAME hook `<AcademicYearTermSelect>`
+ * already calls internally (identical query key — React Query dedupes it,
+ * no extra network round trip) and already returns each term's real `seq`.
+ * `previousTerm` is found by `seq === targetTerm.seq - 1` within that same
+ * list; when none exists (the target is the first term of its academic
+ * year), submission is blocked client-side with an explanatory message —
+ * the same up-front rejection `BulkBillingService.bulkGenerate()` itself
+ * enforces server-side (a 404 if this check is ever bypassed), surfaced
+ * here without waiting for a round trip.
  *
  * **The escalating confirm flow — this component's real reason for
- * existing.** `BulkBillingService.resolveStudents()`
- * (`packages/server/.../bulk-billing.service.ts`, confirmed by reading it
- * directly) treats an empty `classIds` AND empty `streamIds` as "every
- * ACTIVE student in the entire school," with zero server-side confirmation
- * step of its own — this dialog is the ONLY thing standing between a
- * misclick and billing an entire school:
+ * existing.** `BulkBillingService.resolveStudents()` treats an empty
+ * `classIds` AND empty `streamIds` as "every ACTIVE student in the entire
+ * school," with zero server-side confirmation step of its own — this
+ * dialog is the ONLY thing standing between a misclick and billing an
+ * entire school:
  *   - **Scoped** (at least one class or stream selected): a plain `Dialog`
  *     confirm, default button variant, describing the real scope about to be
- *     billed.
+ *     billed and naming the resolved previous term.
  *   - **Unscoped** (both empty): the SAME `Dialog`, but the title/button go
  *     `variant="destructive"`, a `variant="destructive"` `Alert` spells out
  *     "every active student in the school, no undo" in plain language, and —
@@ -77,10 +86,12 @@ interface BulkBillingSummary {
  * rendered inline the moment the mutation resolves, this component never
  * navigates away from it, and a visible "do not navigate away" `Alert`
  * appears both on the main card and inside the confirm dialog itself
- * whenever the mutation is actually in flight (`isPending`), copying
- * `bulk-generate-invoice-form.tsx`'s own established
- * Alert+`<ul>`-of-`{studentId}: {error}"` result-rendering shape for the
- * failures list.
+ * whenever the mutation is actually in flight (`isPending`). The result now
+ * has THREE buckets, not two: `succeeded` (real invoices generated),
+ * `failed` (a real error — e.g. a carried-forward category no longer on the
+ * current fee structure), and `skipped` (not an error — no qualifying
+ * prior-term invoice, or every carried-forward category was already billed
+ * this term).
  */
 export function BulkBillingForm() {
   const t = useTranslations("billing.bulkBilling");
@@ -98,8 +109,16 @@ export function BulkBillingForm() {
   const [result, setResult] = React.useState<BulkBillingSummary | null>(null);
 
   const classesQuery = useClasses();
+  const termsQuery = useTerms(academicYearId ?? undefined);
   const bulkBillingMutation = useBulkBilling();
   const submitting = bulkBillingMutation.isPending;
+
+  const targetTerm = React.useMemo(() => termsQuery.data?.find((t) => t.id === termId), [termsQuery.data, termId]);
+  const previousTerm = React.useMemo(
+    () => (targetTerm && termsQuery.data ? termsQuery.data.find((t) => t.seq === targetTerm.seq - 1) : undefined),
+    [targetTerm, termsQuery.data],
+  );
+  const noPreviousTerm = !!targetTerm && !!termsQuery.data && !previousTerm;
 
   const classOptions = React.useMemo(
     () => (classesQuery.data ?? []).map((klass) => ({ value: klass.id, label: klass.name })),
@@ -141,6 +160,10 @@ export function BulkBillingForm() {
       setFormError(t("form.termRequiredError"));
       return;
     }
+    if (noPreviousTerm && targetTerm) {
+      setFormError(t("form.previousTermMissing", { termName: targetTerm.name }));
+      return;
+    }
     setConfirmError(null);
     setDangerConfirmText("");
     setConfirmOpen(true);
@@ -161,7 +184,7 @@ export function BulkBillingForm() {
         streamIds: streamIds.length > 0 ? streamIds : undefined,
       });
       setConfirmOpen(false);
-      setResult({ succeeded: response.succeeded, failed: response.failed });
+      setResult({ succeeded: response.succeeded, failed: response.failed, skipped: response.skipped });
     } catch (err) {
       setConfirmError(err instanceof ApiError ? err.message : t("form.genericError"));
     }
@@ -199,6 +222,10 @@ export function BulkBillingForm() {
               autoSelectCurrent
               disabled={submitting}
             />
+            {previousTerm && <p className="text-xs text-muted-foreground">{t("form.previousTermPreview", { termName: previousTerm.name })}</p>}
+            {noPreviousTerm && targetTerm && (
+              <p className="text-xs text-destructive">{t("form.previousTermMissing", { termName: targetTerm.name })}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -230,7 +257,7 @@ export function BulkBillingForm() {
           </div>
 
           <div className="flex justify-end">
-            <Button type="button" onClick={handleOpenConfirm} disabled={submitting}>
+            <Button type="button" onClick={handleOpenConfirm} disabled={submitting || noPreviousTerm}>
               {submitting ? t("form.generating") : t("form.submit")}
             </Button>
           </div>
@@ -243,7 +270,7 @@ export function BulkBillingForm() {
             <>
               <DialogHeader>
                 <DialogTitle className="text-destructive">{t("confirmDialog.dangerTitle")}</DialogTitle>
-                <DialogDescription>{t("confirmDialog.dangerBody")}</DialogDescription>
+                <DialogDescription>{t("confirmDialog.dangerBody", { previousTermName: previousTerm?.name ?? "" })}</DialogDescription>
               </DialogHeader>
 
               <Alert variant="destructive">
@@ -266,7 +293,11 @@ export function BulkBillingForm() {
             <DialogHeader>
               <DialogTitle>{t("confirmDialog.normalTitle")}</DialogTitle>
               <DialogDescription>
-                {t("confirmDialog.normalBody", { classCount: classIds.length, streamCount: streamIds.length })}
+                {t("confirmDialog.normalBody", {
+                  classCount: classIds.length,
+                  streamCount: streamIds.length,
+                  previousTermName: previousTerm?.name ?? "",
+                })}
               </DialogDescription>
             </DialogHeader>
           )}
@@ -318,6 +349,20 @@ export function BulkBillingForm() {
                   {result.failed.map((f) => (
                     <li key={f.studentId}>
                       {f.studentId}: {f.error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {result.skipped.length > 0 && (
+              <div>
+                <p className="mb-1 text-sm font-medium text-foreground">{t("result.skippedCount", { count: result.skipped.length })}</p>
+                <p className="mb-1 text-sm font-medium text-foreground">{t("result.skippedListTitle")}</p>
+                <ul className="list-inside list-disc text-sm text-muted-foreground">
+                  {result.skipped.map((s) => (
+                    <li key={s.studentId}>
+                      {s.studentId}: {s.reason}
                     </li>
                   ))}
                 </ul>

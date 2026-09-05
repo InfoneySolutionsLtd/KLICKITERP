@@ -156,7 +156,17 @@ describe("billing module — trigger integration (real DataSource)", () => {
         /BR-BILL-03/,
       );
     } finally {
-      await source.query(`UPDATE app.bill_fee_structure SET status = 'SUPERSEDED' WHERE id = $1`, [structureId]);
+      // Migration 0249 (BR-BILL-03 hardening, Phase 6 Slice 47) added a
+      // PARENT-level `fn_bill_structure_not_deletable_published()` trigger
+      // that blocks deleting a structure whose status is PUBLISHED *or*
+      // SUPERSEDED — a real, deliberate widening beyond the older line-level
+      // `trg_bill_structure_immutable` (migration 0070) this test above
+      // exercises, which only ever blocked on PUBLISHED. Flipping back to
+      // SUPERSEDED here (this test's own old cleanup trick, back when only
+      // PUBLISHED was blocked) no longer unblocks a delete — flip to DRAFT
+      // instead, which bypasses both triggers, since this cleanup step was
+      // never itself testing SUPERSEDED-status behavior.
+      await source.query(`UPDATE app.bill_fee_structure SET status = 'DRAFT' WHERE id = $1`, [structureId]);
       await source.query(`DELETE FROM app.bill_fee_structure_line WHERE fee_structure_id = $1`, [structureId]);
       await source.query(`DELETE FROM app.bill_fee_structure WHERE id = $1`, [structureId]);
       await source.query(`DELETE FROM app.bill_fee_category WHERE id = $1`, [categoryId]);

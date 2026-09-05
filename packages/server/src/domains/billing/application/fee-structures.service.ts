@@ -310,14 +310,44 @@ export class FeeStructuresService {
   }
 
   /**
-   * Cannot delete once any `bill_invoice` references this structure
+   * **Fixed (2026-09-04, closing a real, confirmed gap)**: a `PUBLISHED` or
+   * `SUPERSEDED` structure can no longer be deleted at all, matching this
+   * codebase's "immutable once published" discipline everywhere else
+   * (`bill_invoice`/`gl_journal`/etc.) — a deliberate, explicit product
+   * decision, not a mechanical extension of the invoice-count check below.
+   * Previously `status` was never checked here, so a published structure
+   * with zero invoices against it yet could be deleted outright — and doing
+   * so silently bypassed `trg_bill_structure_immutable` (migration `0070`)
+   * too: that trigger only fires on direct `bill_fee_structure_line`
+   * UPDATE/DELETE and reads the PARENT's status via `OLD.fee_structure_id`,
+   * but a cascade delete removes the parent row first, so by the time the
+   * line-level trigger fires the parent is already gone and its own
+   * `SELECT status ...` finds nothing (`v_status` stays `NULL`, the
+   * `IF v_status = 'PUBLISHED'` guard never fires) — confirmed by reading
+   * the trigger function directly, not assumed. Blocking the delete HERE,
+   * before it ever reaches the DB, closes both the API-level gap and the
+   * cascade-bypass at once for the normal application path; migration
+   * `0249` adds a real `BEFORE DELETE` trigger directly on
+   * `bill_fee_structure` itself as the DB-level backstop (same two-layer
+   * discipline — app check first, DB trigger as the real, unbypassable
+   * enforcement — this codebase uses everywhere else, e.g. BR-FA-02).
+   *
+   * Still cannot delete once any `bill_invoice` references it
    * (`ConflictException`, naming the real count) — mirrors
-   * `StudentsService.delete()`'s count-naming precedent. Otherwise deletes
-   * outright; `bill_fee_structure_line` rows cascade automatically
-   * (`ON DELETE CASCADE`, migration `0070`).
+   * `StudentsService.delete()`'s count-naming precedent; checked AFTER the
+   * status guard since a published-with-invoices structure should report
+   * the more specific "published" reason, not the invoice count, if both
+   * are true. Otherwise deletes outright (DRAFT structures only, now);
+   * `bill_fee_structure_line` rows cascade automatically (`ON DELETE
+   * CASCADE`, migration `0070`).
    */
   async delete(id: string, actorId: string | null): Promise<void> {
-    await this.feeStructureRepository.findByIdOrFail(id);
+    const structure = await this.feeStructureRepository.findByIdOrFail(id);
+    if (structure.status === "PUBLISHED" || structure.status === "SUPERSEDED") {
+      throw new ConflictException(
+        `Cannot delete fee structure ${id}: status is ${structure.status} — a published fee structure can never be deleted, only superseded by publishing a new one`,
+      );
+    }
     const invoiceCount = await this.invoiceRepository.countByFeeStructureId(id);
     if (invoiceCount > 0) {
       throw new ConflictException(`Cannot delete fee structure ${id}: ${invoiceCount} invoice(s) still reference it`);

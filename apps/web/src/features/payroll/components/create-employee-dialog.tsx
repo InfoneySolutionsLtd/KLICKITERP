@@ -249,7 +249,7 @@ export function CreateEmployeeDialog() {
                 <SelectTrigger>
                   <SelectValue placeholder={departmentsQuery.isLoading ? t("loadingDepartments") : t("departmentPlaceholder")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder={tCommon("search")}>
                   {(departmentsQuery.data ?? []).map((d) => (
                     <SelectItem key={d.id} value={d.id}>
                       {d.name}

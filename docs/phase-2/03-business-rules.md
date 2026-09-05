@@ -35,7 +35,7 @@ Rules are normative and testable. Enforcement layer noted as: **UI** (guidance),
 | BR-BILL-01 | A student must have exactly one ledger account, created automatically at registration and never deletable. | SVC/DB |
 | BR-BILL-02 | An invoice may only be generated from a PUBLISHED fee structure version; DRAFT structures cannot bill. | SVC |
 | BR-BILL-03 | A published fee structure version is immutable; changes create a new version. Invoices permanently reference the exact version that produced them. | SVC/DB |
-| BR-BILL-04 | A student may receive at most one structure-generated invoice per (term, structure version); bulk billing re-runs skip already-billed students. | SVC/DB |
+| BR-BILL-04 | A student may receive at most one live STRUCTURE-sourced invoice per (term, structure version) - `uq_bill_invoice_structure_p`, `status <> 'VOID'`. Bulk Billing (`source: CARRIED_FORWARD`, since 2026-09-04) and the ad-hoc bulk tool (`source: ADHOC`) don't post through this path at all, so re-runs of either instead rely on an application-level guard (`BillInvoiceLineRepository.listAlreadyBilledCategoryIds()`) that skips any fee category already really billed for the student/term, rather than this DB constraint. | SVC/DB |
 | BR-BILL-05 | Invoice due date ≥ issue date. Installment schedules must sum exactly to the invoice balance at plan creation, with strictly increasing due dates. | SVC/DB |
 | BR-BILL-06 | Concessions (waiver/discount/scholarship/bursary) may not exceed the balance of the line/invoice they target; aggregate concessions on an invoice may not drive its balance negative. | SVC/DB |
 | BR-BILL-07 | Every waiver requires a reason and completes its approval chain before posting. Waivers above the initiator's authority limit route to the higher chain tier automatically. | WF/SVC |
@@ -110,10 +110,11 @@ Rules are normative and testable. Enforcement layer noted as: **UI** (guidance),
 
 | ID | Rule | Enforced |
 |---|---|---|
-| BR-BANK-01 | Inter-account transfers post both legs atomically via the transfer clearing account; the clearing account must return to zero per transfer. | SVC/DB |
+| BR-BANK-01 | Inter-account transfers post both legs atomically via the transfer clearing account; the clearing account must return to zero per transfer. An optional transfer fee posts as a separate, independently-balanced Debit Bank Charges Expense / Credit source account pair layered onto the same journal — it never affects the clearing account's own net-to-zero invariant. | SVC/DB |
 | BR-BANK-02 | A statement line may reconcile against book entries only once; reconciled entries lock against modification. | SVC/DB |
 | BR-BANK-03 | A period's bank reconciliation must be locked before that period can be HARD_CLOSED. | SVC |
 | BR-BANK-04 | Cheque numbers issue sequentially per cheque book; skipping a leaf requires a CANCELLED record with reason. | SVC/DB |
+| BR-BANK-05 | An external bank transfer (P-35, a beneficiary the school does not own a `bank_account` for) posts a real 2-line journal — Debit the creator-picked GL account (what the payment is for), Credit the source account — with no clearing account, since an arbitrary external beneficiary has no second, known GL account to net against. Same optional fee-leg treatment as BR-BANK-01. | SVC/DB |
 | BR-ACC-01 | Accounts with any postings can be deactivated but never deleted; deactivated accounts reject new postings but appear in history. | SVC/DB |
 | BR-ACC-02 | Manual journals require narration, balanced lines, and the JOURNALS approval chain; reversal journals must reference their original. | SVC/WF |
 | BR-ACC-03 | Fiscal year close requires: all periods soft-closed, all bank reconciliations locked, depreciation posted for all periods, suspense items zero, invariant sweep green. | SVC |

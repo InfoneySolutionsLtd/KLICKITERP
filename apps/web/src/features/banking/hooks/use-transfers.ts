@@ -10,6 +10,7 @@ import {
   postTransfer,
   rejectTransfer,
   submitTransfer,
+  updateTransferReference,
   type BankTransferResponseDto,
   type ListTransfersFilters,
 } from "../api/transfers.api";
@@ -81,6 +82,15 @@ export function usePostTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => postTransfer(id),
+    onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
+  });
+}
+
+/** Pure metadata — settable at any status, see `transfers.api.ts`'s own doc comment. */
+export function useUpdateTransferReference() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, referenceNo }: { id: string; referenceNo: string }) => updateTransferReference(id, referenceNo),
     onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
   });
 }

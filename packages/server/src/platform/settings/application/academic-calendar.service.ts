@@ -175,6 +175,20 @@ export class AcademicCalendarService {
     return this.termRepository.findByIdOrFail(id, manager);
   }
 
+  /**
+   * Thin delegate to `SetTermRepository.findByYearAndSeq()` — cross-module
+   * callers (Bulk Billing's "regenerate like previous term" feature resolves
+   * a target term's own immediately-preceding term via `seq - 1`, same
+   * academic year) go through this service rather than reaching into
+   * `platform/settings`'s repository directly, respecting this module's own
+   * "public barrel exports services, not repositories" convention. Returns
+   * `null` (not throwing) when no such term exists — same nullable-lookup
+   * shape as `getCurrentTerm()`.
+   */
+  async findTermByYearAndSeq(academicYearId: string, seq: number, manager?: EntityManager): Promise<SetTermEntity | null> {
+    return this.termRepository.findByYearAndSeq(academicYearId, seq, manager);
+  }
+
   async updateTerm(
     id: string,
     changes: { name?: string; seq?: number; startsOn?: string; endsOn?: string },

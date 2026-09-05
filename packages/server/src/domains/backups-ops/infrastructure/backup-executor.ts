@@ -92,11 +92,24 @@ export async function dumpDatabase(config: PgConnectionConfig, outputPath: strin
  * own doc comment). `--clean --if-exists` drops existing objects before
  * recreating them so a restore-verify run against a previously-used scratch
  * target doesn't fail on "already exists" errors.
+ *
+ * `--no-owner --no-acl` is required because the target's connecting role is
+ * caller-supplied and, by this function's own design, need not be (and
+ * typically isn't) the same role that owns the objects in the source dump —
+ * confirmed live: a dump taken from the real app database embeds `ALTER
+ * ... OWNER TO kfe_migrate`/`GRANT ... TO kfe_app` statements, and restoring
+ * those verbatim fails with `must be able to SET ROLE "kfe_migrate"` unless
+ * the target role happens to already be a member of every role the dump
+ * references — defeating the point of restore-verify against an
+ * independently-provisioned scratch target. `--no-owner --no-acl` restores
+ * all data/schema/objects and just skips replaying the source's
+ * ownership/grants, which restore-verify never needed anyway (it only
+ * checks row counts against the manifest, not ACLs).
  */
 export async function restoreDatabase(config: PgConnectionConfig, dumpPath: string): Promise<void> {
   await runExecFile(
     "pg_restore",
-    ["--clean", "--if-exists", "-h", config.host, "-p", String(config.port), "-U", config.user, "-d", config.database, dumpPath],
+    ["--clean", "--if-exists", "--no-owner", "--no-acl", "-h", config.host, "-p", String(config.port), "-U", config.user, "-d", config.database, dumpPath],
     { ...process.env, PGPASSWORD: config.password },
   );
 }
@@ -111,6 +124,18 @@ export async function restoreDatabase(config: PgConnectionConfig, dumpPath: stri
  * under one temp work dir) — `tar -C <sharedParent> <relativeNames>` keeps
  * the archive's internal paths relative/clean instead of embedding the
  * host's absolute temp-dir path.
+ *
+ * `--force-local` is required on Windows: bare-name `tar` resolves (via
+ * `PATH`) to Git for Windows' bundled GNU tar ahead of `System32\tar.exe`
+ * (bsdtar) on a stock dev machine, and GNU tar treats ANY colon in an
+ * archive-file argument as a `host:path` remote-tape spec — confirmed live,
+ * `tar -cf C:\Users\...\archive.tar ...` fails with `tar: Cannot connect to
+ * C: resolve failed` (exit 128) regardless of whether the path uses
+ * backslashes or forward slashes (an earlier fix here that only normalized
+ * slashes did NOT resolve this — GNU tar's colon check doesn't care about
+ * the separator). `--force-local` tells tar "treat this as a local file
+ * even though it contains a colon" and is supported by both GNU tar and
+ * bsdtar, so it's a no-op-safe flag on Linux/macOS too.
  */
 export async function createTarArchive(sourcePaths: readonly string[], outputPath: string): Promise<{ path: string; sizeBytes: number }> {
   if (sourcePaths.length === 0) {
@@ -118,15 +143,15 @@ export async function createTarArchive(sourcePaths: readonly string[], outputPat
   }
   const baseDir = path.dirname(sourcePaths[0]);
   const relativeNames = sourcePaths.map((p) => path.relative(baseDir, p));
-  await runExecFile("tar", ["-cf", outputPath, "-C", baseDir, ...relativeNames]);
+  await runExecFile("tar", ["--force-local", "-cf", outputPath, "-C", baseDir, ...relativeNames]);
   const stat = await fs.stat(outputPath);
   return { path: outputPath, sizeBytes: stat.size };
 }
 
-/** The inverse of `createTarArchive` — used by `RestoreVerificationService` to unpack a decrypted archive back into `db.dump`/mirrored files/env snapshot before restoring. */
+/** The inverse of `createTarArchive` — used by `RestoreVerificationService` to unpack a decrypted archive back into `db.dump`/mirrored files/env snapshot before restoring. Needs `--force-local` for the same reason `createTarArchive` does (see its own doc comment). */
 export async function extractTarArchive(archivePath: string, destDir: string): Promise<void> {
   await fs.mkdir(destDir, { recursive: true });
-  await runExecFile("tar", ["-xf", archivePath, "-C", destDir]);
+  await runExecFile("tar", ["--force-local", "-xf", archivePath, "-C", destDir]);
 }
 
 /** Streaming SHA-256 (no external process — Node's built-in `crypto`) so large archives never need to be fully buffered in memory just to hash them. */

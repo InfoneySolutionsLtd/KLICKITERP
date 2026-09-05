@@ -44,6 +44,7 @@ export const EMPTY_AUDIENCE_PICKER_VALUE: AudiencePickerValue = { kind: "STAFF_R
  */
 export function AudiencePicker({ value, onChange }: { value: AudiencePickerValue; onChange: (next: AudiencePickerValue) => void }) {
   const t = useTranslations("communications.broadcasts.audiencePicker");
+  const tCommon = useTranslations("common");
   const rolesQuery = useRoles();
   const usersQuery = useUsersLookup();
 
@@ -75,7 +76,7 @@ export function AudiencePicker({ value, onChange }: { value: AudiencePickerValue
             <SelectTrigger>
               <SelectValue placeholder={t("rolePlaceholder")} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent searchable searchPlaceholder={tCommon("search")}>
               {roleOptions.map((role) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}

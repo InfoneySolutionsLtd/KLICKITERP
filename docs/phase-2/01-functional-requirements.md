@@ -63,9 +63,10 @@ Every financial event posts exactly as below (accounts resolved from CoA mapping
 | P-29 | Statutory remittance | Statutory payable (each) | Bank |
 | P-30 | Depreciation run | Depreciation expense | Accumulated depreciation |
 | P-31 | Asset disposal | Cash/AR + Accum. depreciation + Loss on disposal | Asset cost + Gain on disposal |
-| P-32 | Bank transfer between accounts | Destination bank/cash | Source bank/cash (via transfer clearing) |
+| P-32 | Bank transfer between accounts | Destination bank/cash | Source bank/cash (via transfer clearing); optional transfer fee also debits Bank charges expense / credits source bank/cash |
 | P-33 | Bank charges (reconciliation) | Bank charges expense | Bank |
 | P-34 | M-Pesa settlement to bank | Bank | M-Pesa clearing |
+| P-35 | External bank transfer (beneficiary not owned by the school) | Creator-picked GL account (what the payment is for) | Source bank/cash; optional transfer fee also debits Bank charges expense / credits source bank/cash |
 
 ---
 
@@ -138,7 +139,7 @@ Every financial event posts exactly as below (accounts resolved from CoA mapping
 
 - **FR-BILL-002.1** Import pipeline: upload → parse → column-mapping UI (saved templates) → validation report per row (duplicate admission_no, unknown class, bad phone) → commit valid rows / export rejects. Re-import with same batch key updates instead of duplicating.
 - **FR-BILL-011.1** Structure resolution order for a student: (year, term, class) + most specific match on stream > boarding > fee_group; optional lines included only if assigned to the student (FR-BILL-013).
-- **FR-BILL-020.1** Bulk billing wizard: select scope (term + classes/streams/groups) → preview grid (per-student computed invoice, exceptions flagged: no structure, inactive student, already billed) → confirm → BullMQ job `billing.bulk` (chunked 100/batch, per-student transaction) → completion report (created / skipped-already-billed / failed + reasons). Re-running the same scope is idempotent per (student, term, structure version) (BR-BILL-04).
+- **FR-BILL-020.1** Bulk billing wizard: select scope (term + classes/streams/groups) → preview grid (per-student computed invoice, exceptions flagged: no structure, inactive student, already billed) → confirm → BullMQ job `billing.bulk` (chunked 100/batch, per-student transaction) → completion report (created / skipped-already-billed / failed + reasons). **As actually implemented (redesigned 2026-09-04, "regenerate like previous term")**: no preview grid and no BullMQ job exist (a scoped-down, synchronous implementation, same gap this note already flagged before the redesign) — the wizard itself no longer picks a fee structure at all; per student in scope, it carries forward the fee categories from their own most recent invoice in the immediately preceding term (same academic year, `seq - 1`), re-priced at the current term's PUBLISHED fee structure amounts (`source: CARRIED_FORWARD`). Re-running the same scope is idempotent via an application-level already-billed-category guard, not BR-BILL-04 (which only covers `STRUCTURE`-sourced invoices - see that rule's own updated text).
 - **FR-BILL-025.1** Installments: plan total must equal invoice balance at creation; editing an active plan requires `billing:installment:update`; reminders fire per installment due date (FR-BILL-064 cadence).
 - **FR-BILL-026.1** Late-fee engine (nightly job): for each overdue invoice/installment where policy active and student not exempt → compute flat|%|tiered charge → aggregate into a dated late-fee debit line (P-05) — but if `require_approval=true` in policy, stage as a draft batch for Bursar approval before posting.
 - **FR-BILL-042.1** Sponsor module: sponsor registry (contacts, agreement docs); award = (student, term, amount|%, categories covered); on invoice posting, covered amounts auto-move to sponsor via P-03; sponsor statement shows awards vs sponsor payments; sponsor payments received post Dr Bank / Cr AR–Sponsor.
@@ -248,7 +249,7 @@ All rates/bands/relief flags live in `StatutoryRateTable` rows (type, effective_
 
 ## M10. Banking (BANK)
 
-- **FR-BANK-002.1** Documents: `Deposit` (source till/safe → bank, slip ref), `Withdrawal`, `Transfer` (two-leg with clearing account P-32, both legs in one transaction). Approval chains by amount tier.
+- **FR-BANK-002.1** Documents: `Deposit` (source till/safe → bank, slip ref), `Withdrawal`, `Transfer` (two-leg with clearing account P-32, both legs in one transaction; optional reference number, expected clearing date, and fee), `External Transfer` (P-35, pays a beneficiary the school does not own a `bank_account` for — beneficiary name/bank/branch/account no, a creator-picked GL account for what the payment is for, same optional reference/clearing-date/fee fields). Approval chains by amount tier.
 - **FR-BANK-003.1** Statement import: per-bank saved mapping template (column → field, date format, debit/credit convention); staging table with dedupe on (account, date, amount, ref hash).
 - **FR-BANK-004.1** Reconciliation workspace: unmatched statement lines vs unreconciled book entries; auto-match passes (exact ref → exact amount+date ±3 d → amount-only suggestions); one-click create adjustment (charges P-33, interest income); period lock on completion stores reconciliation statement snapshot (book balance ± outstanding items = bank balance). Reopening a locked reconciliation: `banking:reconciliation:reopen` + reason.
 - **FR-BANK-005.1** Cheque register: books (bank account, prefix, leaf range), auto-next-leaf on voucher print; statuses ISSUED→PRESENTED→CLEARED / STOPPED / CANCELLED / STALE (auto-flag > 6 months).
