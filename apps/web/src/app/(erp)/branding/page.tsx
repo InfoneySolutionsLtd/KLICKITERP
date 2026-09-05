@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ThemeResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
@@ -78,8 +79,8 @@ export default function BrandingPage() {
         cell: ({ row }) => {
           // Disabled, not hidden, once PUBLISHED (matches the real 422 from
           // `PATCH /branding/themes/:id` — `ThemesService.update()`). A real
-          // `<button disabled>` here, not a `Button asChild` wrapping a
-          // disabled `<Link>`: HTML's `disabled` attribute has no effect on
+          // `<button disabled>` here, not a `RowActionButton asChild` wrapping
+          // a disabled `<Link>`: HTML's `disabled` attribute has no effect on
           // an `<a>` (Link renders one) — neither the `:disabled` CSS
           // pseudo-class `buttonVariants` styles against nor real
           // click-prevention would apply to a disabled anchor, so this
@@ -87,15 +88,17 @@ export default function BrandingPage() {
           // a link.
           if (row.original.status === "PUBLISHED") {
             return (
-              <Button type="button" variant="outline" size="sm" disabled title={publishedEditBlockedMessage(row.original.name)}>
-                {t("columns.edit")}
-              </Button>
+              <RowActionButton tone="edit" label={t("columns.edit")} disabled title={publishedEditBlockedMessage(row.original.name)}>
+                <Pencil />
+              </RowActionButton>
             );
           }
           return (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/branding/${row.original.id}/edit`}>{t("columns.edit")}</Link>
-            </Button>
+            <RowActionButton asChild tone="edit" label={t("columns.edit")}>
+              <Link href={`/branding/${row.original.id}/edit`}>
+                <Pencil />
+              </Link>
+            </RowActionButton>
           );
         },
       },

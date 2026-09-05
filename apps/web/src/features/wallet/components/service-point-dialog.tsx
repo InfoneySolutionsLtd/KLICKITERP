@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
+import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -179,9 +181,9 @@ export function EditServicePointDialog({ servicePoint }: { servicePoint: Service
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          {tCommon("edit")}
-        </Button>
+        <RowActionButton tone="edit" label={tCommon("edit")}>
+          <Pencil />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

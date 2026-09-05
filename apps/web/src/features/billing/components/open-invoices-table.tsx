@@ -7,6 +7,7 @@ import { Eye, Search } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PendingUpcomingInvoiceResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Input } from "@/components/ui/input";
 import { DataTable, type ServerPaginationState } from "@/components/patterns/data-table";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
@@ -110,12 +111,11 @@ export function OpenInvoicesTable({ bucket }: { bucket: "PENDING" | "UPCOMING" }
         header: t("columns.actions"),
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
-            <Button asChild size="sm" variant="outline">
+            <RowActionButton asChild tone="view" label={tCommon("view")}>
               <Link href={`/billing/invoices/${row.original.id}`}>
-                <Eye className="size-4" />
-                {tCommon("view")}
+                <Eye />
               </Link>
-            </Button>
+            </RowActionButton>
             <Button asChild size="sm" variant="outline">
               <Link href={`/billing/collect?studentId=${row.original.studentId}&invoiceId=${row.original.id}`}>{t("collect")}</Link>
             </Button>

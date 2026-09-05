@@ -7,8 +7,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { RequisitionResponseDto } from "@klickit/contracts";
 import { Eye } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { DataTable } from "@/components/patterns/data-table";
 import { formatMoney } from "@/lib/money";
@@ -81,17 +81,16 @@ export default function RequisitionsPage() {
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            variant="outline"
+          <RowActionButton
+            tone="view"
+            label={tCommon("view")}
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/procurement/requisitions/${row.original.id}`);
             }}
           >
-            <Eye className="size-4" />
-            {tCommon("view")}
-          </Button>
+            <Eye />
+          </RowActionButton>
         ),
       },
     ],

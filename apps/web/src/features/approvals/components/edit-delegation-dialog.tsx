@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Pencil } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import {
   Dialog,
   DialogContent,
@@ -78,10 +79,9 @@ export function EditDelegationDialog({ delegation }: { delegation: Delegation })
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>
-          <Pencil className="size-4" />
-          {tCommon("edit")}
-        </Button>
+        <RowActionButton tone="edit" label={tCommon("edit")} onClick={(e) => e.stopPropagation()}>
+          <Pencil />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>

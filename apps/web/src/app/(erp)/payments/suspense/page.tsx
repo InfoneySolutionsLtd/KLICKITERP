@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { DataTable } from "@/components/patterns/data-table";
 import { formatMoney } from "@/lib/money";
@@ -38,9 +39,11 @@ export default function SuspensePage() {
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
             <MatchSuspenseDialog item={row.original} />
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/payments/suspense/${row.original.id}`}>{t("viewTrigger")}</Link>
-            </Button>
+            <RowActionButton asChild tone="view" label={t("viewTrigger")}>
+              <Link href={`/payments/suspense/${row.original.id}`}>
+                <Eye />
+              </Link>
+            </RowActionButton>
           </div>
         ),
       },

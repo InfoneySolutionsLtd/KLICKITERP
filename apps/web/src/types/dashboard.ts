@@ -35,9 +35,27 @@ export interface CollectionRateResponse {
   collectionRate: number | null;
 }
 
+/**
+ * Real row shape from `CashFlowReport.execute()`
+ * (`packages/server/src/domains/reporting/application/cash-flow.report.ts`)
+ * — one row per cash/bank/M-Pesa-clearing account, `Money` values
+ * serialized as decimal strings (`Money.toJSON()`). Was previously typed as
+ * `Record<string, unknown>[]` here (Phase 6 Slice 1's own deliberate scope
+ * trim — the cash-flow widget only ever rendered a one-line row-count
+ * summary) — made precise now that the widget shows real formatted totals.
+ */
+export interface CashFlowRow {
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  cashIn: string;
+  cashOut: string;
+  netCashFlow: string;
+}
+
 export interface CashFlowResponse {
-  rows: Record<string, unknown>[];
-  totals?: Record<string, unknown>;
+  rows: CashFlowRow[];
+  totals?: { cashIn: string; cashOut: string; netCashFlow: string };
 }
 
 export interface RevenueExpenseSurplusResponse {

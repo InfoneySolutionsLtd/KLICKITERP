@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Eye } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { StudentResponseDto } from "@klickit/contracts";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { useClasses } from "../hooks/use-classes";
 
 export const STATUS_BADGE_VARIANT: Record<string, NonNullable<BadgeProps["variant"]>> = {
@@ -69,9 +70,11 @@ export function useStudentColumns(): ColumnDef<StudentResponseDto>[] {
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button asChild size="sm" variant="outline">
-            <Link href={`/students/${row.original.id}`}>{t("viewDetails")}</Link>
-          </Button>
+          <RowActionButton asChild tone="view" label={t("viewDetails")}>
+            <Link href={`/students/${row.original.id}`}>
+              <Eye />
+            </Link>
+          </RowActionButton>
         ),
       },
     ],

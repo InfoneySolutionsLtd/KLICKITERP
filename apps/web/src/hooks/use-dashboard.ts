@@ -137,23 +137,41 @@ const REFRESH_MVS_TIMEOUT_MS = 20_000;
 /**
  * `dashboard/page.tsx`'s mount effect fires this once and gates 6 KPI tiles
  * (`outstandingFees`/`defaultersCount`/`revenueExpenseSurplus`×3/
- * `walletLiability`) behind it via `mvKpisReady = isSuccess || isError` — a
- * real, reproducible bug found live: if the underlying `apiClient.POST(...)`
- * promise never settles (a dropped connection mid-request, e.g. a backend
- * restart landing exactly during this call, or any network blip), `fetch()`
- * can leave the promise neither resolved nor rejected, so this mutation
- * never reaches `isSuccess`/`isError` — `mvKpisReady` then stays `false`
- * forever, permanently stranding those 6 tiles in their loading skeleton.
- * Worse, the page's own manual "Refresh data" button is disabled by this
- * SAME `refreshMutation.isPending` flag, so a stuck mount-refresh also takes
- * away the one manual escape hatch — the only recovery was a full page
- * reload. `Promise.race()` against a plain `setTimeout` rejection bounds
- * this call to `REFRESH_MVS_TIMEOUT_MS`: a timeout rejects the mutation the
- * same way a real HTTP error would, which flips `isError` true, which
- * unblocks the gate (falling back to whatever the MVs already hold, same
- * graceful-degrade the plan already intended for a genuine server error) and
- * re-enables the Refresh button for a manual retry — no more permanent
- * stuck state from a single bad request.
+ * `walletLiability`) behind it via `mvKpisReady = isSuccess || isError`.
+ *
+ * `Promise.race()` against a plain `setTimeout` rejection bounds this call
+ * to `REFRESH_MVS_TIMEOUT_MS`, so a genuinely slow/unresponsive backend
+ * still flips `isError` true and unblocks the gate (falling back to
+ * whatever the MVs already hold) instead of hanging forever.
+ *
+ * **A second, separate, now-fixed hang (found live, 2026-09-05)**: the
+ * mount effect that calls this mutation used to guard itself with a
+ * `hasFiredMountRefreshRef` ref ("only ever call `.mutate()` once, even
+ * under React 18/19 Strict Mode's dev-only double-invoke of mount
+ * effects"). That guard was the bug: confirmed via direct diagnostic
+ * logging that the mutation's own `mutationFn`/`onSuccess`/`onSettled` DID
+ * run to completion every time (the real network call always succeeded),
+ * yet `dashboard/page.tsx` kept reading `isPending: true` forever — proven
+ * NOT a general "this component doesn't re-render" issue by placing an
+ * unrelated, unguarded probe `useMutation` in the same component, which
+ * updated correctly on every run. Strict Mode's double-invoke doesn't just
+ * re-run a plain `useEffect`'s setup/cleanup — it also tears down and
+ * rebuilds `useMutation`'s OWN internal query-observer subscription for
+ * the whole component. The ref guard let ONLY the FIRST of the two
+ * Strict-Mode invocations call `.mutate()`; that first invocation's
+ * subscription is exactly the one torn down before its network call
+ * resolves, so its eventual success notifies nobody. The SECOND
+ * invocation — whose subscription survives — never fired, because the
+ * ref had already flipped true. Removing the ref guard (`dashboard/
+ * page.tsx`'s mount effect now just calls `.mutate()` unconditionally)
+ * fixes this: in a production build Strict Mode's double-invoke never
+ * happens, so this still fires exactly once; in dev it fires twice
+ * (a second, harmless, idempotent MV-refresh call) but the SURVIVING
+ * invocation's subscription is the one that resolves, so `isSuccess`/
+ * `isError` correctly reach the component every time. This is invisible
+ * in a production build, which is presumably why it was never caught
+ * before — dev-mode Strict Mode is exactly where it reproduces 100% of
+ * the time.
  */
 export function useRefreshDashboard() {
   const queryClient = useQueryClient();

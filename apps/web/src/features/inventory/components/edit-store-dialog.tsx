@@ -10,6 +10,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { ApiError } from "@/lib/api-error";
 import { useUsersLookup } from "@/features/departments/hooks/use-users-lookup";
 import { useUpdateStore } from "../hooks/use-stores";
@@ -83,10 +84,9 @@ export function EditStoreDialog({ store }: { store: StoreResponseDto }) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
-          <Pencil className="size-4" />
-          {tCommon("edit")}
-        </Button>
+        <RowActionButton tone="edit" label={tCommon("edit")}>
+          <Pencil />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

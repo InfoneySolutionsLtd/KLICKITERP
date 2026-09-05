@@ -6,10 +6,10 @@ import { useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PyrlRunResponseDto } from "@klickit/contracts";
 import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { DataTable } from "@/components/patterns/data-table";
@@ -66,17 +66,16 @@ export default function PayrollRunsPage() {
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            variant="outline"
+          <RowActionButton
+            tone="view"
+            label={tCommon("view")}
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/payroll/runs/${row.original.id}`);
             }}
           >
-            <Eye className="size-4" />
-            {tCommon("view")}
-          </Button>
+            <Eye />
+          </RowActionButton>
         ),
       },
     ],

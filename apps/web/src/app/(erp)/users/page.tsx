@@ -8,6 +8,7 @@ import { Eye, Plus, Search } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { UserResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
@@ -93,17 +94,16 @@ export default function UsersPage() {
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            variant="outline"
+          <RowActionButton
+            tone="view"
+            label={tCommon("view")}
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/users/${row.original.id}`);
             }}
           >
-            <Eye className="size-4" />
-            {tCommon("view")}
-          </Button>
+            <Eye />
+          </RowActionButton>
         ),
       },
     ],

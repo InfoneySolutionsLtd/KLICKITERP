@@ -21,7 +21,7 @@ export function IncomeExpenseChart({ points }: { points: IncomeVsExpensePoint[] 
   }));
 
   return (
-    <div className="h-64 w-full">
+    <div className="h-80 w-full flex-1">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={4}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--viz-grid)" vertical={false} />

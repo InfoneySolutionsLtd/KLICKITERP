@@ -3,9 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Eye } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { InvoiceResponseDto } from "@klickit/contracts";
-import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { DataTable } from "@/components/patterns/data-table";
 import { formatMoney } from "@/lib/money";
 import { InvoiceStatusBadge } from "./status-badges";
@@ -39,9 +40,11 @@ export function StudentInvoicesTable({ invoices }: { invoices: InvoiceResponseDt
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button asChild size="sm" variant="outline">
-            <Link href={`/billing/invoices/${row.original.id}`}>{t("viewDetails")}</Link>
-          </Button>
+          <RowActionButton asChild tone="view" label={t("viewDetails")}>
+            <Link href={`/billing/invoices/${row.original.id}`}>
+              <Eye />
+            </Link>
+          </RowActionButton>
         ),
       },
     ],

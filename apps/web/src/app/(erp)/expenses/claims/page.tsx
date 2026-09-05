@@ -7,6 +7,7 @@ import { Eye, X } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
@@ -98,17 +99,16 @@ export default function ExpenseClaimsPage() {
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            variant="outline"
+          <RowActionButton
+            tone="view"
+            label={tCommon("view")}
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/expenses/claims/${row.original.id}`);
             }}
           >
-            <Eye className="size-4" />
-            {tCommon("view")}
-          </Button>
+            <Eye />
+          </RowActionButton>
         ),
       },
     ],

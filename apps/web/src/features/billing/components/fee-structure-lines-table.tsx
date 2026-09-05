@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { FeeStructureLineResponseDto } from "@klickit/contracts";
 import { Check, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -150,10 +151,9 @@ export function FeeStructureLinesTable({
               header: "",
               cell: ({ row }: { row: { original: FeeStructureLineResponseDto } }) =>
                 editingLineId === row.original.id ? null : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="print:hidden"
+                  <RowActionButton
+                    tone="edit"
+                    label={t("editAmount")}
                     onClick={() => {
                       setEditingLineId(row.original.id);
                       setDraftAmount(row.original.amount);
@@ -162,9 +162,8 @@ export function FeeStructureLinesTable({
                       setRowError(null);
                     }}
                   >
-                    <Pencil className="size-4" />
-                    {t("editAmount")}
-                  </Button>
+                    <Pencil />
+                  </RowActionButton>
                 ),
             } as ColumnDef<FeeStructureLineResponseDto>,
           ]

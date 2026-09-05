@@ -8,6 +8,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { GuardianListItemResponseDto } from "@klickit/contracts";
 import { Eye, Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
@@ -72,17 +73,16 @@ export default function GuardiansPage() {
         id: "actions",
         header: tCommon("actions"),
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            variant="outline"
+          <RowActionButton
+            tone="view"
+            label={tCommon("view")}
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/students/guardians/${row.original.id}`);
             }}
           >
-            <Eye className="size-4" />
-            {tCommon("view")}
-          </Button>
+            <Eye />
+          </RowActionButton>
         ),
       },
     ],

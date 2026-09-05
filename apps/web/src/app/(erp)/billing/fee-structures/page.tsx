@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { FeeStructureResponseDto } from "@klickit/contracts";
-import { CalendarRange, Plus } from "lucide-react";
+import { CalendarRange, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -71,9 +72,11 @@ export default function FeeStructuresPage() {
         header: tCommon("actions"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/billing/fee-structures/${row.original.id}`}>{t("table.viewDetails")}</Link>
-            </Button>
+            <RowActionButton asChild tone="view" label={t("table.viewDetails")}>
+              <Link href={`/billing/fee-structures/${row.original.id}`}>
+                <Eye />
+              </Link>
+            </RowActionButton>
             <RowScopeLabel structure={row.original}>
               {(scopeLabel) => <DeleteFeeStructureButton structure={row.original} scopeLabel={scopeLabel} />}
             </RowScopeLabel>

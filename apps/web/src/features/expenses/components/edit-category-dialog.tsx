@@ -6,6 +6,7 @@ import { Pencil, X } from "lucide-react";
 import type { CategoryResponseDto, UpdateCategoryDto } from "@klickit/contracts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -97,10 +98,9 @@ export function EditCategoryDialog({ category }: { category: CategoryResponseDto
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
-          <Pencil className="size-4" />
-          {tCommon("edit")}
-        </Button>
+        <RowActionButton tone="edit" label={tCommon("edit")}>
+          <Pencil />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

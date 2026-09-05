@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import type { TemplateResponseDto, UpdateTemplateDto } from "@klickit/contracts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -114,10 +115,9 @@ export function EditTemplateDialog({ template }: { template: TemplateResponseDto
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>
-          <Pencil className="size-4" />
-          {tCommon("edit")}
-        </Button>
+        <RowActionButton tone="edit" label={tCommon("edit")} onClick={(e) => e.stopPropagation()}>
+          <Pencil />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>

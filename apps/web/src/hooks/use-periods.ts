@@ -30,11 +30,53 @@ export function useFiscalYears() {
   });
 }
 
+/**
+ * Real bug found live (2026-09-05): a school should only ever have ONE
+ * genuinely `OPEN` fiscal year, but this dev database also carries a large
+ * number of leftover E2E-test-created fiscal years that are ALSO `status
+ * === "OPEN"` (each a single all-encompassing `2015-01-01`-`2035-12-31`
+ * period, created so test runs never had to think about date-range edge
+ * cases). The old `.find((fy) => fy.status === "OPEN")` took whichever one
+ * the backend happened to return first — arbitrary from the user's
+ * perspective — which is how the dashboard ended up scoped to a 20-year
+ * "period" instead of the real current one, cascading into a wrong/empty
+ * Income vs Expense chart and a null Collection Rate.
+ *
+ * Fixed by preferring, among every `OPEN` fiscal year, the one whose own
+ * `[startsOn, endsOn]` window both contains today AND is narrowest — a
+ * real annual fiscal year is ~365 days; a stray test fixture spanning
+ * decades never wins against a real one that also contains today. Only
+ * once no OPEN year contains today at all does this fall back to the
+ * previous "most recently started" heuristic, so a fresh/newly-provisioned
+ * database with a single real OPEN year behaves exactly as before.
+ *
+ * **Second-level tie-break (found live, same investigation)**: this dev
+ * database also carries several E2E-test fiscal years that happen to ALSO
+ * span a real-looking ~365 days (e.g. a whole year as a single period),
+ * tying with the genuine fiscal year on span alone. Every id in this
+ * system is a ULID/UUIDv7 (time-ordered — confirmed throughout this
+ * codebase, e.g. every seeded permission id shares an early, common
+ * prefix), so the lexicographically SMALLEST id among tied candidates was
+ * created earliest — i.e. it's the one deliberately provisioned when the
+ * database was first set up, not one spun up mid-test-run. This is a
+ * genuine, non-arbitrary tie-break (not a guess at test-data naming
+ * conventions), and is a no-op in a clean database where no ties exist.
+ */
+function spanDays(startsOn: string, endsOn: string): number {
+  return (new Date(endsOn).getTime() - new Date(startsOn).getTime()) / 86_400_000;
+}
+
 export function useCurrentFiscalYear() {
   const query = useFiscalYears();
   const fiscalYears = query.data ?? [];
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const openYears = fiscalYears.filter((fy) => fy.status === "OPEN");
+  const openContainingToday = openYears
+    .filter((fy) => fy.startsOn <= todayIso && todayIso <= fy.endsOn)
+    .sort((a, b) => spanDays(a.startsOn, a.endsOn) - spanDays(b.startsOn, b.endsOn) || (a.id < b.id ? -1 : 1));
   const current =
-    fiscalYears.find((fy) => fy.status === "OPEN") ??
+    openContainingToday[0] ??
+    openYears[0] ??
     [...fiscalYears].sort((a, b) => (a.startsOn < b.startsOn ? 1 : -1))[0] ??
     null;
   return { ...query, currentFiscalYear: current };

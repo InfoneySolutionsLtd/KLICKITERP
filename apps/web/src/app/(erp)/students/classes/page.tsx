@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { ClassResponseDto, StreamResponseDto } from "@klickit/contracts";
 import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -72,18 +73,17 @@ export default function ClassesAndStreamsPage() {
         header: tCommon("actions"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
+            <RowActionButton
+              tone="edit"
+              label={tCommon("edit")}
               onClick={() => {
                 setEditingClass(row.original);
                 setClassDialogMode("edit");
                 setClassDialogOpen(true);
               }}
             >
-              <Pencil className="size-4" />
-              {tCommon("edit")}
-            </Button>
+              <Pencil />
+            </RowActionButton>
             <DeleteClassButton classItem={row.original} />
           </div>
         ),
@@ -100,18 +100,17 @@ export default function ClassesAndStreamsPage() {
         header: tCommon("actions"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
+            <RowActionButton
+              tone="edit"
+              label={tCommon("edit")}
               onClick={() => {
                 setEditingStream(row.original);
                 setStreamDialogMode("edit");
                 setStreamDialogOpen(true);
               }}
             >
-              <Pencil className="size-4" />
-              {tCommon("edit")}
-            </Button>
+              <Pencil />
+            </RowActionButton>
             {selectedClassId && <DeleteStreamButton classId={selectedClassId} streamItem={row.original} />}
           </div>
         ),

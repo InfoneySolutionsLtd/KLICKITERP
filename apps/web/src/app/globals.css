@@ -49,6 +49,38 @@
   --viz-success: #0ca30c;
 }
 
+/**
+ * Sidebar nav scroll area — replaces the bare OS/browser scrollbar (a
+ * thick, square-cornered, light-gray-on-white widget by default on
+ * Windows/Chrome) with a thin, rounded, low-contrast thumb tinted to the
+ * sidebar's own dark chrome, so it reads as part of this app's design
+ * system instead of an unstyled native control sitting on top of it.
+ * `color-mix()` against the raw `--color-surface`/`--color-dark` CSS
+ * variables (not a Tailwind `/NN` opacity modifier, which silently no-ops
+ * on this app's hex-var colors — the same documented limitation every
+ * other tinted effect in this app already works around this way).
+ * WebKit (`::-webkit-scrollbar-*`, Chrome/Edge/Safari) and Firefox
+ * (`scrollbar-width`/`scrollbar-color`, the only two properties that
+ * standard supports) are both covered — there's no third API to target.
+ */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-surface) 22%, transparent) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-surface) 22%, transparent);
+  border-radius: 999px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--color-surface) 40%, transparent);
+}
+
 /* Reduced-motion respect for the whole app (a11y baseline, no CI gate this
    slice — see docs/phase-6/PROGRESS.md's explicit out-of-scope note on full
    a11y/visual-regression CI). */

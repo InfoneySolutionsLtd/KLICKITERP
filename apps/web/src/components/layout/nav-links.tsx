@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hasAnyRole } from "@/lib/permissions";
 import { useAuthStore } from "@/lib/auth-store";
+import { useSidebarStore } from "@/lib/sidebar-store";
 
 /**
  * The nav gating mechanism described in docs/phase-6/PROGRESS.md flagged
@@ -1120,6 +1121,8 @@ export function NavLinks() {
   const t = useTranslations("shell.nav");
   const pathname = usePathname();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const collapsed = useSidebarStore((s) => s.collapsed);
+  const setSidebarCollapsed = useSidebarStore((s) => s.setCollapsed);
   const visibleItems = NAV_ITEMS.filter((item) => hasAnyRole(accessToken, item.allowedRoles));
   // Every leaf href — top-level items AND every group's children — feeds
   // `isActiveNavItem()`'s "is some OTHER, more specific entry a better
@@ -1141,21 +1144,40 @@ export function NavLinks() {
 
         if (item.children && item.children.length > 0) {
           const childActive = item.children.some((child) => isActiveNavItem(pathname, child.href, allHrefs));
-          const expanded = expandedOverride[item.href] ?? childActive;
+          // Collapsed sidebar has no room to show a group's children inline
+          // — `expanded` is forced false while collapsed (below), and
+          // clicking the icon instead re-expands the whole sidebar AND
+          // this specific group in one step (see the `onClick` below), so
+          // the user lands exactly where a manual expand-then-click would
+          // rather than needing a separate flyout/submenu system.
+          const expanded = !collapsed && (expandedOverride[item.href] ?? childActive);
           return (
             <div key={item.href}>
               <button
                 type="button"
-                onClick={() => setExpandedOverride((prev) => ({ ...prev, [item.href]: !expanded }))}
+                onClick={() => {
+                  if (collapsed) {
+                    setSidebarCollapsed(false);
+                    setExpandedOverride((prev) => ({ ...prev, [item.href]: true }));
+                    return;
+                  }
+                  setExpandedOverride((prev) => ({ ...prev, [item.href]: !expanded }));
+                }}
                 aria-expanded={expanded}
+                title={collapsed ? t(item.labelKey) : undefined}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  collapsed && "justify-center px-0",
                   childActive ? "text-brand-surface" : INACTIVE_TEXT_CLASSES,
                 )}
               >
                 <Icon className="size-4 shrink-0" />
-                <span className="flex-1 text-left">{t(item.labelKey)}</span>
-                <ChevronDown className={cn("size-4 shrink-0 transition-transform", expanded && "rotate-180")} />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left">{t(item.labelKey)}</span>
+                    <ChevronDown className={cn("size-4 shrink-0 transition-transform", expanded && "rotate-180")} />
+                  </>
+                )}
               </button>
               {expanded && (
                 <div className="ml-4 flex flex-col gap-1 border-l border-[color-mix(in_srgb,var(--color-surface)_15%,transparent)] py-1 pl-3">
@@ -1185,8 +1207,10 @@ export function NavLinks() {
           <Link
             key={item.href}
             href={item.href}
+            title={collapsed ? t(item.labelKey) : undefined}
             className={cn(
               "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              collapsed && "justify-center px-0",
               // Slice 1.5 (visual redesign): active state becomes a filled
               // pill (`bg-brand-primaryLight text-brand-black`) — reusing
               // the exact "on dark chrome" pairing lib/theme.ts's own
@@ -1276,8 +1300,8 @@ export function NavLinks() {
                 />
               </motion.span>
             )}
-            <Icon className="relative z-10 size-4" />
-            <span className="relative z-10">{t(item.labelKey)}</span>
+            <Icon className="relative z-10 size-4 shrink-0" />
+            {!collapsed && <span className="relative z-10">{t(item.labelKey)}</span>}
           </Link>
         );
       })}

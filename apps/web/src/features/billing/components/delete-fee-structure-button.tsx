@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import type { FeeStructureResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import {
   Dialog,
   DialogContent,
@@ -71,10 +72,9 @@ export function DeleteFeeStructureButton({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" className="text-destructive hover:bg-tint-destructive hover:text-destructive print:hidden">
-          <Trash2 className="size-4" />
-          {tCommon("delete")}
-        </Button>
+        <RowActionButton tone="delete" label={tCommon("delete")}>
+          <Trash2 />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

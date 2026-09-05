@@ -7,6 +7,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { FeeCategoryResponseDto } from "@klickit/contracts";
 import { Layers, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
@@ -68,18 +69,17 @@ export default function FeeCategoriesPage() {
         header: tCommon("actions"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
+            <RowActionButton
+              tone="edit"
+              label={tCommon("edit")}
               onClick={() => {
                 setEditingCategory(row.original);
                 setDialogMode("edit");
                 setDialogOpen(true);
               }}
             >
-              <Pencil className="size-4" />
-              {tCommon("edit")}
-            </Button>
+              <Pencil />
+            </RowActionButton>
             {row.original.isActive ? (
               <Button
                 size="sm"

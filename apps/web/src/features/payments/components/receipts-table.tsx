@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Eye } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReceiptResponseDto } from "@klickit/contracts";
-import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { DataTable, type ServerPaginationState } from "@/components/patterns/data-table";
 import { formatMoney } from "@/lib/money";
 
@@ -77,12 +77,11 @@ export function ReceiptsTable({
       id: "actions",
       header: tCommon("actions"),
       cell: ({ row }) => (
-        <Button asChild size="sm" variant="outline">
+        <RowActionButton asChild tone="view" label={tCommon("view")}>
           <Link href={`/payments/receipts/${row.original.id}`}>
-            <Eye className="size-4" />
-            {tCommon("view")}
+            <Eye />
           </Link>
-        </Button>
+        </RowActionButton>
       ),
     },
   ];

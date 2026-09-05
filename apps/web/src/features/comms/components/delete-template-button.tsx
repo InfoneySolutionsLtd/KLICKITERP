@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import type { TemplateResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import {
   Dialog,
   DialogContent,
@@ -54,16 +55,9 @@ export function DeleteTemplateButton({ template }: { template: TemplateResponseD
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="text-destructive hover:bg-tint-destructive hover:text-destructive"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Trash2 className="size-4" />
-          {tCommon("delete")}
-        </Button>
+        <RowActionButton tone="delete" label={tCommon("delete")} onClick={(e) => e.stopPropagation()}>
+          <Trash2 />
+        </RowActionButton>
       </DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>

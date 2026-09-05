@@ -35,19 +35,19 @@ export function CollectionRateGauge({ rate, subtitle }: { rate: number | null; s
   const isOverLimit = rate !== null && rate > 1;
 
   return (
-    <div className="flex h-64 w-full flex-col items-center justify-center">
-      <div className="relative size-40">
+    <div className="flex h-80 w-full flex-1 flex-col items-center justify-center">
+      <div className="relative size-48">
         <ResponsiveContainer width="100%" height="100%">
-          <RadialBarChart data={data} innerRadius="72%" outerRadius="100%" startAngle={90} endAngle={-270} barSize={14}>
+          <RadialBarChart data={data} innerRadius="72%" outerRadius="100%" startAngle={90} endAngle={-270} barSize={16}>
             <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
             <RadialBar dataKey="value" cornerRadius={999} fill="var(--color-primary)" background={{ fill: "var(--tint-primary)" }} isAnimationActive={false} />
           </RadialBarChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-semibold tracking-tight">{rate === null ? "—" : `${(rate * 100).toFixed(1)}%`}</span>
+          <span className="text-3xl font-semibold tracking-tight">{rate === null ? "—" : `${(rate * 100).toFixed(1)}%`}</span>
         </div>
       </div>
-      {subtitle && <p className="mt-2 text-xs text-muted-foreground">{subtitle}</p>}
+      {subtitle && <p className="mt-3 text-xs text-muted-foreground">{subtitle}</p>}
       {isOverLimit && <p className="mt-1 text-xs text-warning">{t("collectionRateOverLimitWarning")}</p>}
     </div>
   );

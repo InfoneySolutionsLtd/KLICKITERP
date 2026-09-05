@@ -73,6 +73,8 @@
   },
   "shell": {
     "productName": "Klickit Finance ERP",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
     "nav": {
       "dashboard": "Dashboard",
       "students": "Students",
@@ -216,7 +218,11 @@
       "expense": "Expense",
       "surplus": "Surplus",
       "walletLiability": "Wallet Liability",
-      "defaultersCount": "Defaulters"
+      "defaultersCount": "Defaulters",
+      "activeStudents": "Active Students",
+      "pendingApprovals": "Pending Approvals",
+      "payrollStatus": "Payroll Status",
+      "noPayrollRuns": "No runs yet"
     },
     "collectionRateOverLimitWarning": "Supérieur à 100 % — inclut probablement des recouvrements sur le solde d'une période précédente",
     "charts": {
@@ -237,7 +243,10 @@
       "none": "No fiscal periods found"
     },
     "cashFlow": {
-      "title": "Cash Flow (last 90 days)"
+      "title": "Cash Flow (last 90 days)",
+      "cashIn": "Cash In",
+      "cashOut": "Cash Out",
+      "netCashFlow": "Net Cash Flow"
     }
   },
   "students": {

@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Eye, Search } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RoleResponseDto } from "@klickit/contracts";
-import { Button } from "@/components/ui/button";
+import { RowActionButton } from "@/components/ui/row-action-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
@@ -68,15 +68,9 @@ export default function RolesPage() {
         // row" guard `<DataTable>`'s own doc comment documents.
         cell: ({ row }) => (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => router.push(`/roles/${row.original.id}`)}
-            >
-              <Eye className="size-4" />
-              {tCommon("view")}
-            </Button>
+            <RowActionButton tone="view" label={tCommon("view")} onClick={() => router.push(`/roles/${row.original.id}`)}>
+              <Eye />
+            </RowActionButton>
             <EditRoleDialog role={row.original} />
           </div>
         ),
