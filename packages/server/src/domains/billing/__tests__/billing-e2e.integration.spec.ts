@@ -449,10 +449,17 @@ describe("billing module — end-to-end capstone (real DataSource)", () => {
     );
 
     // ---- Approvals: real ApprovalEngineService, but see class doc comment
-    // "Why the approve step is simulated via raw SQL" — usersService/
-    // departmentsService/delegationsService/outboxWriter are harmless
-    // placeholders `submit()` never touches (domains/billing may not depend
-    // on platform/users at all, per module-deps.json).
+    // "Why the approve step is simulated via raw SQL" — departmentsService/
+    // delegationsService/outboxWriter are harmless placeholders `submit()`
+    // never touches (domains/billing may not depend on platform/users at
+    // all, per module-deps.json). usersService is NOT a harmless no-op
+    // placeholder anymore, though — the real seeded BILLING_* domain codes
+    // (0900) all use a `ROLE`-type level, and `submit()`'s own notification-
+    // approver-resolution now genuinely calls `listActiveUsersByRoleId()` (a
+    // real, new call path — see `ApprovalEngineService`'s own doc comment on
+    // its 3 notification points) — a bare `{}` would throw here, not just
+    // go unreached; an empty result is fine, this test doesn't assert on
+    // notifications.
     const approvalEngineService = new ApprovalEngineService(
       source,
       new ApprWorkflowDefRepository(source.getRepository(ApprWorkflowDefEntity)),
@@ -461,10 +468,11 @@ describe("billing module — end-to-end capstone (real DataSource)", () => {
       new ApprRoutingRuleRepository(source.getRepository(ApprRoutingRuleEntity)),
       new ApprInstanceRepository(source.getRepository(ApprInstanceEntity)),
       new ApprActionRepository(source.getRepository(ApprActionEntity)),
-      {} as ConstructorParameters<typeof ApprovalEngineService>[7],
+      { listActiveUsersByRoleId: async () => [] } as unknown as ConstructorParameters<typeof ApprovalEngineService>[7],
       {} as ConstructorParameters<typeof ApprovalEngineService>[8],
       {} as ConstructorParameters<typeof ApprovalEngineService>[9],
       {} as ConstructorParameters<typeof ApprovalEngineService>[10],
+      { notify: async () => undefined } as unknown as ConstructorParameters<typeof ApprovalEngineService>[11],
     );
 
     const concessionsService = new ConcessionsService(

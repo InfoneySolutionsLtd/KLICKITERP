@@ -8,6 +8,7 @@ import { ConflictException } from "../../../shared/exceptions/conflict.exception
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { Money } from "../../../shared/money/money";
 import { DepartmentsService, UsersService } from "../../users";
+import { NotifyService } from "../../notifications";
 import { ApprActionDecision, ApprActionEntity } from "../domain/appr-action.entity";
 import { ApprInstanceEntity } from "../domain/appr-instance.entity";
 import { ApprLevelEntity } from "../domain/appr-level.entity";
@@ -98,6 +99,21 @@ interface AuthorizationResult {
  * itself, or whoever delegated to them) is the initiator — both checked at
  * the service layer as defense-in-depth ahead of `trg_appr_no_self_approval`
  * (migration `0050`), per G-04's three-layer rule.
+ *
+ * **Notifications (`platform/notifications`, this module's first real
+ * emitter)**: three points raise a real in-app notification via
+ * `NotifyService.notify()`, always passed the SAME transactional
+ * `EntityManager` the surrounding method already has, so a notification is
+ * only ever committed atomically with the approval-state change that caused
+ * it — (1) `submit()`, once the first level's legitimate approvers are
+ * known; (2) `decide()`, when the instance advances to a new level (the new
+ * level's approvers); (3) `decide()`, when the instance reaches a terminal
+ * status (`APPROVED`/`REJECTED`/`RETURNED`) — the INITIATOR is notified,
+ * three distinct types rather than one generic "decided" type so each gets
+ * its own clean frontend copy. `cancel()` emits nothing — the initiator
+ * cancelling their own request needs no notification, and an approver
+ * already notified about a since-cancelled instance is an accepted,
+ * documented v1 limitation (no "recall" mechanism), not an oversight.
  */
 @Injectable()
 export class ApprovalEngineService {
@@ -113,6 +129,7 @@ export class ApprovalEngineService {
     private readonly departmentsService: DepartmentsService,
     private readonly delegationsService: DelegationsService,
     private readonly outboxWriter: OutboxWriterService,
+    private readonly notifyService: NotifyService,
   ) {}
 
   /**
@@ -145,11 +162,11 @@ export class ApprovalEngineService {
     }
 
     const amount = input.amount ?? null;
-    const { levels } = await this.resolveApplicableLevels(em, version.id, amount, input.initiatorId);
+    const { levels, matchedRule } = await this.resolveApplicableLevels(em, version.id, amount, input.initiatorId);
     const firstLevel = levels[0];
 
     try {
-      return await this.instanceRepository.create(
+      const created = await this.instanceRepository.create(
         {
           workflowVersionId: version.id,
           domainCode: input.domainCode,
@@ -166,6 +183,30 @@ export class ApprovalEngineService {
         },
         em,
       );
+
+      // Excludes the initiator from the notified set — the same BR-APPR-01
+      // guard `listPendingForApprover()` already applies (a ROLE/DEPT_HEAD
+      // level's candidate set can genuinely include the initiator, e.g. a
+      // small school where one staff member holds several roles; they can
+      // never actually act on their own request, so notifying them "this
+      // needs your decision" would be actively wrong, not just noise).
+      const approverIds = (await this.legitimateApproverIds(firstLevel, matchedRule)).filter((id) => id !== input.initiatorId);
+      for (const approverId of approverIds) {
+        await this.notifyService.notify(
+          {
+            userId: approverId,
+            type: "APPROVAL_PENDING",
+            title: "New approval request",
+            body: `A ${input.domainCode} request is waiting for your decision.`,
+            link: "/approvals",
+            entityType: input.entityType,
+            entityId: input.entityId,
+          },
+          em,
+        );
+      }
+
+      return created;
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException(
@@ -247,6 +288,7 @@ export class ApprovalEngineService {
         manager,
       );
 
+      let advancedToLevel: ApprLevelEntity | null = null;
       if (decision === "REJECT") {
         instance.status = "REJECTED";
         instance.decidedAt = new Date();
@@ -264,6 +306,7 @@ export class ApprovalEngineService {
           const nextLevel = levels[currentIndex + 1];
           if (nextLevel) {
             instance.currentLevel = nextLevel.seq;
+            advancedToLevel = nextLevel;
           } else {
             instance.status = "APPROVED";
             instance.decidedAt = new Date();
@@ -274,6 +317,42 @@ export class ApprovalEngineService {
 
       instance.updatedBy = actorId;
       const saved = await this.instanceRepository.save(instance, manager);
+
+      // Notifications (see this class's own doc comment) — advancing to a
+      // new level notifies that level's approvers; a terminal outcome
+      // notifies the initiator. Neither fires for the "stays PENDING at the
+      // same level" (under-quorum) branch — nobody new became actionable.
+      if (advancedToLevel) {
+        // Excludes the initiator — same BR-APPR-01 guard as submit()'s own notification loop above.
+        const nextApproverIds = (await this.legitimateApproverIds(advancedToLevel, matchedRule)).filter((id) => id !== instance.initiatorId);
+        for (const approverId of nextApproverIds) {
+          await this.notifyService.notify(
+            {
+              userId: approverId,
+              type: "APPROVAL_PENDING",
+              title: "New approval request",
+              body: `A ${saved.domainCode} request is waiting for your decision.`,
+              link: "/approvals",
+              entityType: saved.entityType,
+              entityId: saved.entityId,
+            },
+            manager,
+          );
+        }
+      } else if (saved.status === "APPROVED" || saved.status === "REJECTED" || saved.status === "RETURNED") {
+        await this.notifyService.notify(
+          {
+            userId: saved.initiatorId,
+            type: `APPROVAL_${saved.status}`,
+            title: `Your request was ${saved.status.toLowerCase()}`,
+            body: `Your ${saved.domainCode} request was ${saved.status.toLowerCase()}.`,
+            link: null,
+            entityType: saved.entityType,
+            entityId: saved.entityId,
+          },
+          manager,
+        );
+      }
 
       await this.outboxWriter.write(
         manager,

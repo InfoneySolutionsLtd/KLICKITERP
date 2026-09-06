@@ -43,6 +43,31 @@ export const SIDEBAR_COLLAPSED_WIDTH = "w-20";
  * low-contrast `bg-card` (blended into the light-mode page background) to
  * a solid brand-primary fill, so it reads as a clear, clickable control in
  * both light and dark mode, not a near-invisible outline.
+ *
+ * Slice (glass-aurora pass): brings the `(auth)` login redesign's visual
+ * language here — the panel background is now translucent
+ * (`color-mix(in srgb, var(--color-dark) 92%, transparent)` +
+ * `backdrop-blur-xl`) with a thin light edge (`border-white/10`, a common
+ * glassmorphism "catch a highlight" detail) instead of a flat opaque fill.
+ * **Real bug found live, same class as every prior instance of this exact
+ * trap in this app**: this was first shipped as `bg-brand-dark/90` —
+ * `--color-dark` is a raw hex CSS custom property, not the
+ * `rgb(var(--x) / <alpha-value>)` format Tailwind's `/NN` opacity modifier
+ * needs, so the modifier silently failed to generate ANY working
+ * background rule at all (not just "no opacity applied" — no color at
+ * all), leaving the panel effectively transparent and washing out every
+ * "on-dark-chrome" text/motif color sitting on top of it (they're tuned
+ * for a dark background that was never actually there). `color-mix()`
+ * fixes it the same way every other tinted effect in this app already
+ * works around this limitation. Plus two soft blurred color blobs
+ * (`--color-accent`/`--color-secondary`, the SAME tenant theme tokens the
+ * login aurora background uses — never hardcoded hex) layered behind the
+ * existing diamond motifs. The collapse toggle and `<NavLinks>`' active-item
+ * pill both switch from a flat fill to the `--color-primary` ->
+ * `--color-accent` gradient the login page's icon badge/submit button and
+ * this session's `KpiCard`/`RowActionButton` glow language already
+ * established — one consistent "brand gradient" accent across the whole
+ * app now, not a sidebar-specific color.
  */
 export function SidebarShell({
   logoUrl,
@@ -65,7 +90,9 @@ export function SidebarShell({
         collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
       )}
     >
-      <div className="absolute inset-0 flex flex-col overflow-hidden rounded-xl bg-brand-dark shadow-card">
+      <div className="absolute inset-0 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[color-mix(in_srgb,var(--color-dark)_92%,transparent)] shadow-card backdrop-blur-xl">
+        <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-accent opacity-25 blur-3xl" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-brand-secondary opacity-[0.12] blur-3xl" />
         {/* Geometric motif, sourced from the brand PDF's own "Layout & UI
             Principles" (p.10): "Geometric Motifs: Diamonds from logo" (the
             Infoney logo mark is itself diamond-shaped). Unchanged from the
@@ -82,7 +109,7 @@ export function SidebarShell({
 
         <div
           className={cn(
-            "relative z-10 flex h-16 shrink-0 items-center gap-2.5 border-b border-brand-surface/10 px-4",
+            "relative z-10 flex h-16 shrink-0 items-center gap-2.5 border-b border-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] px-4",
             collapsed && "justify-center px-0",
           )}
         >
@@ -110,7 +137,7 @@ export function SidebarShell({
         type="button"
         onClick={toggle}
         aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
-        className="absolute -right-3.5 top-[4.5rem] z-20 flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_2px_8px_-1px_color-mix(in_srgb,var(--color-primary)_55%,transparent)] transition-transform duration-200 hover:scale-110"
+        className="absolute -right-3.5 top-[4.5rem] z-20 flex size-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-primary),var(--color-accent))] text-white shadow-[0_2px_8px_-1px_color-mix(in_srgb,var(--color-primary)_55%,transparent)] transition-transform duration-200 hover:scale-110"
       >
         <ChevronLeft className={cn("size-4 transition-transform duration-300 ease-in-out", collapsed && "rotate-180")} />
       </button>

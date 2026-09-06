@@ -72,6 +72,7 @@ describe("ApprovalEngineService", () => {
   let departmentsService: { findByIdOrFail: jest.Mock };
   let delegationsService: { resolveEffectiveApprover: jest.Mock };
   let outboxWriter: { write: jest.Mock };
+  let notifyService: { notify: jest.Mock };
   let service: ApprovalEngineService;
 
   beforeEach(() => {
@@ -105,6 +106,7 @@ describe("ApprovalEngineService", () => {
     departmentsService = { findByIdOrFail: jest.fn() };
     delegationsService = { resolveEffectiveApprover: jest.fn(async (userId: string) => userId) };
     outboxWriter = { write: jest.fn(async () => undefined) };
+    notifyService = { notify: jest.fn(async () => undefined) };
 
     service = new ApprovalEngineService(
       dataSource,
@@ -118,6 +120,7 @@ describe("ApprovalEngineService", () => {
       departmentsService as never,
       delegationsService as never,
       outboxWriter as never,
+      notifyService as never,
     );
   });
 
@@ -196,6 +199,50 @@ describe("ApprovalEngineService", () => {
       ).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it("notifies the first level's legitimate approvers on submit", async () => {
+      levelRepository.listByVersion.mockResolvedValue([
+        makeLevel({ seq: 1, approverType: "USERS", userIds: ["approver-a", "approver-b"] }),
+      ]);
+
+      await service.submit({} as EntityManager, {
+        domainCode: "TEST_DOMAIN",
+        entityType: "test_entity",
+        entityId: "entity-1",
+        amount: Money.fromInt(100),
+        initiatorId: "initiator-1",
+      });
+
+      expect(notifyService.notify).toHaveBeenCalledTimes(2);
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "approver-a", type: "APPROVAL_PENDING" }),
+        expect.anything(),
+      );
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "approver-b", type: "APPROVAL_PENDING" }),
+        expect.anything(),
+      );
+    });
+
+    it("never notifies the initiator, even when they also hold the approving role (BR-APPR-01)", async () => {
+      levelRepository.listByVersion.mockResolvedValue([
+        makeLevel({ seq: 1, approverType: "USERS", userIds: ["initiator-1", "approver-a"] }),
+      ]);
+
+      await service.submit({} as EntityManager, {
+        domainCode: "TEST_DOMAIN",
+        entityType: "test_entity",
+        entityId: "entity-1",
+        amount: Money.fromInt(100),
+        initiatorId: "initiator-1",
+      });
+
+      expect(notifyService.notify).toHaveBeenCalledTimes(1);
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "approver-a" }),
+        expect.anything(),
+      );
+    });
+
     it("rejects when no active workflow def is registered for the domain code", async () => {
       workflowDefRepository.findByDomainCode.mockResolvedValue(null);
       await expect(
@@ -224,6 +271,10 @@ describe("ApprovalEngineService", () => {
       expect(result.status).toBe("APPROVED"); // single level, SEQUENTIAL, one approve -> done
       expect(actionRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({ actorId: "approver-1", wasDelegatedFrom: null }),
+        expect.anything(),
+      );
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "initiator-1", type: "APPROVAL_APPROVED" }),
         expect.anything(),
       );
     });
@@ -312,6 +363,10 @@ describe("ApprovalEngineService", () => {
 
       expect(result.status).toBe("PENDING");
       expect(result.currentLevel).toBe(2);
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "a2", type: "APPROVAL_PENDING" }),
+        expect.anything(),
+      );
     });
 
     it("keeps a PARALLEL level PENDING at the same level while under quorum", async () => {
@@ -325,6 +380,7 @@ describe("ApprovalEngineService", () => {
 
       expect(result.status).toBe("PENDING");
       expect(result.currentLevel).toBe(1);
+      expect(notifyService.notify).not.toHaveBeenCalled(); // under quorum — nobody new became actionable
     });
 
     it("advances (and resolves, since it's the last level) a PARALLEL level once quorum is met", async () => {
@@ -355,6 +411,10 @@ describe("ApprovalEngineService", () => {
 
       expect(result.status).toBe("REJECTED");
       expect(result.decidedAt).not.toBeNull();
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "initiator-1", type: "APPROVAL_REJECTED" }),
+        expect.anything(),
+      );
     });
 
     it("RETURN with a comment sets status=RETURNED", async () => {
@@ -366,6 +426,10 @@ describe("ApprovalEngineService", () => {
       const result = await service.decide("inst-1", "approver-1", "RETURN", "needs more info");
 
       expect(result.status).toBe("RETURNED");
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: "initiator-1", type: "APPROVAL_RETURNED" }),
+        expect.anything(),
+      );
     });
 
     it("rejects deciding on a non-PENDING instance", async () => {

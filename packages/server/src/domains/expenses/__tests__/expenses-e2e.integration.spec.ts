@@ -173,10 +173,16 @@ describe("expenses module — end-to-end capstone (real DataSource)", () => {
         new ApprRoutingRuleRepository(source.getRepository(ApprRoutingRuleEntity)),
         new ApprInstanceRepository(source.getRepository(ApprInstanceEntity)),
         new ApprActionRepository(source.getRepository(ApprActionEntity)),
-        {} as never, // usersService — unreachable for a no-routing-rule single-level submit()
-        {} as never, // departmentsService — unreachable, same reason
+        // usersService — the seeded level IS `ROLE`-type (`upsertSingleLevelWorkflow` below), so
+        // `submit()`'s own notification-approver-resolution now genuinely calls
+        // `listActiveUsersByRoleId()` (a real, new call path — see `ApprovalEngineService`'s own
+        // doc comment on its 3 notification points) — a bare `{}` would throw here, not just go
+        // unreached; an empty result is fine, this test doesn't assert on notifications.
+        { listActiveUsersByRoleId: async () => [] } as never,
+        {} as never, // departmentsService — genuinely unreachable: the seeded level is ROLE-type, never DEPT_HEAD.
         {} as never, // delegationsService — unreachable, decide() is never called in this test
         { write: async () => undefined } as never, // outboxWriter stub
+        { notify: async () => undefined } as never, // notifyService stub — this test doesn't assert on notifications.
       );
 
       const categoryRepository = new ExpCategoryRepository(source.getRepository(ExpCategoryEntity));

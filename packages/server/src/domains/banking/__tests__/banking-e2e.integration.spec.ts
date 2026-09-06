@@ -152,10 +152,16 @@ describe("banking module — end-to-end capstone (real DataSource)", () => {
         new ApprRoutingRuleRepository(source.getRepository(ApprRoutingRuleEntity)),
         new ApprInstanceRepository(source.getRepository(ApprInstanceEntity)),
         new ApprActionRepository(source.getRepository(ApprActionEntity)),
-        {} as never,
+        // usersService — the real seeded BANK_* domain codes (0900) all use a `ROLE`-type level,
+        // so `submit()`'s own notification-approver-resolution now genuinely calls
+        // `listActiveUsersByRoleId()` (a real, new call path — see `ApprovalEngineService`'s own
+        // doc comment on its 3 notification points) — a bare `{}` would throw here, not just go
+        // unreached; an empty result is fine, this test doesn't assert on notifications.
+        { listActiveUsersByRoleId: async () => [] } as never,
         {} as never,
         {} as never,
         { write: async () => undefined } as never,
+        { notify: async () => undefined } as never, // notifyService stub — this test doesn't assert on notifications.
       );
 
       const bankAccountRepository = new BankAccountRepository(source.getRepository(BankAccountEntity));

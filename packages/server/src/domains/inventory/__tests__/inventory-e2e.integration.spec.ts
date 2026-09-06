@@ -201,6 +201,7 @@ describe("inventory module — end-to-end capstone (real DataSource)", () => {
         {} as unknown as DepartmentsService, // never touched — no DEPT_HEAD level in the STOCK_ADJUSTMENTS seed.
         {} as unknown as DelegationsService, // never touched — the approver holds the role directly, no delegation path taken.
         new OutboxWriterService(),
+        { notify: async () => undefined } as never, // notifyService stub — this test doesn't assert on notifications.
       );
 
       const categoryRepository = new InvCategoryRepository(source.getRepository(InvCategoryEntity));

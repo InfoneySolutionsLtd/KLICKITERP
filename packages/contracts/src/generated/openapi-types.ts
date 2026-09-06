@@ -243,6 +243,276 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/comms/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List templates */
+        get: operations["TemplatesController_list"];
+        put?: never;
+        /** Create a comm_template row (event_code/channel/locale, uq per triple) */
+        post: operations["TemplatesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a template by id */
+        get: operations["TemplatesController_findOne"];
+        put?: never;
+        post?: never;
+        /** Delete a template */
+        delete: operations["TemplatesController_remove"];
+        options?: never;
+        head?: never;
+        /** Update a template's subject/body/variables/is_active */
+        patch: operations["TemplatesController_update"];
+        trace?: never;
+    };
+    "/api/v1/comms/trigger-bindings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List trigger bindings */
+        get: operations["TriggerBindingsController_list"];
+        put?: never;
+        /** Create a comm_trigger_binding row (event_code/channel, uq per pair) */
+        post: operations["TriggerBindingsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/trigger-bindings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a trigger binding by id */
+        get: operations["TriggerBindingsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a trigger binding's is_enabled/audience_rule */
+        patch: operations["TriggerBindingsController_update"];
+        trace?: never;
+    };
+    "/api/v1/comms/device-tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's own registered push tokens */
+        get: operations["DeviceTokensController_listMine"];
+        put?: never;
+        /** Register (or refresh) the caller's own push token */
+        post: operations["DeviceTokensController_register"];
+        /** Unregister one of the caller's own push tokens */
+        delete: operations["DeviceTokensController_unregister"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/optouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List opt-out rows for a guardian */
+        get: operations["OptoutsController_listByGuardian"];
+        put?: never;
+        /** Create an opt-out row (guardian_id/channel/scope, uq per triple) */
+        post: operations["OptoutsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/optouts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete (undo) an opt-out row */
+        delete: operations["OptoutsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/broadcasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List broadcasts */
+        get: operations["BroadcastsController_list"];
+        put?: never;
+        /** Create a broadcast (starts as DRAFT) */
+        post: operations["BroadcastsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/broadcasts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a broadcast by id */
+        get: operations["BroadcastsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/broadcasts/{id}/submit-for-approval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * DRAFT -> PENDING_APPROVAL
+         * @description Stores the caller-supplied approval_ref. The real appr_* approval workflow engine is Module 6 (Approvals), not built yet — this endpoint does not validate or resolve the reference against anything.
+         */
+        post: operations["BroadcastsController_submitForApproval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/broadcasts/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * PENDING_APPROVAL -> APPROVED
+         * @description Stands in for the real approval decision until Module 6 (Approvals) lands.
+         */
+        post: operations["BroadcastsController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/broadcasts/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Any pre-SENDING state -> CANCELLED */
+        post: operations["BroadcastsController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/broadcasts/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** APPROVED -> SENDING -> SENT — resolves the audience and fans out one comm_message per recipient */
+        post: operations["BroadcastsController_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List/filter comm_message rows (status/entity/broadcast), paginated */
+        get: operations["MessagesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comms/integrations/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** FR-SET-003.1 Test Connection for SMTP/SMS/FCM/WHATSAPP — exercises the resolved adapter's real harmless check */
+        post: operations["CommsTestConnectionController_testConnection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users": {
         parameters: {
             query?: never;
@@ -1005,276 +1275,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/comms/templates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List templates */
-        get: operations["TemplatesController_list"];
-        put?: never;
-        /** Create a comm_template row (event_code/channel/locale, uq per triple) */
-        post: operations["TemplatesController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/templates/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a template by id */
-        get: operations["TemplatesController_findOne"];
-        put?: never;
-        post?: never;
-        /** Delete a template */
-        delete: operations["TemplatesController_remove"];
-        options?: never;
-        head?: never;
-        /** Update a template's subject/body/variables/is_active */
-        patch: operations["TemplatesController_update"];
-        trace?: never;
-    };
-    "/api/v1/comms/trigger-bindings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List trigger bindings */
-        get: operations["TriggerBindingsController_list"];
-        put?: never;
-        /** Create a comm_trigger_binding row (event_code/channel, uq per pair) */
-        post: operations["TriggerBindingsController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/trigger-bindings/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a trigger binding by id */
-        get: operations["TriggerBindingsController_findOne"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update a trigger binding's is_enabled/audience_rule */
-        patch: operations["TriggerBindingsController_update"];
-        trace?: never;
-    };
-    "/api/v1/comms/device-tokens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the caller's own registered push tokens */
-        get: operations["DeviceTokensController_listMine"];
-        put?: never;
-        /** Register (or refresh) the caller's own push token */
-        post: operations["DeviceTokensController_register"];
-        /** Unregister one of the caller's own push tokens */
-        delete: operations["DeviceTokensController_unregister"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/optouts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List opt-out rows for a guardian */
-        get: operations["OptoutsController_listByGuardian"];
-        put?: never;
-        /** Create an opt-out row (guardian_id/channel/scope, uq per triple) */
-        post: operations["OptoutsController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/optouts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete (undo) an opt-out row */
-        delete: operations["OptoutsController_remove"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/broadcasts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List broadcasts */
-        get: operations["BroadcastsController_list"];
-        put?: never;
-        /** Create a broadcast (starts as DRAFT) */
-        post: operations["BroadcastsController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/broadcasts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a broadcast by id */
-        get: operations["BroadcastsController_findOne"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/broadcasts/{id}/submit-for-approval": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * DRAFT -> PENDING_APPROVAL
-         * @description Stores the caller-supplied approval_ref. The real appr_* approval workflow engine is Module 6 (Approvals), not built yet — this endpoint does not validate or resolve the reference against anything.
-         */
-        post: operations["BroadcastsController_submitForApproval"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/broadcasts/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * PENDING_APPROVAL -> APPROVED
-         * @description Stands in for the real approval decision until Module 6 (Approvals) lands.
-         */
-        post: operations["BroadcastsController_approve"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/broadcasts/{id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Any pre-SENDING state -> CANCELLED */
-        post: operations["BroadcastsController_cancel"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/broadcasts/{id}/send": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** APPROVED -> SENDING -> SENT — resolves the audience and fans out one comm_message per recipient */
-        post: operations["BroadcastsController_send"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/messages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List/filter comm_message rows (status/entity/broadcast), paginated */
-        get: operations["MessagesController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/comms/integrations/test-connection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** FR-SET-003.1 Test Connection for SMTP/SMS/FCM/WHATSAPP — exercises the resolved adapter's real harmless check */
-        post: operations["CommsTestConnectionController_testConnection"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/approvals/workflow-definitions": {
         parameters: {
             query?: never;
@@ -1563,6 +1563,74 @@ export interface paths {
         put?: never;
         /** Cancel a still-PENDING instance — initiator self-service, or a System Admin */
         post: operations["InstancesController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's own notifications, newest first, paginated */
+        get: operations["NotificationsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Count of the caller's own unread notifications — the bell badge's own poll target */
+        get: operations["NotificationsController_unreadCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one of the caller's own notifications read (silently no-ops if not theirs or already read) */
+        post: operations["NotificationsController_markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark all of the caller's own notifications read */
+        post: operations["NotificationsController_markAllRead"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9433,6 +9501,167 @@ export interface components {
             expiresAt?: string;
             ipAllowlist?: string[];
         };
+        CreateTemplateDto: {
+            eventCode: string;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            /** @default en */
+            locale: string;
+            subject?: string | null;
+            /** @description Template body with {{variableName}} placeholders */
+            body: string;
+            /** @description Documents the placeholder names body/subject accept */
+            variables?: Record<string, never>;
+            /** @default true */
+            isActive: boolean;
+        };
+        TemplateResponseDto: {
+            /** Format: uuid */
+            id: string;
+            eventCode: string;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            locale: string;
+            subject: string | null;
+            body: string;
+            variables: Record<string, never>;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            version: number;
+        };
+        UpdateTemplateDto: {
+            subject?: string | null;
+            body?: string;
+            variables?: Record<string, never>;
+            isActive?: boolean;
+        };
+        CreateTriggerBindingDto: {
+            eventCode: string;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            /** @default true */
+            isEnabled: boolean;
+            audienceRule?: Record<string, never> | null;
+        };
+        TriggerBindingResponseDto: {
+            /** Format: uuid */
+            id: string;
+            eventCode: string;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            isEnabled: boolean;
+            audienceRule: Record<string, never> | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            version: number;
+        };
+        UpdateTriggerBindingDto: {
+            isEnabled?: boolean;
+            audienceRule?: Record<string, never> | null;
+        };
+        RegisterDeviceTokenDto: {
+            token: string;
+            /** @enum {string} */
+            platform: "IOS" | "ANDROID" | "WEB";
+        };
+        DeviceTokenResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            token: string;
+            platform: string;
+            /** Format: date-time */
+            lastSeenAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        UnregisterDeviceTokenDto: {
+            token: string;
+        };
+        CreateOptoutDto: {
+            /**
+             * Format: uuid
+             * @description Bare uuid — no FK yet (students/guardians module, #8, not built)
+             */
+            guardianId: string;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            /** @example ALL */
+            scope: string;
+        };
+        OptoutResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            guardianId: string;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            scope: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AudienceDefDto: {
+            /** @enum {string} */
+            kind: "STAFF_ROLE" | "EXPLICIT_USER_IDS";
+            /**
+             * Format: uuid
+             * @description Required when kind=STAFF_ROLE
+             */
+            roleId?: string;
+            /** @description Required when kind=EXPLICIT_USER_IDS */
+            userIds?: string[];
+        };
+        CreateBroadcastDto: {
+            title: string;
+            audienceDef: components["schemas"]["AudienceDefDto"];
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            body: string;
+            /**
+             * @description Decimal string, e.g. "150.0000" — defaults to 0
+             * @default 0
+             */
+            estCostAmount: string;
+        };
+        BroadcastResponseDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            audienceDef: Record<string, never>;
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
+            body: string;
+            recipientCount: number;
+            /** @description Decimal string */
+            estCostAmount: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "SENDING" | "SENT" | "CANCELLED";
+            /** Format: uuid */
+            approvalRef: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            version: number;
+        };
+        SubmitBroadcastApprovalDto: {
+            /** Format: uuid */
+            approvalRef: string;
+        };
+        CommsTestConnectionDto: {
+            /** @enum {string} */
+            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP";
+        };
+        CommsTestConnectionResponseDto: {
+            ok: boolean;
+            message: string;
+        };
         CreateUserDto: {
             username: string;
             email?: string;
@@ -9861,167 +10090,6 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
         };
-        CreateTemplateDto: {
-            eventCode: string;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            /** @default en */
-            locale: string;
-            subject?: string | null;
-            /** @description Template body with {{variableName}} placeholders */
-            body: string;
-            /** @description Documents the placeholder names body/subject accept */
-            variables?: Record<string, never>;
-            /** @default true */
-            isActive: boolean;
-        };
-        TemplateResponseDto: {
-            /** Format: uuid */
-            id: string;
-            eventCode: string;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            locale: string;
-            subject: string | null;
-            body: string;
-            variables: Record<string, never>;
-            isActive: boolean;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            version: number;
-        };
-        UpdateTemplateDto: {
-            subject?: string | null;
-            body?: string;
-            variables?: Record<string, never>;
-            isActive?: boolean;
-        };
-        CreateTriggerBindingDto: {
-            eventCode: string;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            /** @default true */
-            isEnabled: boolean;
-            audienceRule?: Record<string, never> | null;
-        };
-        TriggerBindingResponseDto: {
-            /** Format: uuid */
-            id: string;
-            eventCode: string;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            isEnabled: boolean;
-            audienceRule: Record<string, never> | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            version: number;
-        };
-        UpdateTriggerBindingDto: {
-            isEnabled?: boolean;
-            audienceRule?: Record<string, never> | null;
-        };
-        RegisterDeviceTokenDto: {
-            token: string;
-            /** @enum {string} */
-            platform: "IOS" | "ANDROID" | "WEB";
-        };
-        DeviceTokenResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            userId: string;
-            token: string;
-            platform: string;
-            /** Format: date-time */
-            lastSeenAt: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        UnregisterDeviceTokenDto: {
-            token: string;
-        };
-        CreateOptoutDto: {
-            /**
-             * Format: uuid
-             * @description Bare uuid — no FK yet (students/guardians module, #8, not built)
-             */
-            guardianId: string;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            /** @example ALL */
-            scope: string;
-        };
-        OptoutResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            guardianId: string;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            scope: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        AudienceDefDto: {
-            /** @enum {string} */
-            kind: "STAFF_ROLE" | "EXPLICIT_USER_IDS";
-            /**
-             * Format: uuid
-             * @description Required when kind=STAFF_ROLE
-             */
-            roleId?: string;
-            /** @description Required when kind=EXPLICIT_USER_IDS */
-            userIds?: string[];
-        };
-        CreateBroadcastDto: {
-            title: string;
-            audienceDef: components["schemas"]["AudienceDefDto"];
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            body: string;
-            /**
-             * @description Decimal string, e.g. "150.0000" — defaults to 0
-             * @default 0
-             */
-            estCostAmount: string;
-        };
-        BroadcastResponseDto: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            audienceDef: Record<string, never>;
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP" | "INAPP";
-            body: string;
-            recipientCount: number;
-            /** @description Decimal string */
-            estCostAmount: string;
-            /** @enum {string} */
-            status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "SENDING" | "SENT" | "CANCELLED";
-            /** Format: uuid */
-            approvalRef: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            version: number;
-        };
-        SubmitBroadcastApprovalDto: {
-            /** Format: uuid */
-            approvalRef: string;
-        };
-        CommsTestConnectionDto: {
-            /** @enum {string} */
-            channel: "SMS" | "EMAIL" | "PUSH" | "WHATSAPP";
-        };
-        CommsTestConnectionResponseDto: {
-            ok: boolean;
-            message: string;
-        };
         CreateWorkflowDefDto: {
             /** @description Open string namespace, e.g. BILLING_WAIVER, PAYMENT_VOUCHER */
             domainCode: string;
@@ -10244,6 +10312,28 @@ export interface components {
             decision: "APPROVE" | "REJECT" | "RETURN";
             /** @description Required for REJECT/RETURN (FR-APPR-003.1) */
             comment?: string;
+        };
+        NotificationResponseDto: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+            title: string;
+            body: string | null;
+            link: string | null;
+            entityType: string | null;
+            /** Format: uuid */
+            entityId: string | null;
+            /** Format: date-time */
+            readAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ListNotificationsResponseDto: {
+            items: components["schemas"]["NotificationResponseDto"][];
+            meta: Record<string, never>;
+        };
+        UnreadCountResponseDto: {
+            count: number;
         };
         CreateAccountDto: {
             code: string;
@@ -14747,6 +14837,525 @@ export interface operations {
             };
         };
     };
+    TemplatesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateResponseDto"][];
+                };
+            };
+        };
+    };
+    TemplatesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateResponseDto"];
+                };
+            };
+        };
+    };
+    TemplatesController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateResponseDto"];
+                };
+            };
+        };
+    };
+    TemplatesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TemplatesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateResponseDto"];
+                };
+            };
+        };
+    };
+    TriggerBindingsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriggerBindingResponseDto"][];
+                };
+            };
+        };
+    };
+    TriggerBindingsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTriggerBindingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriggerBindingResponseDto"];
+                };
+            };
+        };
+    };
+    TriggerBindingsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriggerBindingResponseDto"];
+                };
+            };
+        };
+    };
+    TriggerBindingsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTriggerBindingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriggerBindingResponseDto"];
+                };
+            };
+        };
+    };
+    DeviceTokensController_listMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceTokenResponseDto"][];
+                };
+            };
+        };
+    };
+    DeviceTokensController_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeviceTokenDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceTokenResponseDto"];
+                };
+            };
+        };
+    };
+    DeviceTokensController_unregister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnregisterDeviceTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OptoutsController_listByGuardian: {
+        parameters: {
+            query: {
+                guardianId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptoutResponseDto"][];
+                };
+            };
+        };
+    };
+    OptoutsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOptoutDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptoutResponseDto"];
+                };
+            };
+        };
+    };
+    OptoutsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BroadcastsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"][];
+                };
+            };
+        };
+    };
+    BroadcastsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBroadcastDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"];
+                };
+            };
+        };
+    };
+    BroadcastsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"];
+                };
+            };
+        };
+    };
+    BroadcastsController_submitForApproval: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitBroadcastApprovalDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"];
+                };
+            };
+        };
+    };
+    BroadcastsController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"];
+                };
+            };
+        };
+    };
+    BroadcastsController_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"];
+                };
+            };
+        };
+    };
+    BroadcastsController_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BroadcastResponseDto"];
+                };
+            };
+        };
+    };
+    MessagesController_list: {
+        parameters: {
+            query?: {
+                status?: "QUEUED" | "SENT" | "DELIVERED" | "FAILED" | "OPTED_OUT";
+                entityType?: string;
+                entityId?: string;
+                broadcastId?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommsTestConnectionController_testConnection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommsTestConnectionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommsTestConnectionResponseDto"];
+                };
+            };
+        };
+    };
     UsersController_list: {
         parameters: {
             query: {
@@ -16096,525 +16705,6 @@ export interface operations {
             };
         };
     };
-    TemplatesController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateResponseDto"][];
-                };
-            };
-        };
-    };
-    TemplatesController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateTemplateDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateResponseDto"];
-                };
-            };
-        };
-    };
-    TemplatesController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateResponseDto"];
-                };
-            };
-        };
-    };
-    TemplatesController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    TemplatesController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateTemplateDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateResponseDto"];
-                };
-            };
-        };
-    };
-    TriggerBindingsController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TriggerBindingResponseDto"][];
-                };
-            };
-        };
-    };
-    TriggerBindingsController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateTriggerBindingDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TriggerBindingResponseDto"];
-                };
-            };
-        };
-    };
-    TriggerBindingsController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TriggerBindingResponseDto"];
-                };
-            };
-        };
-    };
-    TriggerBindingsController_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateTriggerBindingDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TriggerBindingResponseDto"];
-                };
-            };
-        };
-    };
-    DeviceTokensController_listMine: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DeviceTokenResponseDto"][];
-                };
-            };
-        };
-    };
-    DeviceTokensController_register: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterDeviceTokenDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DeviceTokenResponseDto"];
-                };
-            };
-        };
-    };
-    DeviceTokensController_unregister: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UnregisterDeviceTokenDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    OptoutsController_listByGuardian: {
-        parameters: {
-            query: {
-                guardianId: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptoutResponseDto"][];
-                };
-            };
-        };
-    };
-    OptoutsController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateOptoutDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OptoutResponseDto"];
-                };
-            };
-        };
-    };
-    OptoutsController_remove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    BroadcastsController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"][];
-                };
-            };
-        };
-    };
-    BroadcastsController_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateBroadcastDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"];
-                };
-            };
-        };
-    };
-    BroadcastsController_findOne: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"];
-                };
-            };
-        };
-    };
-    BroadcastsController_submitForApproval: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubmitBroadcastApprovalDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"];
-                };
-            };
-        };
-    };
-    BroadcastsController_approve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"];
-                };
-            };
-        };
-    };
-    BroadcastsController_cancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"];
-                };
-            };
-        };
-    };
-    BroadcastsController_send: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BroadcastResponseDto"];
-                };
-            };
-        };
-    };
-    MessagesController_list: {
-        parameters: {
-            query?: {
-                status?: "QUEUED" | "SENT" | "DELIVERED" | "FAILED" | "OPTED_OUT";
-                entityType?: string;
-                entityId?: string;
-                broadcastId?: string;
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    CommsTestConnectionController_testConnection: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CommsTestConnectionDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CommsTestConnectionResponseDto"];
-                };
-            };
-        };
-    };
     WorkflowDefinitionsController_list: {
         parameters: {
             query?: never;
@@ -17095,6 +17185,83 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["InstanceResponseDto"];
                 };
+            };
+        };
+    };
+    NotificationsController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListNotificationsResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_unreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCountResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_markAllRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

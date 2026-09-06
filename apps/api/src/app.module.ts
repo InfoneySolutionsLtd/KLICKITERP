@@ -30,6 +30,7 @@ import {
   BackupsOpsModule,
   LicensingModule,
   DocumentVerificationModule,
+  NotificationsModule,
 } from "@klickit/server";
 import { HealthController } from "./health.controller";
 
@@ -179,6 +180,7 @@ function flattenValidationErrors(errors: ValidationError[], parentPath = ""): Fi
     // places safe (confirmed against this codebase's own precedent: `FilesModule`
     // is both a direct root import AND imported by `BrandingModule`).
     DocumentVerificationModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
   providers: [

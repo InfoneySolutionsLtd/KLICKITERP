@@ -211,7 +211,10 @@
     },
     "topbar": {
       "searchPlaceholder": "Search…",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "unreadAriaLabel": "{count} unread notifications",
+      "markAllRead": "Mark all read",
+      "viewAll": "View all"
     },
     "userMenu": {
       "profile": "Profile",
@@ -224,6 +227,18 @@
       "dark": "Dark",
       "system": "System",
       "toggle": "Toggle theme"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Notifications",
+    "pageSubtitle": "Every notification you've received, newest first.",
+    "markAllRead": "Mark all read",
+    "loadMore": "Load more",
+    "types": {
+      "APPROVAL_PENDING": { "title": "New approval request" },
+      "APPROVAL_APPROVED": { "title": "Your request was approved" },
+      "APPROVAL_REJECTED": { "title": "Your request was rejected" },
+      "APPROVAL_RETURNED": { "title": "Your request was returned" }
     }
   },
   "dashboard": {

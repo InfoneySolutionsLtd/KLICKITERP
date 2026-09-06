@@ -218,10 +218,16 @@ describe("procurement module — end-to-end capstone (real DataSource)", () => {
         new ApprRoutingRuleRepository(source.getRepository(ApprRoutingRuleEntity)),
         new ApprInstanceRepository(source.getRepository(ApprInstanceEntity)),
         new ApprActionRepository(source.getRepository(ApprActionEntity)),
-        {} as unknown as UsersService, // never touched — 0900 seeds zero appr_routing_rule rows for these domain codes, see class doc comment.
-        {} as unknown as DepartmentsService,
+        // usersService — 0900 seeds these domain codes' single level as `ROLE`-type (System
+        // Admin), so `submit()`'s own notification-approver-resolution now genuinely calls
+        // `listActiveUsersByRoleId()` (a real, new call path — see `ApprovalEngineService`'s own
+        // doc comment on its 3 notification points) — a bare `{}` would throw here, not just go
+        // unreached; an empty result is fine, this test doesn't assert on notifications.
+        { listActiveUsersByRoleId: async () => [] } as unknown as UsersService,
+        {} as unknown as DepartmentsService, // genuinely unreachable: the seeded level is ROLE-type, never DEPT_HEAD.
         {} as unknown as DelegationsService,
         new OutboxWriterService(),
+        { notify: async () => undefined } as never, // notifyService stub — this test doesn't assert on notifications.
       );
 
       const supplierRepository = new ProcSupplierRepository(source.getRepository(ProcSupplierEntity));

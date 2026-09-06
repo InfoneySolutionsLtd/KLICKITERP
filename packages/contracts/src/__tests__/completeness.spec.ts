@@ -66,7 +66,6 @@ function allPropertyNames(scanned: ScannedDtoClass, byName: Map<string, ScannedD
 /** Unwrap ZodEffects/ZodOptional/ZodNullable/etc. down to the underlying ZodObject, if any. */
 function unwrapToZodObject(schema: z.ZodTypeAny): z.ZodObject<z.ZodRawShape> | undefined {
   let current: z.ZodTypeAny = schema;
-  // eslint-disable-next-line no-constant-condition
   for (let i = 0; i < 10; i++) {
     if (current instanceof z.ZodObject) return current;
     const inner = (current as unknown as { _def?: { schema?: z.ZodTypeAny; innerType?: z.ZodTypeAny } })._def;
@@ -98,12 +97,12 @@ describe("packages/contracts zod DTO coverage — completeness", () => {
       const outAbsolutePath = path.join(CONTRACTS_SRC, outRelativePath);
 
       it(`has a generated schema module at src/${outRelativePath}`, () => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- `outAbsolutePath` is computed per-DTO at test-generation time, so a static `import` can't express it.
         expect(() => require(outAbsolutePath)).not.toThrow();
       });
 
       it(`exports \`${schemaVarName}\` as a zod object whose shape matches the DTO's own property list`, () => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- see the previous test's identical comment.
         const mod = require(outAbsolutePath);
         expect(mod).toHaveProperty(schemaVarName);
         const schema = mod[schemaVarName] as z.ZodTypeAny;

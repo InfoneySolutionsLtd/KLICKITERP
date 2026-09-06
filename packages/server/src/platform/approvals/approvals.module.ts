@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
 import { UsersModule } from "../users";
+import { NotificationsModule } from "../notifications";
 import { ApprovalEngineService } from "./application/approval-engine.service";
 import { DelegationsService } from "./application/delegations.service";
 import { LevelsService } from "./application/levels.service";
@@ -45,6 +46,11 @@ import { ApprWorkflowVersionRepository } from "./infrastructure/appr-workflow-ve
  * `getStatus()` before posting. The other application services are also
  * exported for admin-configuration UIs to call directly, but
  * `ApprovalEngineService` is the one every other module needs.
+ *
+ * Also imports `NotificationsModule` (notifications pass) — `ApprovalEngineService`
+ * calls `NotifyService.notify()` at three points (see that class's own doc
+ * comment) to raise a real in-app notification for the affected
+ * approver(s)/initiator, the first real emitter of that new generic module.
  */
 @Module({
   imports: [
@@ -58,6 +64,7 @@ import { ApprWorkflowVersionRepository } from "./infrastructure/appr-workflow-ve
       ApprDelegationEntity,
     ]),
     UsersModule,
+    NotificationsModule,
   ],
   controllers: [
     WorkflowDefinitionsController,

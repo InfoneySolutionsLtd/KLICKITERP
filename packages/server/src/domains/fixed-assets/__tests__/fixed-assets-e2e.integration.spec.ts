@@ -203,6 +203,7 @@ describe("fixed-assets module — end-to-end capstone (real DataSource)", () => 
         {} as unknown as DepartmentsService, // never touched — no DEPT_HEAD level in either seeded workflow.
         {} as unknown as DelegationsService, // never touched — the approver holds the role directly, no delegation path taken.
         new OutboxWriterService(),
+        { notify: async () => undefined } as never, // notifyService stub — this test doesn't assert on notifications.
       );
 
       const categoryRepository = new FaCategoryRepository(source.getRepository(FaCategoryEntity));

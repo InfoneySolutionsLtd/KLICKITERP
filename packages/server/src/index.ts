@@ -115,6 +115,15 @@ export { LicensingModule } from "./licensing/licensing.module";
 // `BillingModule` also import it transitively for `DocumentVerificationService`).
 export { DocumentVerificationModule } from "./platform/document-verification/document-verification.module";
 
+// A real, generic per-user notification inbox (migration `0256`) — another
+// new small platform module added after the original 21 phase-5 modules,
+// same reasoning as `DocumentVerificationModule` above: exported here so
+// `NotificationsController`'s own `GET/POST /notifications/*` routes are
+// reachable regardless of module-import ordering, even though
+// `platform/approvals` also imports it transitively (its first, real
+// emitter — see `ApprovalEngineService`'s own doc comment).
+export { NotificationsModule } from "./platform/notifications/notifications.module";
+
 // Shared kernel / cross-cutting — composition-root needs only.
 export { SharedInfraModule } from "./shared/infra/shared-infra.module";
 export { AppConfigService } from "./shared/config/app-config.service";

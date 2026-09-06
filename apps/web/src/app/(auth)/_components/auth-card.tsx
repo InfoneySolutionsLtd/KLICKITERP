@@ -73,8 +73,21 @@ export function AuthCard({ title, description, children }: { title: string; desc
   );
 }
 
-/** Subtle frosted tint on fields sitting inside the glass card — border/background only, no text-color override needed (see this file's own doc comment). */
-export const authInputClass = "border-white/50 bg-white/60 placeholder:text-muted-foreground/70 focus-visible:ring-primary/40";
+/**
+ * Subtle frosted tint on fields sitting inside the glass card —
+ * border/background only, no text-color override needed (see this file's
+ * own doc comment). `border-white/50`/`bg-white/60` use literal `white`
+ * (a real Tailwind built-in color, opacity modifiers work correctly on
+ * it) — but `--muted-foreground`/`--primary` are raw hex-resolving CSS
+ * vars like `--color-*`, so `text-muted-foreground/70`/`ring-primary/40`
+ * would hit the exact same silently-broken-modifier trap this app has hit
+ * repeatedly elsewhere (confirmed empirically: neither class generates
+ * ANY compiled CSS rule at all, not just "opacity ignored" — verified via
+ * `.next/static/css/app/layout.css` directly while root-causing the
+ * sidebar's own instance of this same bug). `color-mix()` sidesteps it.
+ */
+export const authInputClass =
+  "border-white/50 bg-white/60 placeholder:text-[color-mix(in_srgb,var(--muted-foreground)_70%,transparent)] focus-visible:ring-[color-mix(in_srgb,var(--primary)_40%,transparent)]";
 /** Same gradient as the icon badge above, for visual continuity — matches the glow-shadow language `KpiCard`/`RowActionButton` already established this session. */
 export const authSubmitButtonClass =
   "w-full rounded-full bg-[linear-gradient(135deg,var(--color-primary),var(--color-accent))] shadow-[0_8px_20px_-6px_color-mix(in_srgb,var(--color-primary)_55%,transparent)] hover:opacity-95";

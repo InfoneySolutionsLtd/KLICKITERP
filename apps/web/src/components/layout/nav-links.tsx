@@ -1189,7 +1189,9 @@ export function NavLinks() {
                         href={child.href}
                         className={cn(
                           "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                          childIsActive ? "bg-brand-primaryLight text-brand-black" : INACTIVE_TEXT_CLASSES,
+                          childIsActive
+                            ? "bg-[linear-gradient(135deg,var(--color-primary),var(--color-accent))] text-white shadow-[0_2px_10px_-3px_color-mix(in_srgb,var(--color-primary)_55%,transparent)]"
+                            : INACTIVE_TEXT_CLASSES,
                         )}
                       >
                         {t(child.labelKey)}
@@ -1259,7 +1261,7 @@ export function NavLinks() {
               // refactor Slice 1.5b's bug #3 flagged as its own dedicated
               // pass — that broader issue stays deliberately deferred,
               // this fixes only the two classes causing THIS reported bug.
-              active ? "text-brand-black" : INACTIVE_TEXT_CLASSES,
+              active ? "text-white" : INACTIVE_TEXT_CLASSES,
             )}
           >
             {active && (
@@ -1289,15 +1291,20 @@ export function NavLinks() {
               // out. The chip is a plain child span, not its own
               // `layoutId`, so it rides along with the parent pill's FLIP
               // transition for free.
+              //
+              // Slice (glass-aurora pass): the flat `bg-brand-primaryLight`
+              // fill (and its `text-brand-black` pairing) is now the
+              // `--color-primary` -> `--color-accent` gradient the login
+              // page's icon badge/submit button already established — the
+              // diamond chip switched from `bg-brand-accent` to `bg-white`
+              // since it now sits ON TOP of that same accent color at the
+              // gradient's far edge, where it would otherwise blend in.
               <motion.span
                 layoutId="nav-active-pill"
-                className="absolute inset-0 rounded-lg bg-brand-primaryLight shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-primary-light)_60%,transparent)]"
+                className="absolute inset-0 rounded-lg bg-[linear-gradient(135deg,var(--color-primary),var(--color-accent))] shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-primary)_55%,transparent)]"
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >
-                <span
-                  aria-hidden
-                  className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 rounded-[1px] bg-brand-accent"
-                />
+                <span aria-hidden className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 rounded-[1px] bg-white" />
               </motion.span>
             )}
             <Icon className="relative z-10 size-4 shrink-0" />

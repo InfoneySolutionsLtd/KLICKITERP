@@ -40,6 +40,7 @@ import { ApprInstanceEntity } from "../platform/approvals/domain/appr-instance.e
 import { ApprActionEntity } from "../platform/approvals/domain/appr-action.entity";
 import { ApprDelegationEntity } from "../platform/approvals/domain/appr-delegation.entity";
 import { DocvRecordEntity } from "../platform/document-verification/domain/docv-record.entity";
+import { NtfNotificationEntity } from "../platform/notifications/domain/ntf-notification.entity";
 import { GlAccountEntity } from "../accounting/domain/gl-account.entity";
 import { GlFiscalYearEntity } from "../accounting/domain/gl-fiscal-year.entity";
 import { GlPeriodEntity } from "../accounting/domain/gl-period.entity";
@@ -243,6 +244,11 @@ export const AppDataSource = new DataSource({
     // block, before accounting-core) for the same reason the phase-5 blocks
     // are grouped by module rather than alphabetically.
     DocvRecordEntity,
+    // A real, generic per-user notification inbox (migration `0256`) —
+    // another new small platform module, placed here for the same reason
+    // `DocvRecordEntity` above is: end of the platform-module block, before
+    // accounting-core, rather than alphabetically.
+    NtfNotificationEntity,
     GlAccountEntity,
     GlFiscalYearEntity,
     GlPeriodEntity,
