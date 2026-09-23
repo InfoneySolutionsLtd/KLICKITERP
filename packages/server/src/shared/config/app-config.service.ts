@@ -201,7 +201,7 @@ export class AppConfigService {
   }
 
   get minioBucketDefault(): string {
-    return process.env.MINIO_BUCKET_DEFAULT ?? "klickit-files";
+    return process.env.MINIO_BUCKET_DEFAULT ?? "klickit-erp-files";
   }
 
   get minioUseSsl(): boolean {
