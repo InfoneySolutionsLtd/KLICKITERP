@@ -25,6 +25,7 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'kfe_license')
 ALTER ROLE kfe_app PASSWORD :'app_password';
 ALTER ROLE kfe_migrate PASSWORD :'migration_password';
 ALTER ROLE kfe_license PASSWORD :'migration_password';
+ALTER ROLE kfe_migrate CREATEROLE;
 
 -- Migration 0002 re-checks schema creation with CREATE SCHEMA IF NOT EXISTS.
 -- PostgreSQL still requires database CREATE for that statement, so grant it
