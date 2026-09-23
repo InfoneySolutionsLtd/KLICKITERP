@@ -10,11 +10,11 @@ Services:
 - NestJS background worker
 - PostgreSQL
 - Redis
-- MinIO object storage and bucket initialization
+- RustFS object storage and bucket initialization
 
 The Compose project name is `klickit-erp-dev`. Kong integration is optional.
-Without `KONG_NETWORK`, the ERP runs using its normal Nginx and host-port
-configuration only. Set `KONG_NETWORK` to Kong's existing Docker network name
+Without `GATEWAY_NETWORK`, the ERP runs using its normal Nginx and host-port
+configuration only. Set `GATEWAY_NETWORK` to Kong's existing Docker network name
 to enable the Kong overlay.
 
 When Kong integration is enabled, configure Kong to route the ERP hostname to:
@@ -42,21 +42,21 @@ When using Kong, verify that the shared network exists and that the Kong
 container is attached to it:
 
 ```sh
-docker network inspect "$(grep '^KONG_NETWORK=' .env | cut -d= -f2-)"
+docker network inspect "$(grep '^GATEWAY_NETWORK=' .env | cut -d= -f2-)"
 ```
 
-If `KONG_NETWORK` is unset, skip this check. If the deployment host uses a
-different network name, update `KONG_NETWORK` in `.env` and attach Kong to that
+If `GATEWAY_NETWORK` is unset, skip this check. If the deployment host uses a
+different network name, update `GATEWAY_NETWORK` in `.env` and attach Kong to that
 network before deploying.
 
-MinIO is internal to the ERP stack. The API and worker use `minio:9000`, and
-the `minio-init` service creates `klickit-erp-files` and `MINIO_BUCKET_DEFAULT`
-automatically. Set a
+RustFS is internal to the ERP stack. The API and worker continue to use the
+compatible `minio:9000` hostname, and the `minio-init` service creates
+`klickit-erp-files` and `MINIO_BUCKET_DEFAULT` automatically. Set a
 unique `MINIO_ROOT_PASSWORD` in `.env`; the example value must not be used in
 an actual deployment.
 
 For browser file viewing, configure `MINIO_PUBLIC_ENDPOINT` to the dedicated
-MinIO S3 hostname and set `MINIO_PUBLIC_USE_SSL=true` when TLS is enabled. The
+RustFS S3 hostname and set `MINIO_PUBLIC_USE_SSL=true` when TLS is enabled. The
 API and worker continue using the internal `MINIO_ENDPOINT` for storage
 operations, while signed URLs use the public endpoint.
 

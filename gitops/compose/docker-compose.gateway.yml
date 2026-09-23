@@ -8,4 +8,4 @@ services:
 networks:
   kong_network:
     external: true
-    name: ${KONG_NETWORK}
+    name: ${GATEWAY_NETWORK}
