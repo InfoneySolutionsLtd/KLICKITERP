@@ -77,11 +77,11 @@ jobs:
             export KFE_VERSION="$RELEASE_VERSION"
             export ERP_IMAGE_REGISTRY="$IMAGE_REGISTRY"
             printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
-            KONG_NETWORK="$(awk -F= '$1 == "KONG_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
+            GATEWAY_NETWORK="$(awk -F= '$1 == "GATEWAY_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
             COMPOSE_FILES=(-f gitops/compose/docker-compose.production.yml)
-            if [ -n "$KONG_NETWORK" ]; then
-              if ! docker network inspect "$KONG_NETWORK" >/dev/null 2>&1; then
-                echo "Configured Kong Docker network '$KONG_NETWORK' does not exist or is not accessible" >&2
+            if [ -n "$GATEWAY_NETWORK" ]; then
+              if ! docker network inspect "$GATEWAY_NETWORK" >/dev/null 2>&1; then
+                echo "Configured Kong Docker network '$GATEWAY_NETWORK' does not exist or is not accessible" >&2
                 exit 1
               fi
               COMPOSE_FILES+=( -f gitops/compose/docker-compose.gateway.yml )
@@ -89,4 +89,4 @@ jobs:
             docker compose --env-file .env "${COMPOSE_FILES[@]}" pull
             docker compose --env-file .env "${COMPOSE_FILES[@]}" run --rm api pnpm --dir packages/server migration:run
             docker compose --env-file .env "${COMPOSE_FILES[@]}" up -d
-            docker image prune -f
+            docker image prune -af

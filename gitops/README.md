@@ -77,6 +77,15 @@ docker compose --env-file .env -f gitops/compose/docker-compose.production.yml \
   run --rm api pnpm --dir packages/server migration:run
 ```
 
+After the stack is updated, old unused release images can be cleaned up with:
+
+```sh
+docker image prune -af
+```
+
+This removes images not referenced by any container. It does not remove named
+volumes, including PostgreSQL or RustFS storage volumes.
+
 The release workflow publishes API, Worker, and Web images to GHCR, copies the
 Compose/Nginx files to the host, authenticates the deployment host to GHCR,
 runs migrations, and restarts the stack.
