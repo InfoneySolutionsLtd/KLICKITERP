@@ -10,6 +10,7 @@ Services:
 - NestJS background worker
 - PostgreSQL
 - Redis
+- MinIO object storage and bucket initialization
 
 The Compose project name is `klickit-erp-dev`. Kong integration is optional.
 Without `KONG_NETWORK`, the ERP runs using its normal Nginx and host-port
@@ -47,6 +48,16 @@ docker network inspect "$(grep '^KONG_NETWORK=' .env | cut -d= -f2-)"
 If `KONG_NETWORK` is unset, skip this check. If the deployment host uses a
 different network name, update `KONG_NETWORK` in `.env` and attach Kong to that
 network before deploying.
+
+MinIO is internal to the ERP stack. The API and worker use `minio:9000`, and
+the `minio-init` service creates `MINIO_BUCKET_DEFAULT` automatically. Set a
+unique `MINIO_ROOT_PASSWORD` in `.env`; the example value must not be used in
+an actual deployment.
+
+For browser file viewing, configure `MINIO_PUBLIC_ENDPOINT` to the dedicated
+MinIO S3 hostname and set `MINIO_PUBLIC_USE_SSL=true` when TLS is enabled. The
+API and worker continue using the internal `MINIO_ENDPOINT` for storage
+operations, while signed URLs use the public endpoint.
 
 Run database migrations before a new release is served:
 

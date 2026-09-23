@@ -16,18 +16,11 @@ import { PutObjectResult, StoragePort } from "./storage.port";
 @Injectable()
 export class MinioStorageAdapter implements StoragePort {
   private readonly client: S3Client;
+  private readonly signingClient: S3Client;
 
   constructor(private readonly config: AppConfigService) {
-    const scheme = this.config.minioUseSsl ? "https" : "http";
-    this.client = new S3Client({
-      endpoint: `${scheme}://${this.config.minioEndpoint}`,
-      region: "us-east-1", // MinIO ignores region, but the SDK requires one to be set
-      forcePathStyle: true,
-      credentials: {
-        accessKeyId: this.config.minioAccessKey,
-        secretAccessKey: this.config.minioSecretKey,
-      },
-    });
+    this.client = this.createClient(this.config.minioEndpoint, this.config.minioUseSsl);
+    this.signingClient = this.createClient(this.config.minioPublicEndpoint, this.config.minioPublicUseSsl);
   }
 
   async putObject(bucket: string, key: string, body: Buffer, contentType: string): Promise<PutObjectResult> {
@@ -45,12 +38,25 @@ export class MinioStorageAdapter implements StoragePort {
   }
 
   async getSignedUrl(bucket: string, key: string, expirySeconds: number): Promise<string> {
-    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: bucket, Key: key }), {
+    return getSignedUrl(this.signingClient, new GetObjectCommand({ Bucket: bucket, Key: key }), {
       expiresIn: expirySeconds,
     });
   }
 
   async deleteObject(bucket: string, key: string): Promise<void> {
     await this.client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+  }
+
+  private createClient(endpoint: string, useSsl: boolean): S3Client {
+    const scheme = useSsl ? "https" : "http";
+    return new S3Client({
+      endpoint: `${scheme}://${endpoint}`,
+      region: "us-east-1", // MinIO ignores region, but the SDK requires one to be set
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId: this.config.minioAccessKey,
+        secretAccessKey: this.config.minioSecretKey,
+      },
+    });
   }
 }
