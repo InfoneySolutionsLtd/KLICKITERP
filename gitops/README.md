@@ -11,9 +11,20 @@ Services:
 - PostgreSQL
 - Redis
 
-The Compose project name is `klickit-erp`. The default public port is
-`5080` so it can coexist with the Academy gateway on ports `80/443` and the
-Academy development services on their existing ports.
+The Compose project name is `klickit-erp-dev`. Kong integration is optional.
+Without `KONG_NETWORK`, the ERP runs using its normal Nginx and host-port
+configuration only. Set `KONG_NETWORK` to Kong's existing Docker network name
+to enable the Kong overlay.
+
+When Kong integration is enabled, configure Kong to route the ERP hostname to:
+
+```text
+http://klickit-erp-dev:80
+```
+
+The host port defaults to `5080` for direct health checks or non-Kong access.
+Do not configure Kong to use `127.0.0.1:5080`, because that points to the Kong
+container itself.
 
 ## Manual deployment
 
@@ -25,6 +36,17 @@ cp gitops/.env.production.example .env
 docker compose --env-file .env -f gitops/compose/docker-compose.production.yml pull
 docker compose --env-file .env -f gitops/compose/docker-compose.production.yml up -d
 ```
+
+When using Kong, verify that the shared network exists and that the Kong
+container is attached to it:
+
+```sh
+docker network inspect "$(grep '^KONG_NETWORK=' .env | cut -d= -f2-)"
+```
+
+If `KONG_NETWORK` is unset, skip this check. If the deployment host uses a
+different network name, update `KONG_NETWORK` in `.env` and attach Kong to that
+network before deploying.
 
 Run database migrations before a new release is served:
 

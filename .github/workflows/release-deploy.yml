@@ -52,7 +52,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: gitops/compose/docker-compose.production.yml,gitops/nginx/nginx.conf
+          source: gitops/compose/docker-compose.production.yml,gitops/compose/docker-compose.gateway.yml,gitops/nginx/nginx.conf
           target: ${{ secrets.DEPLOY_PATH }}
       - uses: appleboy/ssh-action@v1.2.1
         env:
@@ -69,7 +69,17 @@ jobs:
             cd "$DEPLOY_PATH"
             export KFE_VERSION="$RELEASE_VERSION"
             export ERP_IMAGE_REGISTRY="$IMAGE_REGISTRY"
-            docker compose --env-file .env -f gitops/compose/docker-compose.production.yml pull
-            docker compose --env-file .env -f gitops/compose/docker-compose.production.yml run --rm api pnpm --filter @klickit/server migration:run
-            docker compose --env-file .env -f gitops/compose/docker-compose.production.yml up -d
+            KONG_NETWORK="$(awk -F= '$1 == "KONG_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
+            KONG_NETWORK="$(awk -F= '$1 == "KONG_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
+            COMPOSE_FILES=(-f gitops/compose/docker-compose.production.yml)
+            if [ -n "$KONG_NETWORK" ]; then
+              if ! docker network inspect "$KONG_NETWORK" >/dev/null 2>&1; then
+                echo "Configured Kong Docker network '$KONG_NETWORK' does not exist or is not accessible" >&2
+                exit 1
+              fi
+              COMPOSE_FILES+=( -f gitops/compose/docker-compose.gateway.yml )
+            fi
+            docker compose --env-file .env "${COMPOSE_FILES[@]}" pull
+            docker compose --env-file .env "${COMPOSE_FILES[@]}" run --rm api pnpm --filter @klickit/server migration:run
+            docker compose --env-file .env "${COMPOSE_FILES[@]}" up -d
             docker image prune -f
