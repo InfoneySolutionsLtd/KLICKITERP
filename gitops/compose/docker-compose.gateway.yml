@@ -13,5 +13,4 @@ services:
 networks:
   kong_network:
     external: true
-    # Temporary fixed name while validating the shared Kong/ERP network.
-    name: kong-erp-network
+    name: ${GATEWAY_NETWORK}

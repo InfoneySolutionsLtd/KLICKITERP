@@ -77,8 +77,7 @@ jobs:
             export KFE_VERSION="$RELEASE_VERSION"
             export ERP_IMAGE_REGISTRY="$IMAGE_REGISTRY"
             printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
-            # Temporary fixed shared network for ERP/Kong integration testing.
-            GATEWAY_NETWORK="kong-erp-network"
+            GATEWAY_NETWORK="$(awk -F= '$1 == "GATEWAY_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
             COMPOSE_FILES=(-f gitops/compose/docker-compose.production.yml)
             if [ -n "$GATEWAY_NETWORK" ]; then
               if ! docker network inspect "$GATEWAY_NETWORK" >/dev/null 2>&1; then
@@ -89,5 +88,5 @@ jobs:
             fi
             docker compose --env-file .env "${COMPOSE_FILES[@]}" pull
             docker compose --env-file .env "${COMPOSE_FILES[@]}" run --rm api pnpm --dir packages/server migration:run
-            docker compose --env-file .env "${COMPOSE_FILES[@]}" up -d
+            docker compose --env-file .env "${COMPOSE_FILES[@]}" up -d --force-recreate --remove-orphans
             docker image prune -af
