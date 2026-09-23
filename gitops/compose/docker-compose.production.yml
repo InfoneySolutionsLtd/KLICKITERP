@@ -1,4 +1,4 @@
-name: klickit-erp-dev
+name: klickit-erp
 
 services:
   nginx:

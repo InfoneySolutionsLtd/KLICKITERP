@@ -18,6 +18,6 @@ fi
 export KFE_VERSION ERP_IMAGE_REGISTRY
 
 "${compose[@]}" pull
-"${compose[@]}" run --rm api pnpm --filter @klickit/server migration:run
+"${compose[@]}" run --rm api pnpm --dir packages/server migration:run
 "${compose[@]}" up -d
 "${compose[@]}" ps
