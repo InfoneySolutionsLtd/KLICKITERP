@@ -26,6 +26,13 @@ ALTER ROLE kfe_app PASSWORD :'app_password';
 ALTER ROLE kfe_migrate PASSWORD :'migration_password';
 ALTER ROLE kfe_license PASSWORD :'migration_password';
 
+-- Install extensions as the PostgreSQL superuser. TypeORM's migration role
+-- should not need database-level CREATE just to run CREATE EXTENSION IF NOT EXISTS.
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "btree_gin";
+CREATE EXTENSION IF NOT EXISTS "btree_gist";
+
 CREATE SCHEMA IF NOT EXISTS app;
 CREATE SCHEMA IF NOT EXISTS license;
 CREATE SCHEMA IF NOT EXISTS audit;
