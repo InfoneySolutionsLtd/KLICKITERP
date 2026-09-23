@@ -64,16 +64,19 @@ jobs:
           RELEASE_VERSION: ${{ needs.publish.outputs.version }}
           IMAGE_REGISTRY: ${{ needs.publish.outputs.image_registry }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          GHCR_USERNAME: ${{ github.repository_owner }}
+          GHCR_TOKEN: ${{ github.token }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          envs: RELEASE_VERSION,IMAGE_REGISTRY,DEPLOY_PATH
+          envs: RELEASE_VERSION,IMAGE_REGISTRY,DEPLOY_PATH,GHCR_USERNAME,GHCR_TOKEN
           script: |
             set -eu
             cd "$DEPLOY_PATH"
             export KFE_VERSION="$RELEASE_VERSION"
             export ERP_IMAGE_REGISTRY="$IMAGE_REGISTRY"
+            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
             KONG_NETWORK="$(awk -F= '$1 == "KONG_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
             COMPOSE_FILES=(-f gitops/compose/docker-compose.production.yml)
             if [ -n "$KONG_NETWORK" ]; then
