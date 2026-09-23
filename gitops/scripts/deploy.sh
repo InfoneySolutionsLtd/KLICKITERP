@@ -21,3 +21,7 @@ export KFE_VERSION ERP_IMAGE_REGISTRY
 "${compose[@]}" run --rm api pnpm --dir packages/server migration:run
 "${compose[@]}" up -d
 "${compose[@]}" ps
+
+# Remove old release images that are no longer referenced by any container.
+# This does not remove running containers, named volumes, or their images.
+docker image prune -af
