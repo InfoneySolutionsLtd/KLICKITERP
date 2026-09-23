@@ -208,6 +208,16 @@ export class AppConfigService {
     return process.env.MINIO_USE_SSL === "true";
   }
 
+  /** Public MinIO hostname used only in browser-facing signed URLs. Keep this separate from the internal Docker endpoint. */
+  get minioPublicEndpoint(): string {
+    return process.env.MINIO_PUBLIC_ENDPOINT ?? this.minioEndpoint;
+  }
+
+  get minioPublicUseSsl(): boolean {
+    return process.env.MINIO_PUBLIC_USE_SSL === "true" ||
+      (process.env.MINIO_PUBLIC_USE_SSL === undefined && this.minioUseSsl);
+  }
+
   /** Module 3 (Files) upload guard — FR/NFR reference: reasonable default, school-configurable. Default 25 MiB. */
   get fileMaxUploadBytes(): number {
     return Number(process.env.FILE_MAX_UPLOAD_BYTES ?? 26_214_400);

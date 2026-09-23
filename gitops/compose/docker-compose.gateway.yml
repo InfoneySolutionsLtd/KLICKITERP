@@ -1,11 +1,11 @@
 services:
   nginx:
     networks:
-      kong_edge:
+      kong_network:
         aliases:
-          - klickit-erp-dev
+          - klickit-erp
 
 networks:
-  kong_edge:
+  kong_network:
     external: true
     name: ${KONG_NETWORK}
