@@ -1,0 +1,75 @@
+name: ERP Release and Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [api, worker, web]
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        shell: bash
+        run: |
+          echo "version=$(git rev-parse --short=12 "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: gitops/docker/Dockerfile
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/klickit-erp-${{ matrix.target }}:${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: gitops/compose/docker-compose.production.yml,gitops/nginx/nginx.conf
+          target: ${{ secrets.DEPLOY_PATH }}
+      - uses: appleboy/ssh-action@v1.2.1
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.version }}
+          IMAGE_REGISTRY: ${{ env.REGISTRY }}/${{ github.repository_owner }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: RELEASE_VERSION,IMAGE_REGISTRY,DEPLOY_PATH
+          script: |
+            set -eu
+            cd "$DEPLOY_PATH"
+            export KFE_VERSION="$RELEASE_VERSION"
+            export ERP_IMAGE_REGISTRY="$IMAGE_REGISTRY"
+            docker compose --env-file .env -f gitops/compose/docker-compose.production.yml pull
+            docker compose --env-file .env -f gitops/compose/docker-compose.production.yml run --rm api pnpm --filter @klickit/server migration:run
+            docker compose --env-file .env -f gitops/compose/docker-compose.production.yml up -d
+            docker image prune -f
