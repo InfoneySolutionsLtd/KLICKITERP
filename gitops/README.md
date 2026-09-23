@@ -67,7 +67,18 @@ docker compose --env-file .env -f gitops/compose/docker-compose.production.yml \
 ```
 
 The release workflow publishes API, Worker, and Web images to GHCR, copies the
-Compose/Nginx files to the host, runs migrations, and restarts the stack.
+Compose/Nginx files to the host, authenticates the deployment host to GHCR,
+runs migrations, and restarts the stack.
+
+For a manual deployment, authenticate the server before pulling private images:
+
+```sh
+printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io \
+  --username "$GHCR_USERNAME" --password-stdin
+```
+
+`GHCR_READ_TOKEN` must be a GitHub token with `read:packages` access to the ERP
+container images.
 
 The same operations can be run directly on the host:
 
