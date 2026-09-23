@@ -34,6 +34,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      postgres-prepare:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       minio-init:
@@ -53,6 +55,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      postgres-prepare:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       minio-init:
@@ -69,11 +73,32 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_SUPERPASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ../postgres-init/001-create-erp-roles.sh:/docker-entrypoint-initdb.d/001-create-erp-roles.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER:-postgres} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks: [core]
+
+  postgres-prepare:
+    image: postgres:16-alpine
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
+      POSTGRES_DB: ${DB_NAME}
+      PGPASSWORD: ${POSTGRES_SUPERPASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD}
+    volumes:
+      - ../postgres-init/001-create-erp-roles.sh:/usr/local/bin/001-create-erp-roles.sh:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["/usr/local/bin/001-create-erp-roles.sh"]
     networks: [core]
 
   redis:

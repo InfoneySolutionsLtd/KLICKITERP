@@ -57,7 +57,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: gitops/compose/docker-compose.production.yml,gitops/compose/docker-compose.gateway.yml,gitops/nginx/nginx.conf
+          source: gitops/compose/docker-compose.production.yml,gitops/compose/docker-compose.gateway.yml,gitops/nginx/nginx.conf,gitops/postgres-init/001-create-erp-roles.sh
           target: ${{ secrets.DEPLOY_PATH }}
       - uses: appleboy/ssh-action@v1.2.1
         env:
