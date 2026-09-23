@@ -4,9 +4,8 @@ set -euo pipefail
 : "${KFE_VERSION:?Set KFE_VERSION to the image tag}"
 : "${ERP_IMAGE_REGISTRY:?Set ERP_IMAGE_REGISTRY to the image registry path}"
 
-if [ -z "${GATEWAY_NETWORK:-}" ] && [ -f .env ]; then
-  GATEWAY_NETWORK="$(awk -F= '$1 == "GATEWAY_NETWORK" { print substr($0, index($0, "=") + 1); exit }' .env)"
-fi
+# Temporary fixed shared network for ERP/Kong integration testing.
+GATEWAY_NETWORK="kong-erp-network"
 compose=(docker compose --env-file .env -f gitops/compose/docker-compose.production.yml)
 if [ -n "${GATEWAY_NETWORK:-}" ]; then
   if ! docker network inspect "$GATEWAY_NETWORK" >/dev/null 2>&1; then
