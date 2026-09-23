@@ -50,7 +50,8 @@ different network name, update `KONG_NETWORK` in `.env` and attach Kong to that
 network before deploying.
 
 MinIO is internal to the ERP stack. The API and worker use `minio:9000`, and
-the `minio-init` service creates `MINIO_BUCKET_DEFAULT` automatically. Set a
+the `minio-init` service creates `klickit-erp-files` and `MINIO_BUCKET_DEFAULT`
+automatically. Set a
 unique `MINIO_ROOT_PASSWORD` in `.env`; the example value must not be used in
 an actual deployment.
 

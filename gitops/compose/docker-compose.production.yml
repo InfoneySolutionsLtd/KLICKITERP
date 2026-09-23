@@ -90,7 +90,7 @@ services:
     networks: [core]
 
   minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: minio/minio:latest
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -106,7 +106,7 @@ services:
     networks: [core]
 
   minio-init:
-    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    image: minio/mc:latest
     restart: "no"
     depends_on:
       minio:
@@ -114,11 +114,12 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET_DEFAULT: ${MINIO_BUCKET_DEFAULT:-klickit-files}
+      MINIO_BUCKET_DEFAULT: ${MINIO_BUCKET_DEFAULT:-klickit-erp-files}
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
         mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing local/klickit-erp-files &&
         mc mb --ignore-existing "local/$${MINIO_BUCKET_DEFAULT}"
     networks: [core]
 
