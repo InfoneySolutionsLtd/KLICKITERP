@@ -87,6 +87,6 @@ jobs:
               COMPOSE_FILES+=( -f gitops/compose/docker-compose.gateway.yml )
             fi
             docker compose --env-file .env "${COMPOSE_FILES[@]}" pull
-            docker compose --env-file .env "${COMPOSE_FILES[@]}" run --rm api pnpm --filter @klickit/server migration:run
+            docker compose --env-file .env "${COMPOSE_FILES[@]}" run --rm api pnpm --dir packages/server migration:run
             docker compose --env-file .env "${COMPOSE_FILES[@]}" up -d
             docker image prune -f

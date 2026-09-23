@@ -12,7 +12,7 @@ Services:
 - Redis
 - RustFS object storage and bucket initialization
 
-The Compose project name is `klickit-erp-dev`. Kong integration is optional.
+The Compose project name is `klickit-erp`. Kong integration is optional.
 Without `GATEWAY_NETWORK`, the ERP runs using its normal Nginx and host-port
 configuration only. Set `GATEWAY_NETWORK` to Kong's existing Docker network name
 to enable the Kong overlay.
@@ -20,7 +20,7 @@ to enable the Kong overlay.
 When Kong integration is enabled, configure Kong to route the ERP hostname to:
 
 ```text
-http://klickit-erp-dev:80
+http://klickit-erp:80
 ```
 
 The host port defaults to `5080` for direct health checks or non-Kong access.
@@ -64,7 +64,7 @@ Run database migrations before a new release is served:
 
 ```sh
 docker compose --env-file .env -f gitops/compose/docker-compose.production.yml \
-  run --rm api pnpm --filter @klickit/server migration:run
+  run --rm api pnpm --dir packages/server migration:run
 ```
 
 The release workflow publishes API, Worker, and Web images to GHCR, copies the
