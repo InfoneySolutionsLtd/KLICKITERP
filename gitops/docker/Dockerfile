@@ -28,6 +28,7 @@ WORKDIR /workspace
 COPY --from=build /workspace/package.json ./package.json
 COPY --from=build /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=build /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=build /workspace/tsconfig.base.json ./tsconfig.base.json
 COPY --from=build /workspace/node_modules ./node_modules
 COPY --from=build /workspace/packages ./packages
 COPY --from=build /workspace/apps/api ./apps/api

@@ -4,6 +4,11 @@ services:
       kong_network:
         aliases:
           - klickit-erp
+  minio:
+    networks:
+      kong_network:
+        aliases:
+          - klickit-erp-storage
 
 networks:
   kong_network:

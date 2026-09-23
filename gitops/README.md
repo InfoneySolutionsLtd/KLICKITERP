@@ -60,6 +60,16 @@ RustFS S3 hostname and set `MINIO_PUBLIC_USE_SSL=true` when TLS is enabled. The
 API and worker continue using the internal `MINIO_ENDPOINT` for storage
 operations, while signed URLs use the public endpoint.
 
+When the gateway overlay is enabled, configure the file hostname in Kong to
+route to:
+
+```text
+http://klickit-erp-storage:9000
+```
+
+The RustFS service joins the gateway network only when the overlay is used; its
+console remains disabled.
+
 Run database migrations before a new release is served:
 
 ```sh
