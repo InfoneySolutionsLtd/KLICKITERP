@@ -86,8 +86,48 @@ jobs:
               fi
               COMPOSE_FILES+=( -f gitops/compose/docker-compose.gateway.yml )
             fi
-            docker compose --env-file .env "${COMPOSE_FILES[@]}" pull
-            docker compose --env-file .env "${COMPOSE_FILES[@]}" down --remove-orphans
-            docker compose --env-file .env "${COMPOSE_FILES[@]}" run --rm api pnpm --dir packages/server migration:run
-            docker compose --env-file .env "${COMPOSE_FILES[@]}" up -d --force-recreate --remove-orphans
+            for service_name in klickit-erp_postgres-prepare klickit-erp_rustfs-prepare klickit-erp_minio-init; do
+              docker service rm "$service_name" >/dev/null 2>&1 || true
+            done
+
+            STACK_FILE="$(mktemp)"
+            docker compose --env-file .env "${COMPOSE_FILES[@]}" config > "$STACK_FILE"
+            docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
+
+            wait_for_completion() {
+              service_name="$1"
+              attempt=0
+              while [ "$attempt" -lt 60 ]; do
+                state="$(docker service ps "$service_name" --format '{{.CurrentState}}' 2>/dev/null | head -n 1 || true)"
+                case "$state" in
+                  Complete*) return 0 ;;
+                  Failed*|Rejected*)
+                    docker service ps "$service_name" --no-trunc || true
+                    return 1
+                    ;;
+                esac
+                attempt=$((attempt + 1))
+                sleep 5
+              done
+              echo "Timed out waiting for $service_name" >&2
+              docker service ps "$service_name" --no-trunc || true
+              return 1
+            }
+
+            wait_for_completion klickit-erp_postgres-prepare
+            wait_for_completion klickit-erp_minio-init
+
+            MIGRATION_SERVICE="klickit-erp-migration"
+            docker service rm "$MIGRATION_SERVICE" >/dev/null 2>&1 || true
+            trap 'docker service rm "$MIGRATION_SERVICE" >/dev/null 2>&1 || true; rm -f "$STACK_FILE"' EXIT
+            docker service create \
+              --name "$MIGRATION_SERVICE" \
+              --network klickit-erp_core \
+              --env-file .env \
+              --restart-condition none \
+              "$ERP_IMAGE_REGISTRY/klickit-erp-api:$KFE_VERSION" \
+              pnpm --dir packages/server migration:run >/dev/null
+
+            wait_for_completion "$MIGRATION_SERVICE"
+            docker service logs "$MIGRATION_SERVICE" || true
             docker image prune -af

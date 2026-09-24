@@ -98,7 +98,13 @@ services:
     volumes:
       - ../postgres-init/001-create-erp-roles.sh:/usr/local/bin/001-create-erp-roles.sh:ro
     entrypoint: ["/bin/sh", "-c"]
-    command: ["/usr/local/bin/001-create-erp-roles.sh"]
+    command:
+      - >-
+        until pg_isready -h "$${PGHOST}" -p "$${PGPORT}" -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"; do sleep 2; done;
+        /usr/local/bin/001-create-erp-roles.sh
+    deploy:
+      restart_policy:
+        condition: none
     networks: [core]
 
   redis:
@@ -140,6 +146,9 @@ services:
     restart: "no"
     user: "0:0"
     command: ["sh", "-c", "chown -R 10001:10001 /data"]
+    deploy:
+      restart_policy:
+        condition: none
     volumes:
       - miniodata:/data
     networks: [core]
@@ -158,10 +167,14 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
+        until aws --endpoint-url http://minio:9000 s3api list-buckets >/dev/null 2>&1; do sleep 2; done;
         for bucket in klickit-erp-files "$${MINIO_BUCKET_DEFAULT}"; do
           aws --endpoint-url http://minio:9000 s3api head-bucket --bucket "$${bucket}" >/dev/null 2>&1 ||
           aws --endpoint-url http://minio:9000 s3api create-bucket --bucket "$${bucket}";
         done
+    deploy:
+      restart_policy:
+        condition: none
     networks: [core]
 
 volumes:
