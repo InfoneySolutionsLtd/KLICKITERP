@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
+import { APP_GUARD, Reflector } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsrUserEntity } from "../users/domain/usr-user.entity";
 import { UsrSessionEntity } from "../users/domain/usr-session.entity";
@@ -76,6 +76,7 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
   ],
   controllers: [AuthController, ApiKeysController],
   providers: [
+    Reflector,
     { provide: NOTIFICATION_PORT, useClass: CommsNotificationAdapter },
     AuthUsrUserRepository,
     UsrSessionRepository,

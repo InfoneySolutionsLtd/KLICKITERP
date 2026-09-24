@@ -96,24 +96,32 @@ jobs:
             # Compose renders published ports as quoted strings; Swarm requires integers.
             sed -i -E 's/(published: )"([0-9]+)"/\1\2/g' "$STACK_FILE"
             docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
+            docker stack services klickit-erp
 
             wait_for_completion() {
               service_name="$1"
+              echo "Waiting for Swarm service $service_name to complete..."
               attempt=0
               while [ "$attempt" -lt 60 ]; do
                 state="$(docker service ps "$service_name" --format '{{.CurrentState}}' 2>/dev/null | head -n 1 || true)"
                 case "$state" in
                   Complete*) return 0 ;;
-                  Failed*|Rejected*)
+                  Failed*|Rejected*|Shutdown*|"orchestration error"*)
                     docker service ps "$service_name" --no-trunc || true
+                    docker service logs "$service_name" || true
                     return 1
                     ;;
                 esac
+                if [ "$((attempt % 6))" -eq 0 ]; then
+                  echo "  $service_name state: ${state:-pending}"
+                  docker service ps "$service_name" --no-trunc || true
+                fi
                 attempt=$((attempt + 1))
                 sleep 5
               done
               echo "Timed out waiting for $service_name" >&2
               docker service ps "$service_name" --no-trunc || true
+              docker service logs "$service_name" || true
               return 1
             }
 
