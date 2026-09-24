@@ -141,14 +141,14 @@ services:
     command:
       - >-
         attempts=0;
-        until aws --endpoint-url http://minio:9000 s3api list-buckets >/dev/null 2>&1; do
+        until aws --cli-connect-timeout 5 --cli-read-timeout 5 --endpoint-url http://minio:9000 s3api list-buckets >/dev/null 2>&1; do
           attempts=$$((attempts + 1));
           if [ "$${attempts}" -ge 90 ]; then echo 'RustFS S3 API did not become ready within 180 seconds' >&2; exit 1; fi;
           sleep 2;
         done;
         for bucket in klickit-erp-files "$${MINIO_BUCKET_DEFAULT}"; do
-          aws --endpoint-url http://minio:9000 s3api head-bucket --bucket "$${bucket}" >/dev/null 2>&1 ||
-          aws --endpoint-url http://minio:9000 s3api create-bucket --bucket "$${bucket}";
+          aws --cli-connect-timeout 5 --cli-read-timeout 5 --endpoint-url http://minio:9000 s3api head-bucket --bucket "$${bucket}" >/dev/null 2>&1 ||
+          aws --cli-connect-timeout 5 --cli-read-timeout 5 --endpoint-url http://minio:9000 s3api create-bucket --bucket "$${bucket}";
         done
     deploy:
       restart_policy:

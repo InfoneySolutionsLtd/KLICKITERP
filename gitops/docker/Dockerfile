@@ -51,6 +51,7 @@ COPY --from=build /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=build /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /workspace/node_modules ./node_modules
 COPY --from=build /workspace/apps/web ./apps/web
+COPY --from=build /workspace/apps/web/.next ./apps/web/.next
 COPY --from=build /workspace/packages/config ./packages/config
 COPY --from=build /workspace/packages/contracts ./packages/contracts
 CMD ["node", "apps/web/node_modules/next/dist/bin/next", "start", "-p", "3002"]
