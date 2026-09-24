@@ -54,4 +54,5 @@ COPY --from=build /workspace/apps/web ./apps/web
 COPY --from=build /workspace/apps/web/.next ./apps/web/.next
 COPY --from=build /workspace/packages/config ./packages/config
 COPY --from=build /workspace/packages/contracts ./packages/contracts
-CMD ["node", "apps/web/node_modules/next/dist/bin/next", "start", "-p", "3002"]
+WORKDIR /workspace/apps/web
+CMD ["node", "node_modules/next/dist/bin/next", "start", "-p", "3002"]

@@ -154,7 +154,9 @@ jobs:
               return 1
             }
 
+            wait_for_completion klickit-erp_rustfs-prepare
             wait_for_completion klickit-erp_postgres-prepare
+            wait_for_completion klickit-erp_minio-init
 
             MIGRATION_SERVICE="klickit-erp-migration"
             docker service rm "$MIGRATION_SERVICE" >/dev/null 2>&1 || true
