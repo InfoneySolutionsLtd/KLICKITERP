@@ -40,6 +40,24 @@ services:
     expose: ["3001"]
     networks: [core]
 
+  migrations:
+    image: "${ERP_IMAGE_REGISTRY}/klickit-erp-api:${KFE_VERSION}"
+    restart: "no"
+    env_file: ["${ERP_ENV_FILE:-../../.env}"]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        attempts=0;
+        until pnpm --dir packages/server migration:run; do
+          attempts=$$((attempts + 1));
+          if [ "$${attempts}" -ge 60 ]; then echo 'Database migrations did not complete within 300 seconds' >&2; exit 1; fi;
+          sleep 5;
+        done
+    deploy:
+      restart_policy:
+        condition: none
+    networks: [core]
+
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped

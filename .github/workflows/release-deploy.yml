@@ -99,6 +99,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 20m
           envs: RELEASE_VERSION,IMAGE_REGISTRY,DEPLOY_PATH,GHCR_USERNAME,GHCR_TOKEN
           script: |
             set -eu
@@ -115,7 +116,7 @@ jobs:
               fi
               COMPOSE_FILES+=( -f gitops/compose/docker-compose.gateway.yml )
             fi
-            for service_name in klickit-erp_postgres-prepare klickit-erp_rustfs-prepare klickit-erp_minio-init; do
+            for service_name in klickit-erp_postgres-prepare klickit-erp_rustfs-prepare klickit-erp_minio-init klickit-erp_migrations klickit-erp-migration; do
               docker service rm "$service_name" >/dev/null 2>&1 || true
             done
 
@@ -124,6 +125,7 @@ jobs:
             sed -i '/^name: /d' "$STACK_FILE"
             # Compose renders published ports as quoted strings; Swarm requires integers.
             sed -i -E 's/(published: )"([0-9]+)"/\1\2/g' "$STACK_FILE"
+            trap 'docker service rm klickit-erp_migrations >/dev/null 2>&1 || true; rm -f "$STACK_FILE"' EXIT
             docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
             docker stack services klickit-erp
 
@@ -157,18 +159,7 @@ jobs:
             wait_for_completion klickit-erp_rustfs-prepare
             wait_for_completion klickit-erp_postgres-prepare
             wait_for_completion klickit-erp_minio-init
-
-            MIGRATION_SERVICE="klickit-erp-migration"
-            docker service rm "$MIGRATION_SERVICE" >/dev/null 2>&1 || true
-            trap 'docker service rm "$MIGRATION_SERVICE" >/dev/null 2>&1 || true; rm -f "$STACK_FILE"' EXIT
-            docker service create \
-              --name "$MIGRATION_SERVICE" \
-              --network klickit-erp_core \
-              --env-file .env \
-              --restart-condition none \
-              "$ERP_IMAGE_REGISTRY/klickit-erp-api:$KFE_VERSION" \
-              pnpm --dir packages/server migration:run >/dev/null
-
-            wait_for_completion "$MIGRATION_SERVICE"
-            docker service logs "$MIGRATION_SERVICE" || true
+            wait_for_completion klickit-erp_migrations
+            docker service logs klickit-erp_migrations || true
+            docker service rm klickit-erp_migrations >/dev/null 2>&1 || true
             docker image prune -af
