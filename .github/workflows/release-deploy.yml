@@ -134,8 +134,8 @@ jobs:
               while [ "$attempt" -lt 60 ]; do
                 state="$(docker service ps "$service_name" --format '{{.CurrentState}}' 2>/dev/null | head -n 1 || true)"
                 case "$state" in
-                  Complete*) return 0 ;;
-                  Failed*|Rejected*|Shutdown*|"orchestration error"*)
+                  *Complete*) return 0 ;;
+                  *Failed*|*Rejected*|*"orchestration error"*)
                     docker service ps "$service_name" --no-trunc || true
                     docker service logs "$service_name" || true
                     return 1
