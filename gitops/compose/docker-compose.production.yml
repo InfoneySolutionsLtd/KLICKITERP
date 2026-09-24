@@ -4,11 +4,6 @@ services:
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
-    depends_on:
-      web:
-        condition: service_healthy
-      api:
-        condition: service_healthy
     ports:
       - "${HTTP_PORT:-80}:80"
     volumes:
@@ -31,15 +26,6 @@ services:
     restart: unless-stopped
     env_file: ["${ERP_ENV_FILE:-../../.env}"]
     expose: ["3000"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-      postgres-prepare:
-        condition: service_completed_successfully
-      redis:
-        condition: service_healthy
-      minio-init:
-        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 30s
@@ -52,15 +38,6 @@ services:
     restart: unless-stopped
     env_file: ["${ERP_ENV_FILE:-../../.env}"]
     expose: ["3001"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-      postgres-prepare:
-        condition: service_completed_successfully
-      redis:
-        condition: service_healthy
-      minio-init:
-        condition: service_completed_successfully
     networks: [core]
 
   postgres:
@@ -84,9 +61,6 @@ services:
   postgres-prepare:
     image: postgres:16-alpine
     restart: "no"
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       PGHOST: postgres
       PGPORT: 5432
@@ -124,9 +98,6 @@ services:
     image: rustfs/rustfs:1.0.0
     restart: unless-stopped
     command: ["/data"]
-    depends_on:
-      rustfs-prepare:
-        condition: service_completed_successfully
     environment:
       RUSTFS_ACCESS_KEY: ${MINIO_ROOT_USER}
       RUSTFS_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
@@ -156,9 +127,6 @@ services:
   minio-init:
     image: public.ecr.aws/aws-cli/aws-cli:2.37.0
     restart: "no"
-    depends_on:
-      minio:
-        condition: service_healthy
     environment:
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
