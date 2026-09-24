@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { REFRESH_COOKIE_NAME, refreshCookieOptions } from "@/lib/auth-cookie";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api/v1";
+import { SERVER_API_BASE_URL } from "@/lib/server-api-url";
 
 /**
  * Reads the httpOnly refresh cookie server-side (never exposed to client
@@ -17,7 +16,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No session" }, { status: 401 });
   }
 
-  const backendResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+  const backendResponse = await fetch(`${SERVER_API_BASE_URL}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken }),

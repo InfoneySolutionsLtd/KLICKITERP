@@ -1,7 +1,6 @@
 import "server-only";
 import type { VerifyDocumentResponseDto } from "@klickit/contracts";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api/v1";
+import { SERVER_API_BASE_URL } from "./server-api-url";
 
 /**
  * Server-only fetch of the public `GET /document-verification/:token` (no
@@ -25,7 +24,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3
  */
 export async function verifyDocumentServer(token: string): Promise<VerifyDocumentResponseDto | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/document-verification/${encodeURIComponent(token)}`, {
+    const res = await fetch(`${SERVER_API_BASE_URL}/document-verification/${encodeURIComponent(token)}`, {
       cache: "no-store",
     });
     if (!res.ok) {

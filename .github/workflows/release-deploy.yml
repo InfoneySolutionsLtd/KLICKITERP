@@ -127,6 +127,9 @@ jobs:
             sed -i -E 's/(published: )"([0-9]+)"/\1\2/g' "$STACK_FILE"
             trap 'docker service rm klickit-erp_migrations >/dev/null 2>&1 || true; rm -f "$STACK_FILE"' EXIT
             docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
+            # nginx.conf is bind-mounted from the deployment directory; force a
+            # restart so a changed file is loaded by the running task.
+            docker service update --force klickit-erp_nginx >/dev/null
             docker stack services klickit-erp
 
             wait_for_completion() {

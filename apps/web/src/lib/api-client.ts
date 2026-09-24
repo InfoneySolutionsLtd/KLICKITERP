@@ -8,26 +8,10 @@ import { refreshSession } from "./session-api";
 // .env.local's own doc comment for why) — this client's `baseUrl` is
 // therefore the bare origin, NOT NEXT_PUBLIC_API_BASE_URL.
 //
-// Deliberately NOT a hardcoded "http://localhost:3000" fallback: this file
-// is genuinely browser-executed (unlike lib/theme-server.ts/lib/document-
-// verification-server.ts and the app/api/auth/* route handlers, which run
-// server-side in the SAME Next.js Node process as a plain fetch — always on
-// the same machine as apps/api regardless of how the browser reached the
-// page, so a "localhost" fallback is correct for THOSE). This client makes
-// requests FROM the browser, so when someone reaches apps/web via a LAN IP
-// (e.g. http://192.168.1.50:3002 from another device) instead of localhost,
-// a hardcoded "localhost:3000" fallback would send every request to port
-// 3000 on THAT DEVICE, not the actual API server — surfacing as a failed
-// cross-origin fetch the browser reports as a CORS error, even though the
-// real problem is a wrong host, not a CORS policy (found and fixed
-// 2026-08-08). Falls back to deriving the origin from wherever the page
-// itself was loaded (same hostname/protocol, api's own port 3000) so login
-// works identically over localhost or a LAN IP with zero config — an
-// explicit NEXT_PUBLIC_API_ORIGIN still wins when set, for the real case of
-// the API genuinely living on a different host.
-const API_ORIGIN =
-  process.env.NEXT_PUBLIC_API_ORIGIN ??
-  (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:3000` : "http://localhost:3000");
+// Browser requests are deliberately same-origin. Nginx/Kong exposes the
+// public API through /api/v1, so the internal API port must never appear in a
+// browser URL (especially in an external deployment).
+const API_ORIGIN = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
 
 /**
  * Attaches `Authorization: Bearer <accessToken>` to every request from the

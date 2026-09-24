@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { REFRESH_COOKIE_NAME } from "@/lib/auth-cookie";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api/v1";
+import { SERVER_API_BASE_URL } from "@/lib/server-api-url";
 
 /**
  * Clears the httpOnly refresh cookie and best-effort calls the real backend
@@ -16,7 +15,7 @@ export async function POST(request: NextRequest) {
 
   if (body.accessToken) {
     try {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
+      await fetch(`${SERVER_API_BASE_URL}/auth/logout`, {
         method: "POST",
         headers: { Authorization: `Bearer ${body.accessToken}` },
         cache: "no-store",

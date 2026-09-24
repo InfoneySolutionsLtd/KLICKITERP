@@ -13,6 +13,8 @@ services:
   web:
     image: "${ERP_IMAGE_REGISTRY}/klickit-erp-web:${KFE_VERSION}"
     restart: unless-stopped
+    environment:
+      INTERNAL_API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://api:3000/api/v1}
     expose: ["3002"]
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/login').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]

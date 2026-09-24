@@ -19,8 +19,8 @@ import { ThemeEditorForm } from "@/features/branding/components/theme-editor-for
  * SAME-ORIGIN `/api/theme` route handler (`app/api/theme/route.ts`, a thin
  * wrapper over the public `GET /branding/theme/current`), not a new
  * `themes.api.ts` wrapper — that file wraps the real backend surface
- * (`NEXT_PUBLIC_API_ORIGIN`), this is a different, same-origin Next.js
- * route, so it's a plain local `useQuery` + `fetch`, deliberately NOT added
+ * (the backend API surface), this is a different, same-origin Next.js route,
+ * so it's a plain local `useQuery` + `fetch`, deliberately NOT added
  * to `use-themes.ts`.
  */
 function useThemeSeed() {

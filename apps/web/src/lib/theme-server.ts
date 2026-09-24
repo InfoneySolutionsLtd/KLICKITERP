@@ -1,7 +1,6 @@
 import "server-only";
 import type { CurrentThemeResponseDto } from "@klickit/contracts";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api/v1";
+import { SERVER_API_BASE_URL } from "./server-api-url";
 
 /**
  * Server-only fetch of the public `GET /branding/theme/current` (no auth —
@@ -25,7 +24,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3
  */
 export async function getCurrentThemeServer(): Promise<CurrentThemeResponseDto> {
   try {
-    const res = await fetch(`${API_BASE_URL}/branding/theme/current`, {
+    const res = await fetch(`${SERVER_API_BASE_URL}/branding/theme/current`, {
       // Branding rarely changes; a short revalidate window keeps SSR fast
       // while still picking up a newly-published theme within a minute.
       next: { revalidate: 60 },
