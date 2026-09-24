@@ -5,27 +5,56 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+
+          latest_tag="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n 1)"
+          if [ -n "$latest_tag" ]; then
+            current_version="${latest_tag#v}"
+            IFS=. read -r major minor patch <<< "$current_version"
+            next_version="$major.$minor.$((patch + 1))"
+          else
+            next_version="$(node -p "require('./package.json').version")"
+          fi
+
+          next_tag="v$next_version"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$next_tag" "$GITHUB_SHA"
+          git push origin "$next_tag"
+
+          echo "version=$next_version" >> "$GITHUB_OUTPUT"
+
   publish:
+    needs: version
     runs-on: ubuntu-latest
     strategy:
       matrix:
         target: [api, worker, web]
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ needs.version.outputs.version }}
       image_registry: ${{ steps.image.outputs.image_registry }}
     steps:
       - uses: actions/checkout@v4
-      - id: version
-        shell: bash
-        run: |
-          echo "version=$(git rev-parse --short=12 "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
       - id: image
         shell: bash
         run: |
@@ -42,7 +71,7 @@ jobs:
           file: gitops/docker/Dockerfile
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ steps.image.outputs.image_registry }}/klickit-erp-${{ matrix.target }}:${{ steps.version.outputs.version }}
+          tags: ${{ steps.image.outputs.image_registry }}/klickit-erp-${{ matrix.target }}:${{ needs.version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
