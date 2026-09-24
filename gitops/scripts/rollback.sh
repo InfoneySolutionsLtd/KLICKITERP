@@ -17,6 +17,8 @@ if [ -n "${GATEWAY_NETWORK:-}" ]; then
 fi
 export KFE_VERSION ERP_IMAGE_REGISTRY
 
-"${compose[@]}" pull
-"${compose[@]}" up -d
-"${compose[@]}" ps
+STACK_FILE="$(mktemp)"
+trap 'rm -f "$STACK_FILE"' EXIT
+"${compose[@]}" config > "$STACK_FILE"
+docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
+docker stack services klickit-erp

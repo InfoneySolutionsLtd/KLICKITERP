@@ -1,7 +1,5 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 import { generateUuidV7 } from "../shared/ids/uuid7";
-import { TRANSPORT_FEE_INCOME_CATEGORY_NAME } from "../domains/billing/application/transport-billing.service";
-import { TRANSPORT_VEHICLE_EXPENSE_CATEGORY_NAME } from "../domains/billing/application/transport-expense.service";
 import { PERMISSION_CATALOGUE } from "../platform/users/domain/permission-catalogue";
 
 // `0900-seed-permissions-and-roles.ts`'s own `SYSTEM_ADMIN_ROLE`/`AUDITOR_ROLE`
@@ -37,24 +35,8 @@ const NEW_PERMISSION_CODES = [
  *    precedent in `domains/fixed-assets` — a bus expense IS an ordinary
  *    expense voucher, reusing `VouchersService`'s full lifecycle unchanged.
  *
- * Seeds two designated `bill_fee_category`/`exp_category` rows (idempotent
- * `INSERT ... ON CONFLICT (name) DO UPDATE`, mirroring `0900`'s own
- * `seedLateFeeIncomeCategory()`/`seedBounceFeeCategory()` pattern exactly —
- * this migration is deliberately its own file rather than an edit to
- * already-applied `0900`, since TypeORM tracks that migration as executed
- * and would never re-run an in-place edit to it):
- *  - `TRANSPORT_FEE_INCOME_CATEGORY_NAME` ("Transport Fee") — reuses the
- *    already-seeded `4030 Other Income` GL leaf, same judgement call
- *    `LateFeeBatchesService`/`ChequesService.bounce()` already made for
- *    their own designated categories (not enough reason yet to mint a
- *    dedicated income account for a category this narrow).
- *  - `TRANSPORT_VEHICLE_EXPENSE_CATEGORY_NAME` ("Transport/Vehicle
- *    Expense") — genuinely NEW GL leaf `5140 Transport/Vehicle Expense`
- *    (confirmed via direct search: no existing `5xxx` leaf fits; `5120`/
- *    `5130` — Fixed Assets' own depreciation-expense pair — are the highest
- *    currently seeded, so `5140` is the next free code), since expenses
- *    have no equivalent "reuse a generic leaf" precedent the way `4030`
- *    serves every narrow income category.
+ * Business seed data for these tables is applied by migration 0901, after
+ * migration 0900 has seeded the chart of accounts.
  */
 export class TransportRoutesEnhancements0245 implements MigrationInterface {
   name = "TransportRoutesEnhancements1700000000245";
@@ -101,8 +83,6 @@ export class TransportRoutesEnhancements0245 implements MigrationInterface {
     `);
     await queryRunner.query(`CREATE INDEX ix_bill_transport_expense_route_id ON app.bill_transport_expense(route_id)`);
 
-    await this.seedTransportFeeIncomeCategory(queryRunner);
-    await this.seedTransportVehicleExpenseAccount(queryRunner);
     await this.seedNewPermissions(queryRunner);
   }
 
@@ -158,58 +138,6 @@ export class TransportRoutesEnhancements0245 implements MigrationInterface {
     }
   }
 
-  private async seedTransportFeeIncomeCategory(queryRunner: QueryRunner): Promise<void> {
-    const accountRows: Array<{ id: string }> = await queryRunner.query(`SELECT id FROM app.gl_account WHERE code = $1`, [
-      "4030",
-    ]);
-    if (accountRows.length === 0) {
-      throw new Error(
-        "TransportRoutesEnhancements0245.seedTransportFeeIncomeCategory: gl_account code=4030 (Other Income) not found",
-      );
-    }
-    await queryRunner.query(
-      `
-      INSERT INTO app.bill_fee_category (id, name, gl_income_account_id, taxable, is_active, priority)
-      VALUES ($1, $2, $3, false, true, 0)
-      ON CONFLICT (name) DO UPDATE SET gl_income_account_id = EXCLUDED.gl_income_account_id, is_active = true
-      `,
-      [generateUuidV7(), TRANSPORT_FEE_INCOME_CATEGORY_NAME, accountRows[0].id],
-    );
-  }
-
-  private async seedTransportVehicleExpenseAccount(queryRunner: QueryRunner): Promise<void> {
-    const parentRows: Array<{ id: string }> = await queryRunner.query(`SELECT id FROM app.gl_account WHERE code = $1`, [
-      "5000",
-    ]);
-    if (parentRows.length === 0) {
-      throw new Error("TransportRoutesEnhancements0245.seedTransportVehicleExpenseAccount: gl_account code=5000 (Expenses) not found");
-    }
-    const existing: Array<{ id: string }> = await queryRunner.query(`SELECT id FROM app.gl_account WHERE code = $1`, [
-      "5140",
-    ]);
-    const glExpenseAccountId =
-      existing[0]?.id ??
-      (
-        await queryRunner.query(
-          `
-          INSERT INTO app.gl_account (id, code, name, class, parent_id, is_postable, is_control, control_domain, is_active)
-          VALUES ($1, '5140', 'Transport/Vehicle Expense', 'EXPENSE', $2, true, false, NULL, true)
-          RETURNING id
-          `,
-          [generateUuidV7(), parentRows[0].id],
-        )
-      )[0].id;
-
-    await queryRunner.query(
-      `
-      INSERT INTO app.exp_category (id, name, gl_expense_account_id, budget_required, is_active)
-      VALUES ($1, $2, $3, false, true)
-      ON CONFLICT (name) DO UPDATE SET gl_expense_account_id = EXCLUDED.gl_expense_account_id, is_active = true
-      `,
-      [generateUuidV7(), TRANSPORT_VEHICLE_EXPENSE_CATEGORY_NAME, glExpenseAccountId],
-    );
-  }
-
   public async down(queryRunner: QueryRunner): Promise<void> {
     for (const code of NEW_PERMISSION_CODES) {
       const permissionRows: Array<{ id: string }> = await queryRunner.query(
@@ -221,9 +149,6 @@ export class TransportRoutesEnhancements0245 implements MigrationInterface {
       }
       await queryRunner.query(`DELETE FROM app.usr_permission WHERE code = $1`, [code]);
     }
-    await queryRunner.query(`DELETE FROM app.exp_category WHERE name = $1`, [TRANSPORT_VEHICLE_EXPENSE_CATEGORY_NAME]);
-    await queryRunner.query(`DELETE FROM app.gl_account WHERE code = '5140'`);
-    await queryRunner.query(`DELETE FROM app.bill_fee_category WHERE name = $1`, [TRANSPORT_FEE_INCOME_CATEGORY_NAME]);
     await queryRunner.query(`DROP TABLE IF EXISTS app.bill_transport_expense`);
     await queryRunner.query(`DROP TABLE IF EXISTS app.bill_transport_billing_line`);
     await queryRunner.query(`ALTER TABLE app.bill_transport_route DROP COLUMN IF EXISTS bus`);
