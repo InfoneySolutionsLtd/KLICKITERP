@@ -46,7 +46,11 @@ CMD ["node", "apps/worker/dist/apps/worker/src/main.worker.js"]
 FROM base AS web
 ENV NODE_ENV=production
 WORKDIR /workspace
+COPY --from=build /workspace/package.json ./package.json
+COPY --from=build /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=build /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /workspace/node_modules ./node_modules
 COPY --from=build /workspace/apps/web ./apps/web
 COPY --from=build /workspace/packages/config ./packages/config
-CMD ["pnpm", "--filter", "@klickit/web", "start"]
+COPY --from=build /workspace/packages/contracts ./packages/contracts
+CMD ["pnpm", "--dir", "apps/web", "start"]

@@ -74,7 +74,12 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
-        until pg_isready -h "$${PGHOST}" -p "$${PGPORT}" -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"; do sleep 2; done;
+        attempts=0;
+        until pg_isready -h "$${PGHOST}" -p "$${PGPORT}" -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"; do
+          attempts=$$((attempts + 1));
+          if [ "$${attempts}" -ge 60 ]; then echo 'PostgreSQL did not become ready within 120 seconds' >&2; exit 1; fi;
+          sleep 2;
+        done;
         /usr/local/bin/001-create-erp-roles.sh
     deploy:
       restart_policy:
@@ -135,7 +140,12 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
-        until aws --endpoint-url http://minio:9000 s3api list-buckets >/dev/null 2>&1; do sleep 2; done;
+        attempts=0;
+        until aws --endpoint-url http://minio:9000 s3api list-buckets >/dev/null 2>&1; do
+          attempts=$$((attempts + 1));
+          if [ "$${attempts}" -ge 90 ]; then echo 'RustFS S3 API did not become ready within 180 seconds' >&2; exit 1; fi;
+          sleep 2;
+        done;
         for bucket in klickit-erp-files "$${MINIO_BUCKET_DEFAULT}"; do
           aws --endpoint-url http://minio:9000 s3api head-bucket --bucket "$${bucket}" >/dev/null 2>&1 ||
           aws --endpoint-url http://minio:9000 s3api create-bucket --bucket "$${bucket}";
