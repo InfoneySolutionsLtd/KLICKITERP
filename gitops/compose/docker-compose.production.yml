@@ -48,7 +48,7 @@ services:
     command:
       - >-
         attempts=0;
-        until pnpm --dir packages/server migration:run; do
+        until TS_NODE_PROJECT=packages/server/tsconfig.json ./node_modules/.bin/typeorm-ts-node-commonjs migration:run -d packages/server/src/migrations/data-source.ts; do
           attempts=$$((attempts + 1));
           if [ "$${attempts}" -ge 60 ]; then echo 'Database migrations did not complete within 300 seconds' >&2; exit 1; fi;
           sleep 5;
