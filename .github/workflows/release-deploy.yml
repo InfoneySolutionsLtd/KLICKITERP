@@ -92,6 +92,8 @@ jobs:
 
             STACK_FILE="$(mktemp)"
             docker compose --env-file .env "${COMPOSE_FILES[@]}" config > "$STACK_FILE"
+            # Compose renders published ports as quoted strings; Swarm requires integers.
+            sed -i -E 's/(published: )"([0-9]+)"/\1\2/g' "$STACK_FILE"
             docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
 
             wait_for_completion() {
