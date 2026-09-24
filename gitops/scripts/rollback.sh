@@ -20,6 +20,7 @@ export KFE_VERSION ERP_IMAGE_REGISTRY
 STACK_FILE="$(mktemp)"
 trap 'rm -f "$STACK_FILE"' EXIT
 "${compose[@]}" config > "$STACK_FILE"
+sed -i '/^name: /d' "$STACK_FILE"
 sed -i -E 's/(published: )"([0-9]+)"/\1\2/g' "$STACK_FILE"
 docker stack deploy --with-registry-auth --prune -c "$STACK_FILE" klickit-erp
 docker stack services klickit-erp
