@@ -47,8 +47,10 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
+        migration_command=./packages/server/node_modules/.bin/typeorm-ts-node-commonjs;
+        if [ ! -x "$${migration_command}" ]; then echo "Migration executable not found: $${migration_command}" >&2; exit 1; fi;
         attempts=0;
-        until TS_NODE_PROJECT=packages/server/tsconfig.json ./node_modules/.bin/typeorm-ts-node-commonjs migration:run -d packages/server/src/migrations/data-source.ts; do
+        until TS_NODE_PROJECT=packages/server/tsconfig.json "$${migration_command}" migration:run -d packages/server/src/migrations/data-source.ts; do
           attempts=$$((attempts + 1));
           if [ "$${attempts}" -ge 60 ]; then echo 'Database migrations did not complete within 300 seconds' >&2; exit 1; fi;
           sleep 5;
