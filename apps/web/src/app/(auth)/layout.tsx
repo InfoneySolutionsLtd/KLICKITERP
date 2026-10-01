@@ -1,12 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentThemeServer } from "@/lib/theme-server";
+import { SetupStatusGate } from "@/components/patterns/setup-status-gate";
 
 /**
- * Server component shell for the public `/login` (and future sub-routes)
- * segment — reads `loginConfig.welcomeText` from the same SSR theme fetch
+ * Server component shell for the public `/login` (and sibling) routes —
+ * reads `loginConfig.welcomeText` from the same SSR theme fetch
  * `app/layout.tsx` already performed (a second cheap call, cached by
  * Next.js's fetch dedupe within the same request since it's the identical
- * URL). No auth guard here on purpose: this segment IS the public one.
+ * URL). No SESSION guard here on purpose: this segment IS the public one.
+ * It does, however, wrap `{children}` in `<SetupStatusGate>` — a client
+ * island (same shape as `(erp)/layout.tsx`'s own `<AuthGuard>`) that
+ * redirects to `/setup` whenever this instance has never had its first
+ * System Admin provisioned, regardless of which `(auth)` route was
+ * actually requested.
  *
  * Slice 1.5 (visual redesign, docs/phase-6/PROGRESS.md): two-column split on
  * `lg+` — a dark brand panel (reusing the exact `bg-brand-dark`/
@@ -93,7 +99,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
               {welcomeText}
             </h1>
           </div>
-          {children}
+          <SetupStatusGate>{children}</SetupStatusGate>
         </div>
       </div>
     </div>

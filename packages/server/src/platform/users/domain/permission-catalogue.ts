@@ -647,6 +647,14 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
     description: "View the current license state/plan/expiry, the school-visible /license/v1/* call log (BR-LIC-04), and update notices",
     isWrite: false,
   },
+  // license:academy:* (Academy Gateway integration — school-code/OTP onboarding + subscription
+  // entitlement sync into license.license.state; academy-integration.controller.ts)
+  {
+    code: "license:academy:manage",
+    module: "license",
+    description: "Start/verify Academy Gateway onboarding (stores the returned API key) and force an immediate entitlement recheck",
+    isWrite: true,
+  },
 ] as const;
 
 registerPermissions(PERMISSION_CATALOGUE);

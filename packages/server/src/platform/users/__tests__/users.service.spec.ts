@@ -1,3 +1,4 @@
+import * as bcrypt from "bcryptjs";
 import { DataSource, EntityManager } from "typeorm";
 import { UsersService } from "../application/users.service";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
@@ -120,5 +121,35 @@ describe("UsersService.assignDepartment — departmentId/department sync (Phase 
     const saved = userRepository.save.mock.calls[0][0];
     expect(saved.departmentId).toBe("dept-new");
     expect(saved.department).toEqual({ id: "dept-new" });
+  });
+});
+
+describe("UsersService.setInitialPassword — the pre-login first-run setup wizard's own password path", () => {
+  let userRepository: { findByIdOrFail: jest.Mock; save: jest.Mock };
+  let service: UsersService;
+
+  beforeEach(() => {
+    userRepository = {
+      findByIdOrFail: jest.fn().mockResolvedValue({
+        id: "user-1",
+        status: "INVITED",
+        passwordHash: "old-temp-hash",
+        mustChangePassword: true,
+        passwordChangedAt: new Date("2020-01-01T00:00:00.000Z"),
+      }),
+      save: jest.fn(async (u: unknown) => u),
+    };
+    service = new UsersService({} as never, userRepository as never, {} as never, {} as never);
+  });
+
+  it("hashes the chosen password for real, and activates the account", async () => {
+    const result = await service.setInitialPassword("user-1", "a-real-chosen-password");
+
+    expect(result.status).toBe("ACTIVE");
+    expect(result.mustChangePassword).toBe(false);
+    expect(result.passwordHash).not.toBe("old-temp-hash");
+    expect(await bcrypt.compare("a-real-chosen-password", result.passwordHash)).toBe(true);
+    expect(await bcrypt.compare("wrong-password", result.passwordHash)).toBe(false);
+    expect(result.passwordChangedAt.getTime()).toBeGreaterThan(new Date("2020-01-01T00:00:00.000Z").getTime());
   });
 });

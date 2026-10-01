@@ -101,6 +101,56 @@
     "copyrightProductPrefix": "A Product By",
     "copyrightInfoney": "Infoney Solutions Limited"
   },
+  "setup": {
+    "genericError": "Something went wrong. Please try again.",
+    "schoolCode": {
+      "title": "Welcome to Klickit",
+      "subtitle": "Enter your school code to get started.",
+      "label": "School Code",
+      "submit": "Continue",
+      "submitting": "Checking..."
+    },
+    "otp": {
+      "title": "Verify Your School",
+      "subtitle": "Enter the verification code sent to your administrator.",
+      "codeSentMessage": "A verification code was sent to {email} and {phone}.",
+      "codeLabel": "Verification Code",
+      "submit": "Verify",
+      "submitting": "Verifying...",
+      "startOver": "Start Over",
+      "invalidCode": "That code is invalid or has expired. Please try again."
+    },
+    "review": {
+      "title": "Create Your Admin Account",
+      "subtitle": "Confirm your details and choose a password to finish setting up this ERP.",
+      "schoolLabel": "School",
+      "adminLabel": "Administrator",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "passwordMismatch": "Passwords do not match.",
+      "submit": "Create Account & Continue",
+      "submitting": "Creating Account...",
+      "genericError": "Something went wrong creating your account. Please try again.",
+      "alreadySetUp": "This instance has already been set up. Please log in instead."
+    },
+    "twoFactor": {
+      "title": "Secure Your Account",
+      "subtitle": "Add an extra layer of security with two-factor authentication. You can always set this up later.",
+      "setUpNow": "Set Up Now",
+      "skip": "Skip for Now",
+      "enrollSubmitting": "Starting...",
+      "qrInstructions": "Scan this QR code with your authenticator app, then enter the 6-digit code it generates.",
+      "manualKeyLabel": "Or enter this key manually",
+      "codeLabel": "Verification Code",
+      "activateSubmit": "Activate",
+      "activateSubmitting": "Activating...",
+      "invalidCode": "That code is invalid. Please try again.",
+      "recoveryCodesTitle": "Save Your Recovery Codes",
+      "recoveryCodesWarning": "Store these codes somewhere safe — each can be used once if you lose access to your authenticator app. They will not be shown again.",
+      "continueToDashboard": "Continue to Dashboard",
+      "genericError": "Something went wrong setting up two-factor authentication. Please try again."
+    }
+  },
   "shell": {
     "productName": "Klickit Finance ERP",
     "collapseSidebar": "Collapse sidebar",
@@ -8628,6 +8678,31 @@
         "APPLIED": "Appliquée",
         "DECLINED": "Refusée"
       }
+    },
+    "academy": {
+      "title": "Academy Subscription",
+      "description": "Connects this ERP to Academy for school identity and subscription entitlement.",
+      "connectedLabel": "Connected",
+      "notConnectedLabel": "Not Connected",
+      "schoolCodeLabel": "School Code",
+      "sendCodeSubmit": "Send Code",
+      "sendCodeSubmitting": "Sending...",
+      "codeSentMessage": "A verification code was sent to {email} and {phone}.",
+      "otpCodeLabel": "Verification Code",
+      "verifySubmit": "Verify",
+      "verifySubmitting": "Verifying...",
+      "startOver": "Start Over",
+      "genericError": "Something went wrong. Please check the details and try again.",
+      "subscriptionLabel": "Subscription",
+      "subscriptionAllowed": "Active",
+      "subscriptionNotAllowed": "Not Active",
+      "lastStatusLabel": "Status",
+      "lastCheckedLabel": "Last Checked",
+      "lastSuccessLabel": "Last Successful Check",
+      "lastErrorLabel": "Last Error",
+      "recheckButton": "Recheck Now",
+      "recheckSubmitting": "Checking...",
+      "reonboardButton": "Reconnect / Rotate Key"
     }
   },
   "backupsOps": {

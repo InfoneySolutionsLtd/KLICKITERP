@@ -153,7 +153,14 @@ Practical implications for adding code:
   in depth, not just a code-review rule.
 - `licensing/` has no exceptions at all, in either direction: nothing else may import it, and it may
   import nothing but shared-kernel. This is deliberate structural isolation (the licensing/activation
-  surface must never be able to see financial data), not an oversight.
+  surface must never be able to see financial data), not an oversight. Within that one module, three
+  independent channels all converge on the same singular `license.license` row: a signed license
+  file (`LicenseFileService`), the Infoney Super Admin portal's JWS-mutual-auth API
+  (`LicenseApiService`), and a newer "Academy Gateway" integration (`AcademyOnboardingService` /
+  `AcademyEntitlementService`) — a two-step school-code/OTP onboarding flow plus a periodically-polled
+  subscription entitlement check that drives the same `state` column the other two channels manage.
+  All three share one invariant: never auto-override `DEACTIVATED`. The pre-existing `LicenseStateGuard`
+  (`shared/rbac/`) needed zero changes for this — it only ever reads the resulting state.
 - New cross-module dependency? Add a documented entry to `module-deps.json` following the existing
   style (name the real FK or the real service call, name the concrete method, explain why it isn't a
   cycle) before writing the import — this file is treated as living documentation, not boilerplate.

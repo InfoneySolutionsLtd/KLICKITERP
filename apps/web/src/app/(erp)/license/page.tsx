@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { type ServerPaginationState } from "@/components/patterns/data-table";
 import { useApiCallLog, useLicenseStatus, useUpdateNotices } from "@/features/licensing/hooks/use-license";
+import { useAcademyStatus } from "@/features/licensing/hooks/use-academy";
 import { LicenseStatusCard } from "@/features/licensing/components/license-status-card";
+import { AcademyIntegrationCard } from "@/features/licensing/components/academy-integration-card";
 import { ApiCallLogTable } from "@/features/licensing/components/api-call-log-table";
 import { UpdateNoticesList } from "@/features/licensing/components/update-notices-list";
 
@@ -34,6 +36,7 @@ const DEFAULT_PAGE_SIZE = 10;
 export default function LicensePage() {
   const t = useTranslations("license");
   const statusQuery = useLicenseStatus();
+  const academyStatusQuery = useAcademyStatus();
   const updateNoticesQuery = useUpdateNotices();
 
   const [page, setPage] = React.useState(1);
@@ -61,6 +64,10 @@ export default function LicensePage() {
       </div>
 
       <QueryBoundary query={statusQuery}>{(status) => <LicenseStatusCard status={status} />}</QueryBoundary>
+
+      <QueryBoundary query={academyStatusQuery}>
+        {(academyStatus) => <AcademyIntegrationCard status={academyStatus} />}
+      </QueryBoundary>
 
       <Card>
         <CardHeader>

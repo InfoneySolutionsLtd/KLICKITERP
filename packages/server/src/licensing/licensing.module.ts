@@ -4,19 +4,26 @@ import { LicenseEntity } from "./domain/license.entity";
 import { ApiCallLogEntity } from "./domain/api-call-log.entity";
 import { UsageSnapshotEntity } from "./domain/usage-snapshot.entity";
 import { UpdateNoticeEntity } from "./domain/update-notice.entity";
+import { AcademyLinkEntity } from "./domain/academy-link.entity";
 import { LicenseRepository } from "./infrastructure/license.repository";
 import { ApiCallLogRepository } from "./infrastructure/api-call-log.repository";
 import { UsageSnapshotRepository } from "./infrastructure/usage-snapshot.repository";
 import { UpdateNoticeRepository } from "./infrastructure/update-notice.repository";
 import { UsageStatsViewRepository } from "./infrastructure/usage-stats-view.repository";
+import { AcademyLinkRepository } from "./infrastructure/academy-link.repository";
 import { JwsMutualAuthService } from "./infrastructure/crypto/jws-mutual-auth";
+import { AcademyGatewayClient } from "./infrastructure/academy-gateway.client";
 import { LicenseFileService } from "./application/license-file.service";
 import { LicenseApiService } from "./application/license-api.service";
 import { ApiCallLoggerService } from "./application/api-call-logger.service";
 import { UpdateNoticesService } from "./application/update-notices.service";
+import { AcademyOnboardingService } from "./application/academy-onboarding.service";
+import { AcademyEntitlementService } from "./application/academy-entitlement.service";
 import { LicenseMutualAuthGuard } from "./api/license-mutual-auth.guard";
 import { LicenseApiController } from "./api/license-api.controller";
 import { LicenseStatusController } from "./api/license-status.controller";
+import { AcademyIntegrationController } from "./api/academy-integration.controller";
+import { AcademyFirstRunController } from "./api/academy-first-run.controller";
 
 /**
  * Module 21 (Licensing) — THE structurally isolated module (module-deps.json
@@ -40,22 +47,39 @@ import { LicenseStatusController } from "./api/license-status.controller";
  * lives in `shared/rbac/` and is wired into `platform/auth`'s `APP_GUARD`
  * list, since `licensing` may be imported by nothing (see that guard's own
  * doc comment for the full isolation reasoning).
+ *
+ * `exports: [AcademyEntitlementService]` is new — this module previously
+ * exported nothing. It does NOT violate `module-deps.json`'s
+ * `"importableBy": []` isolation rule: that rule governs TS-source imports
+ * between `packages/server/src/*` modules, not a composition root
+ * (`apps/api`/`apps/worker`) consuming an exported provider — every other
+ * module's own `*Module` class is already consumed by the composition
+ * roots the exact same way. `apps/worker`'s new `AcademyEntitlementProcessor`
+ * is this export's one real consumer, needed to drive the periodic
+ * entitlement recheck (see `apps/worker/src/academy/*`).
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([LicenseEntity, ApiCallLogEntity, UsageSnapshotEntity, UpdateNoticeEntity])],
-  controllers: [LicenseApiController, LicenseStatusController],
+  imports: [
+    TypeOrmModule.forFeature([LicenseEntity, ApiCallLogEntity, UsageSnapshotEntity, UpdateNoticeEntity, AcademyLinkEntity]),
+  ],
+  controllers: [LicenseApiController, LicenseStatusController, AcademyIntegrationController, AcademyFirstRunController],
   providers: [
     LicenseRepository,
     ApiCallLogRepository,
     UsageSnapshotRepository,
     UpdateNoticeRepository,
     UsageStatsViewRepository,
+    AcademyLinkRepository,
     JwsMutualAuthService,
+    AcademyGatewayClient,
     LicenseFileService,
     LicenseApiService,
     ApiCallLoggerService,
     UpdateNoticesService,
+    AcademyOnboardingService,
+    AcademyEntitlementService,
     LicenseMutualAuthGuard,
   ],
+  exports: [AcademyEntitlementService],
 })
 export class LicensingModule {}

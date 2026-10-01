@@ -171,6 +171,7 @@ import { LicenseEntity } from "../licensing/domain/license.entity";
 import { ApiCallLogEntity } from "../licensing/domain/api-call-log.entity";
 import { UsageSnapshotEntity } from "../licensing/domain/usage-snapshot.entity";
 import { UpdateNoticeEntity } from "../licensing/domain/update-notice.entity";
+import { AcademyLinkEntity } from "../licensing/domain/academy-link.entity";
 
 // `dotenv`'s default `config()` resolves `.env` relative to `process.cwd()`, which is
 // `packages/server` (not the repo root where `.env`/`.env.example` actually live) whenever this
@@ -375,7 +376,7 @@ export const AppDataSource = new DataSource({
     IntgSyncLogEntity,
     BkpBackupRunEntity,
     BkpRestoreRunEntity,
-    // Module 21 (Licensing) — the only 4 entities in this codebase that set
+    // Module 21 (Licensing) — the only 5 entities in this codebase that set
     // their own `schema: "license"` (isolated per ADR-002) rather than
     // inheriting this DataSource's default `schema: "app"`, same treatment
     // `AuditLogEntity`/`ChainAnchorEntity` (`schema: "audit"`) already get.
@@ -383,6 +384,10 @@ export const AppDataSource = new DataSource({
     ApiCallLogEntity,
     UsageSnapshotEntity,
     UpdateNoticeEntity,
+    // Academy Gateway integration (migration 0257) — tracks this instance's
+    // connection to the external Academy subscription-entitlement API;
+    // separate table, same schema/ownership regime.
+    AcademyLinkEntity,
     // NOTE: the 5 Module-18 materialized-view "entities"
     // (domains/reporting/domain/mv-*.view-entity.ts) are deliberately NOT
     // listed here. They are plain DTO classes, not TypeORM @Entity/@ViewEntity

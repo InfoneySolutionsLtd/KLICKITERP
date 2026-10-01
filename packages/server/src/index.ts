@@ -105,6 +105,14 @@ export { runInTransaction } from "./shared/database/tx";
 export { BackupsOpsModule } from "./domains/backups-ops/backups-ops.module";
 // Module 21
 export { LicensingModule } from "./licensing/licensing.module";
+// Academy Gateway integration — `apps/worker`'s own
+// `academy-entitlement-queue.module.ts` imports `LicensingModule` (not just
+// this service) to get this provider injectable into its BullMQ processor,
+// the same "import the whole module, Nest singletons dedupe it" pattern
+// `apps/api/src/app.module.ts`'s own doc comment already documents for
+// `FilesModule`. `onModuleInit` also fires this service's boot-time check
+// in both `apps/api` and `apps/worker`, since both mount `LicensingModule`.
+export { AcademyEntitlementService } from "./licensing/application/academy-entitlement.service";
 
 // Phase 6 Slice 16 (Part 1 — Document Security: Watermark + QR
 // Verification backend) — a new small platform module added after the
