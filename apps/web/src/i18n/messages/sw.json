@@ -104,7 +104,7 @@
   "setup": {
     "genericError": "Something went wrong. Please try again.",
     "schoolCode": {
-      "title": "Welcome to Klickit Finance ERP",
+      "title": "Klickit Finance ERP",
       "subtitle": "Enter your school code to get started.",
       "label": "School Code",
       "submit": "Continue",
