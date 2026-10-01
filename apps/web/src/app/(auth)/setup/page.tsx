@@ -47,6 +47,12 @@ function describeError(err: unknown, fallback: string): string {
  * steps — nothing round-trips it to any other persistence, so a hard
  * refresh mid-wizard restarts from the school-code step (a documented,
  * accepted rough edge for a one-time setup flow).
+ *
+ * Two boxes below use `bg-[color-mix(in_srgb,var(--muted)_30%,transparent)]`
+ * rather than `bg-muted/30` — the latter silently generates NO CSS rule at
+ * all on this app's raw-hex-var color tokens (see `(auth)/layout.tsx`'s own
+ * doc comment for the related, bigger dark-mode bug found alongside this
+ * one on the same live-production report).
  */
 export default function FirstRunSetupPage() {
   const t = useTranslations("setup");
@@ -243,7 +249,7 @@ export default function FirstRunSetupPage() {
                 <AlertDescription>{formError}</AlertDescription>
               </Alert>
             )}
-            <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+            <div className="space-y-3 rounded-lg border border-border bg-[color-mix(in_srgb,var(--muted)_30%,transparent)] p-4">
               <div>
                 <p className="text-xs text-muted-foreground">{t("review.schoolLabel")}</p>
                 <p className="text-sm font-medium text-foreground">{verified.school.schoolName}</p>
@@ -287,7 +293,7 @@ export default function FirstRunSetupPage() {
         <Reveal>
           <AuthCard title={t("twoFactor.recoveryCodesTitle")} description={t("twoFactor.recoveryCodesWarning")}>
             <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-muted/30 p-4 font-mono text-sm">
+              <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-[color-mix(in_srgb,var(--muted)_30%,transparent)] p-4 font-mono text-sm">
                 {recoveryCodes.map((code) => (
                   <span key={code}>{code}</span>
                 ))}
