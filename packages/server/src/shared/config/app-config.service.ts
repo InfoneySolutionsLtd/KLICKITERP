@@ -110,9 +110,17 @@ export class AppConfigService {
     return parseJwtKeyPair(process.env.JWT_KEY_PREVIOUS, DEV_JWT_KEYPAIR_JSON);
   }
 
-  /** docs/phase-3/02-communication-authentication.md §2.7 — 15 min, configurable 5-60. */
+  /**
+   * Session timeout — how long a session stays valid before the silent
+   * refresh-token cycle must run again. Originally docs/phase-3/02-communication-authentication.md
+   * §2.7's 15 min default (documented range "configurable 5-60") — widened
+   * to 6 hours (360 min) per a later, deliberate product decision
+   * superseding that figure; nothing in this codebase enforces the old
+   * 5-60 range at runtime (it was a doc-comment figure only), so this is a
+   * plain default-value change, not a validation-rule change.
+   */
   get accessTokenTtlMinutes(): number {
-    return Number(process.env.AUTH_ACCESS_TTL_MIN ?? 15);
+    return Number(process.env.AUTH_ACCESS_TTL_MIN ?? 360);
   }
 
   /** §2.7 — 7 days, configurable 1-30. */
