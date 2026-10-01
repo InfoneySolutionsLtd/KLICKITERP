@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
 import { HttpException, Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { AppConfigService } from "@klickit/server";
+import { AppConfigService, assertValidEncryptionKey } from "@klickit/server";
 import { HealthController } from "../../api/src/health.controller";
 import { AppModule } from "./app.module";
 
@@ -56,6 +56,13 @@ loadDotenv({ path: resolve(__dirname, "../../../.env") });
  * class and methods being called, not a re-implementation that could drift.
  */
 async function bootstrap(): Promise<void> {
+  // Fail fast and loud on a malformed APP_ENCRYPTION_KEY — see
+  // `apps/api/src/main.api.ts`'s own identical check for the real
+  // production incident this closes. This process uses the same key
+  // (2FA secrets, Academy API key encryption, backup passphrase), so it
+  // needs the same boot-time guard.
+  assertValidEncryptionKey(new AppConfigService().appEncryptionKeyBase64);
+
   const appContext = await NestFactory.createApplicationContext(AppModule);
   const config = appContext.get(AppConfigService);
   const healthController = appContext.get(HealthController);

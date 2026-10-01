@@ -5,7 +5,7 @@ import { config as loadDotenv } from "dotenv";
 import { Logger, RequestMethod } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { AppConfigService } from "@klickit/server";
+import { AppConfigService, assertValidEncryptionKey } from "@klickit/server";
 import { AppModule } from "./app.module";
 
 // Same repo-root-relative resolution `migrations/data-source.ts` already
@@ -19,6 +19,15 @@ import { AppModule } from "./app.module";
 loadDotenv({ path: resolve(__dirname, "../../../.env") });
 
 async function bootstrap(): Promise<void> {
+  // Fail fast and loud on a malformed APP_ENCRYPTION_KEY — a real
+  // production incident found this sitting silently broken until the
+  // first live use (an admin's first-run setup wizard, several steps into
+  // a one-time-use Academy OTP exchange, surfacing as a confusing mid-flow
+  // 500 instead of an obvious boot-time crash). Checked before
+  // NestFactory.create() even runs, so a bad key never gets the chance to
+  // serve a single request.
+  assertValidEncryptionKey(new AppConfigService().appEncryptionKeyBase64);
+
   const app = await NestFactory.create(AppModule);
   const config = app.get(AppConfigService);
 

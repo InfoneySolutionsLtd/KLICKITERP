@@ -135,6 +135,11 @@ export { NotificationsModule } from "./platform/notifications/notifications.modu
 // Shared kernel / cross-cutting — composition-root needs only.
 export { SharedInfraModule } from "./shared/infra/shared-infra.module";
 export { AppConfigService } from "./shared/config/app-config.service";
+// Boot-time fail-fast check for APP_ENCRYPTION_KEY — see its own doc
+// comment (a real production incident: a malformed key sat undetected
+// until the first live use, several steps into an admin's first-run setup
+// flow). `apps/api`/`apps/worker` both call this once at startup.
+export { assertValidEncryptionKey } from "./shared/crypto/aes-gcm.util";
 export { REDIS_CLIENT, redisClientProvider } from "./shared/cache/redis.provider";
 export { AllExceptionsFilter } from "./shared/exceptions/all-exceptions.filter";
 export { Public } from "./shared/rbac/public.decorator";
