@@ -23,3 +23,19 @@ export interface LoginOutcome {
   user?: PublicUser;
   mustChangePassword?: boolean;
 }
+
+/** Mirrors `FirstRunSetupService.getStatus()`'s return shape — same "no Swagger response schema" gap as `LoginOutcome` above. */
+export interface SetupStatus {
+  setupComplete: boolean;
+}
+
+/** Mirrors `TwoFactorService.EnrollResult`. */
+export interface TwoFactorEnrollResult {
+  otpauthUri: string;
+  manualKey: string;
+}
+
+/** Mirrors `TwoFactorService.ActivateResult`. */
+export interface TwoFactorActivateResult {
+  recoveryCodes: string[];
+}

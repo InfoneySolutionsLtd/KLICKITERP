@@ -1,10 +1,11 @@
-import { Body, Controller, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthenticationException } from "../../../shared/exceptions/authentication.exception";
 import { AuthService } from "../application/auth.service";
 import { TwoFactorService } from "../application/two-factor.service";
 import { OtpService } from "../application/otp.service";
 import { PasswordService } from "../application/password.service";
+import { FirstRunSetupService } from "../application/first-run-setup.service";
 import { Public } from "../../../shared/rbac/public.decorator";
 import { ExemptFromLicenseGuard } from "../../../shared/rbac/exempt-from-license-guard.decorator";
 import { LoginDto } from "./dto/login.dto";
@@ -16,6 +17,7 @@ import { OtpVerifyDto } from "./dto/otp-verify.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { CompleteFirstRunSetupDto } from "./dto/complete-first-run-setup.dto";
 import { AuthenticatedRequest, extractIp, extractUserAgent } from "./request-context";
 
 /** Controllers stay thin: DTO -> service call only (architecture doc §4.2). */
@@ -27,7 +29,24 @@ export class AuthController {
     private readonly twoFactorService: TwoFactorService,
     private readonly otpService: OtpService,
     private readonly passwordService: PasswordService,
+    private readonly firstRunSetupService: FirstRunSetupService,
   ) {}
+
+  @Get("setup-status")
+  @Public()
+  @ExemptFromLicenseGuard()
+  @ApiOperation({ summary: "Has this instance's first System Admin been provisioned yet? Gates the pre-login first-run setup wizard." })
+  async setupStatus() {
+    return this.firstRunSetupService.getStatus();
+  }
+
+  @Post("setup/complete")
+  @Public()
+  @ExemptFromLicenseGuard()
+  @ApiOperation({ summary: "Provision this instance's first System Admin (school-code/OTP onboarding already done) and log them straight in — permanently refuses once any System Admin exists" })
+  async completeSetup(@Body() dto: CompleteFirstRunSetupDto, @Req() req: AuthenticatedRequest) {
+    return this.firstRunSetupService.completeSetup(dto, extractIp(req), extractUserAgent(req));
+  }
 
   @Post("login")
   @Public()

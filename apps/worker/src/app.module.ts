@@ -36,6 +36,7 @@ import { HealthController } from "../../api/src/health.controller";
 import { OutboxQueueModule } from "./outbox/outbox-queue.module";
 import { WebhookDispatchModule } from "./outbox/webhook-dispatch.module";
 import { WebhookRetryModule } from "./outbox/webhook-retry.module";
+import { AcademyEntitlementQueueModule } from "./academy/academy-entitlement-queue.module";
 
 /**
  * `apps/worker`'s composition root — ADR-003's other half
@@ -141,6 +142,10 @@ import { WebhookRetryModule } from "./outbox/webhook-retry.module";
     // doc comments for why.
     WebhookDispatchModule,
     WebhookRetryModule,
+    // Academy Gateway integration — periodic subscription entitlement
+    // recheck (AcademyEntitlementService.checkEntitlement(), from
+    // LicensingModule), same registerQueue-only shape as WebhookRetryModule.
+    AcademyEntitlementQueueModule,
   ],
   controllers: [HealthController],
   providers: [

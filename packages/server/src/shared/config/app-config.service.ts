@@ -370,6 +370,31 @@ export class AppConfigService {
   get licenseFilePath(): string {
     return process.env.LICENSE_FILE_PATH ?? "./data/license/license.json";
   }
+
+  /**
+   * Academy Gateway integration — the external system that now owns
+   * subscription truth for this ERP (two-step school-code/OTP onboarding +
+   * periodic `GET /erp/entitlement`, see `licensing/infrastructure/academy-gateway.client.ts`).
+   * Dev default is an obviously-non-functional local placeholder — there is
+   * no real Academy sandbox this codebase can default to, unlike every other
+   * getter's "safe, working dev default" convention; onboarding/entitlement
+   * calls will fail with a connection error until operators set the real
+   * env var, which is the correct behavior for an instance that was never
+   * onboarded.
+   */
+  get academyGatewayUrl(): string {
+    return process.env.ACADEMY_GATEWAY_URL ?? "http://localhost:4100";
+  }
+
+  /** Cadence for `AcademyEntitlementService`'s periodic recheck — spec recommends 15 minutes. */
+  get academyEntitlementPollIntervalMinutes(): number {
+    return Number(process.env.ACADEMY_ENTITLEMENT_POLL_INTERVAL_MIN ?? 15);
+  }
+
+  /** Max time to keep trusting the last successful entitlement result while the gateway is unreachable — spec recommends 24h. */
+  get academyEntitlementGraceHours(): number {
+    return Number(process.env.ACADEMY_ENTITLEMENT_GRACE_HOURS ?? 24);
+  }
 }
 
 /** Default allow-list backing `AppConfigService.fileAllowedMimeTypes` — images, PDF, common office docs. */

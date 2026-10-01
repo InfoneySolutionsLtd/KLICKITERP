@@ -84,6 +84,24 @@ export class UsersService {
     return this.userRepository.findByIdOrFail(id);
   }
 
+  /**
+   * Sets a password the USER THEMSELVES chose (not an admin-issued temp
+   * password), activating the account immediately — a deliberately separate,
+   * narrow capability from `create()`'s own always-random-temp-password/
+   * `INVITED` behavior, used only by the pre-login first-run setup wizard
+   * (`platform/auth`'s `FirstRunSetupService`), where the first System Admin
+   * sets their own password upfront, with no "temp password then forced
+   * change" dance needed at all.
+   */
+  async setInitialPassword(userId: string, newPassword: string): Promise<UsrUserEntity> {
+    const user = await this.userRepository.findByIdOrFail(userId);
+    user.passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    user.status = "ACTIVE";
+    user.mustChangePassword = false;
+    user.passwordChangedAt = new Date();
+    return this.userRepository.save(user);
+  }
+
   /** Username lookup, `null` if none — first consumer is `tools/bootstrap-admin.ts` resolving `--username` to a user id. */
   async findByUsername(username: string): Promise<UsrUserEntity | null> {
     return this.userRepository.findByUsername(username);

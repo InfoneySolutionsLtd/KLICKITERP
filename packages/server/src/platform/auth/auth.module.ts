@@ -17,6 +17,7 @@ import { JwtTokenService } from "./infrastructure/jwt-token.service";
 import { NOTIFICATION_PORT } from "./infrastructure/notification-port";
 import { CommsNotificationAdapter } from "./infrastructure/comms-notification.adapter";
 import { CommsModule } from "../comms";
+import { UsersModule } from "../users/users.module";
 import { JwtAuthGuard } from "./infrastructure/guards/jwt-auth.guard";
 import { PermissionsGuard } from "./infrastructure/guards/permissions.guard";
 import { AuthorityGuard } from "./infrastructure/guards/authority.guard";
@@ -27,6 +28,7 @@ import { OtpService } from "./application/otp.service";
 import { PasswordService } from "./application/password.service";
 import { ApiKeyService } from "./application/api-key.service";
 import { LockoutService } from "./application/lockout.service";
+import { FirstRunSetupService } from "./application/first-run-setup.service";
 import { AuthController } from "./api/auth.controller";
 import { ApiKeysController } from "./api/api-keys.controller";
 import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
@@ -62,6 +64,15 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
  * `platform/auth` entry was updated to allow this, the same precedent
  * `domains/reporting`/`domains/procurement`/`domains/integrations` already
  * set for importing `platform/comms`.
+ *
+ * **Imports `UsersModule` (`platform/users`)** — `module-deps.json` already
+ * permitted the one-directional TS-import dependency (entity-level FKs,
+ * documented on that entry), but no provider from it was ever actually
+ * wired into this module's own DI graph until `FirstRunSetupService`
+ * needed real `UsersService`/`RolesService` injection to provision the
+ * pre-login first-run wizard's first System Admin — the same two services
+ * `tools/bootstrap-admin.ts` already calls via direct DI, now reachable
+ * from an HTTP endpoint instead of only a CLI.
  */
 @Module({
   imports: [
@@ -73,6 +84,7 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
       UsrApiKeyEntity,
     ]),
     CommsModule,
+    UsersModule,
   ],
   controllers: [AuthController, ApiKeysController],
   providers: [
@@ -93,6 +105,7 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
     OtpService,
     PasswordService,
     ApiKeyService,
+    FirstRunSetupService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: LicenseStateGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
