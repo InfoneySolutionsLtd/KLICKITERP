@@ -57,3 +57,19 @@ function decodeKey(keyBase64: string): Buffer {
   }
   return key;
 }
+
+/**
+ * Boot-time fail-fast check — a real production incident (a malformed
+ * `APP_ENCRYPTION_KEY` that decoded to 30 bytes instead of 32) sat
+ * undetected until the first real admin ran the first-run setup wizard,
+ * surfacing as a confusing 500 several steps into a live, one-time-use
+ * Academy OTP exchange (the OTP had already been consumed by Academy by
+ * the time this failed, so the natural "just retry" response made it
+ * worse, not better). This exists so `main.api.ts`/`main.worker.ts` can
+ * call it once at startup and crash loudly and immediately instead — the
+ * exact same `decodeKey()` check every encrypt/decrypt call already runs,
+ * just run eagerly before any request can ever reach it.
+ */
+export function assertValidEncryptionKey(keyBase64: string): void {
+  decodeKey(keyBase64);
+}
