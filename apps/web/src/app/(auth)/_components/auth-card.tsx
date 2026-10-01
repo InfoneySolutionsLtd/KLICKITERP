@@ -54,7 +54,7 @@ export function AuthCard({ title, description, children }: { title: string; desc
       <CardContent>{children}</CardContent>
       <CardFooter className="flex-col gap-3 pt-0">
         <div className="h-px w-full bg-border" />
-        <div className="space-y-1 text-center text-[11px] text-muted-foreground/70">
+        <div className="space-y-1 text-center text-[11px] text-[color-mix(in_srgb,var(--muted-foreground)_70%,transparent)]">
           <p>
             {t("copyrightPrefix", { year: currentYear })}{" "}
             <a href="https://www.klickiteducation.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
@@ -85,6 +85,11 @@ export function AuthCard({ title, description, children }: { title: string; desc
  * ANY compiled CSS rule at all, not just "opacity ignored" — verified via
  * `.next/static/css/app/layout.css` directly while root-causing the
  * sidebar's own instance of this same bug). `color-mix()` sidesteps it.
+ *
+ * This exact pattern was ALSO found live, unfixed, inside `AuthCard` itself
+ * above (`text-muted-foreground/70` on the copyright footer) — this
+ * component's own doc comment described the trap without having actually
+ * avoided it everywhere; fixed to `color-mix()` there too.
  */
 export const authInputClass =
   "border-white/50 bg-white/60 placeholder:text-[color-mix(in_srgb,var(--muted-foreground)_70%,transparent)] focus-visible:ring-[color-mix(in_srgb,var(--primary)_40%,transparent)]";

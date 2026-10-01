@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentThemeServer } from "@/lib/theme-server";
+import { buildSemanticLightVariables, toCssBlock } from "@/lib/theme";
 import { SetupStatusGate } from "@/components/patterns/setup-status-gate";
 
 /**
@@ -43,10 +44,41 @@ import { SetupStatusGate } from "@/components/patterns/setup-status-gate";
  * inline `style` (matching this file's own existing precedent for
  * `brandPanelStyle`) since a `radial-gradient()` + `background-size` pair
  * isn't cleanly expressible as a single Tailwind arbitrary-value class.
+ *
+ * **Real bug found and fixed live (a reported-from-production "white text,
+ * invisible" issue on login/setup/verify)**: `app/providers.tsx`'s
+ * `next-themes` `<ThemeProvider attribute="data-theme" defaultTheme="system"
+ * enableSystem>` auto-applies `data-theme="dark"` to `<html>` whenever the
+ * VISITOR'S OWN OS/browser prefers dark mode — app-wide, with no opt-out,
+ * including this pre-login segment. `app/layout.tsx` injects BOTH a light
+ * (`:root`) and a dark (`:root[data-theme="dark"]`) CSS-variable block; in
+ * dark mode `--foreground`/`--muted-foreground` correctly flip to LIGHT
+ * values (meant for the dashboard's own dark surfaces). `AuthCard`
+ * (`_components/auth-card.tsx`) is a deliberately FIXED-light glass design
+ * (`bg-white/70`, never meant to respond to dark mode at all — see that
+ * file's own doc comment) that never opted out of this flip, so a visitor
+ * in system dark mode got light/white text rendered against its hardcoded
+ * light card: invisible, exactly as reported, on EVERY page this layout
+ * wraps (login, setup, forgot/reset-password — matching the report of all
+ * three being affected identically).
+ *
+ * Fixed by re-asserting the LIGHT semantic variable block, scoped to this
+ * segment's own wrapper (`.auth-light-scope`, not `:root`) via a second
+ * inline `<style>` — CSS custom properties cascade by DOM position, so a
+ * more specific/inner declaration always wins over `<html data-theme="dark">`'s
+ * `:root`-level one for every descendant, regardless of the visitor's
+ * system preference or any `next-themes` state. Reuses the SAME already
+ * server-fetched `theme` object (`getCurrentThemeServer()`, called once
+ * per request, Next's fetch dedupe keeps this and `app/layout.tsx`'s own
+ * call to one real network round trip) and the exact same
+ * `buildSemanticLightVariables()` builder `app/layout.tsx` itself uses for
+ * its own `:root` block — never a second, hand-duplicated color set that
+ * could drift from the real theme.
  */
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const [theme, t] = await Promise.all([getCurrentThemeServer(), getTranslations("shell")]);
   const welcomeText = theme.loginConfig.welcomeText ?? "Klickit Finance ERP";
+  const authLightThemeCss = toCssBlock(".auth-light-scope", buildSemanticLightVariables(theme));
   // Slice 14 Part 3: `theme.loginBackgroundImageUrl` is a signed URL the
   // backend already resolved server-side (ThemesService, in-process
   // FilesService call) — this pre-auth page carries no bearer token at all,
@@ -64,10 +96,12 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   };
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className="auth-light-scope flex min-h-screen flex-col lg:flex-row">
+      {/* Trusted, server-generated CSS from our own theme builder, never user input — see this file's own doc comment above ("Real bug found and fixed live"). */}
+      <style dangerouslySetInnerHTML={{ __html: authLightThemeCss }} />
       <div className="hidden flex-col justify-center gap-4 bg-brand-dark px-12 py-16 text-brand-surface lg:flex lg:w-1/2" style={brandPanelStyle}>
         <span className="text-2xl font-semibold">{t("productName")}</span>
-        <p className="max-w-sm text-sm text-brand-surface/70">{welcomeText}</p>
+        <p className="max-w-sm text-sm text-[color-mix(in_srgb,var(--color-surface)_70%,transparent)]">{welcomeText}</p>
       </div>
       <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-[linear-gradient(135deg,var(--color-primary),var(--color-dark))] px-4 py-12 lg:w-1/2">
         <span aria-hidden className="pointer-events-none absolute -right-24 -top-32 h-[26rem] w-[26rem] rounded-full bg-brand-accent opacity-40 blur-3xl" />
