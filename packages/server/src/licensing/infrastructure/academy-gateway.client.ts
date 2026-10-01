@@ -169,6 +169,15 @@ export class AcademyGatewayClient {
         await this.backoffAndLog(attempt, lastError.message);
         continue;
       }
+      // Non-retryable (400/401/404) — logged here specifically because these
+      // never reach backoffAndLog()'s own logging, so without this line a
+      // real Academy rejection (e.g. "Invalid or expired OTP") would be
+      // completely silent in the server logs, visible only in whatever
+      // response body the BROWSER happened to capture — a real, previously-
+      // unnoticed diagnostic gap, found while troubleshooting a live
+      // deployment's "invalid code" report that needed the actual Academy
+      // response text to investigate.
+      this.logger.warn(`${lastError.message} (${method} ${path}, academyStatus=${raw.status})`);
       throw lastError;
     }
 

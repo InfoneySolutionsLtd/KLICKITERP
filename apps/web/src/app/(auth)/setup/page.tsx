@@ -23,6 +23,21 @@ import { ApiError } from "@/lib/api-error";
 type Step = "school-code" | "otp" | "review" | "two-factor";
 
 /**
+ * Surfaces the REAL server error message when one exists (this wizard is an
+ * admin-only, pre-login first-run flow, not a public login form — there is
+ * no account-enumeration concern here, so showing the real reason is more
+ * useful than hiding it behind a generic string). Falls back to a generic
+ * translation only when the server gave nothing usable (a genuine network
+ * failure, or a non-`ApiError` throw).
+ */
+function describeError(err: unknown, fallback: string): string {
+  if (err instanceof ApiError && err.message) {
+    return err.message;
+  }
+  return fallback;
+}
+
+/**
  * The pre-login first-run setup wizard — reached only via `<SetupStatusGate>`
  * ((auth)/layout.tsx) redirecting here whenever `GET /auth/setup-status`
  * reports this instance has never had its first System Admin provisioned.
@@ -65,8 +80,8 @@ export default function FirstRunSetupPage() {
       const result = await startMutation.mutateAsync(schoolCode);
       setStarted({ schoolId: result.schoolId, refId: result.refId, email: result.email, phoneNumber: result.phoneNumber });
       setStep("otp");
-    } catch {
-      setFormError(t("genericError"));
+    } catch (err) {
+      setFormError(describeError(err, t("genericError")));
     }
   }
 
@@ -75,11 +90,11 @@ export default function FirstRunSetupPage() {
     if (!started) return;
     setFormError(null);
     try {
-      const result = await verifyMutation.mutateAsync({ schoolId: started.schoolId, refId: started.refId, code: otpCode });
+      const result = await verifyMutation.mutateAsync({ schoolId: started.schoolId, refId: started.refId, code: otpCode.trim() });
       setVerified(result);
       setStep("review");
-    } catch {
-      setFormError(t("otp.invalidCode"));
+    } catch (err) {
+      setFormError(describeError(err, t("otp.invalidCode")));
     }
   }
 
@@ -122,7 +137,7 @@ export default function FirstRunSetupPage() {
       if (err instanceof ApiError && err.status === 409) {
         setFormError(t("review.alreadySetUp"));
       } else {
-        setFormError(t("review.genericError"));
+        setFormError(describeError(err, t("review.genericError")));
       }
     }
   }
@@ -132,8 +147,8 @@ export default function FirstRunSetupPage() {
     try {
       const result = await enroll2faMutation.mutateAsync();
       setEnrollment(result);
-    } catch {
-      setFormError(t("twoFactor.genericError"));
+    } catch (err) {
+      setFormError(describeError(err, t("twoFactor.genericError")));
     }
   }
 
@@ -143,8 +158,8 @@ export default function FirstRunSetupPage() {
     try {
       const result = await activate2faMutation.mutateAsync({ code: twoFactorCode });
       setRecoveryCodes(result.recoveryCodes);
-    } catch {
-      setFormError(t("twoFactor.invalidCode"));
+    } catch (err) {
+      setFormError(describeError(err, t("twoFactor.invalidCode")));
     }
   }
 
@@ -199,7 +214,7 @@ export default function FirstRunSetupPage() {
                 autoComplete="one-time-code"
                 className={authInputClass}
                 value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value)}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                 required
               />
             </div>
