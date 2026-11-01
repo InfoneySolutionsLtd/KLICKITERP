@@ -70,6 +70,10 @@ export default function FirstRunSetupPage() {
   const [schoolCode, setSchoolCode] = React.useState("");
   const [started, setStarted] = React.useState<{ schoolId: string; refId: string; email: string; phoneNumber: string } | null>(null);
   const [otpCode, setOtpCode] = React.useState("");
+  // The button's `isPending` state updates asynchronously. Keep a synchronous
+  // guard as well so a rapid double-submit cannot consume the single-use OTP
+  // twice and then show "invalid code" for the second request.
+  const otpSubmitLocked = React.useRef(false);
 
   const [verified, setVerified] = React.useState<AcademyOnboardingVerifyResult | null>(null);
   const [password, setPassword] = React.useState("");
@@ -94,6 +98,8 @@ export default function FirstRunSetupPage() {
   async function handleOtpSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!started) return;
+    if (otpSubmitLocked.current || verifyMutation.isPending) return;
+    otpSubmitLocked.current = true;
     setFormError(null);
     try {
       const result = await verifyMutation.mutateAsync({ schoolId: started.schoolId, refId: started.refId, code: otpCode.trim() });
