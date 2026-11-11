@@ -65,18 +65,21 @@ export class AuthController {
   }
 
   @Post("2fa/enroll")
+  @ExemptFromLicenseGuard()
   @ApiOperation({ summary: "Begin 2FA enrollment — returns an otpauth URI + manual key" })
   async enroll2fa(@Req() req: AuthenticatedRequest) {
     return this.twoFactorService.enroll(requireUserId(req));
   }
 
   @Post("2fa/activate")
+  @ExemptFromLicenseGuard()
   @ApiOperation({ summary: "Activate 2FA by verifying one code — returns one-time recovery codes" })
   async activate2fa(@Body() dto: TwoFactorCodeDto, @Req() req: AuthenticatedRequest) {
     return this.twoFactorService.activateEnroll(requireUserId(req), dto.code);
   }
 
   @Post("2fa/disable")
+  @ExemptFromLicenseGuard()
   @ApiOperation({ summary: "Disable 2FA (requires a valid TOTP or recovery code)" })
   async disable2fa(@Body() dto: TwoFactorCodeDto, @Req() req: AuthenticatedRequest) {
     await this.twoFactorService.disable(requireUserId(req), dto.code);
@@ -117,6 +120,7 @@ export class AuthController {
   }
 
   @Post("password/change")
+  @ExemptFromLicenseGuard()
   @ApiOperation({ summary: "Self-service password change (requires current password)" })
   async changePassword(@Body() dto: ChangePasswordDto, @Req() req: AuthenticatedRequest) {
     await this.passwordService.changePassword(requireUserId(req), dto.currentPassword, dto.newPassword);
@@ -125,6 +129,7 @@ export class AuthController {
 
   @Post("password/forgot")
   @Public()
+  @ExemptFromLicenseGuard()
   @ApiOperation({ summary: "Request a password reset token (uniform response — no user enumeration)" })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.passwordService.forgotPassword(dto.identifier);
@@ -132,6 +137,7 @@ export class AuthController {
 
   @Post("password/reset")
   @Public()
+  @ExemptFromLicenseGuard()
   @ApiOperation({ summary: "Reset password with a token; invalidates all sessions for that user" })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     await this.passwordService.resetPassword(dto.token, dto.newPassword);

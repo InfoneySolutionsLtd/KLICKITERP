@@ -7,9 +7,10 @@ export const IS_EXEMPT_FROM_LICENSE_GUARD_METADATA_KEY = "isExemptFromLicenseGua
  * — mirrors `platform/auth`'s `@Public()` decorator exactly (same
  * `SetMetadata` shape, same class+method applicability). Per FR-LIC-006.1 /
  * BR-LIC-01 ("license checks never block reads, exports, or backups in any
- * state"), applied to: `platform/auth`'s login/2FA-verify/refresh/logout/OTP
- * endpoints (a DEACTIVATED instance must still let a System Admin
- * authenticate), `domains/reporting`'s export-job endpoints, and
+ * state"), applied to: `platform/auth`'s login/session/OTP,
+ * password-recovery, password-change, and 2FA lifecycle endpoints (a
+ * DEACTIVATED instance must still let a System Admin authenticate and recover
+ * account access), `domains/reporting`'s export-job endpoints, and
  * `domains/backups-ops`'s backup/restore endpoints — see each controller's
  * own doc comment at the call site for the specific handlers.
  */
