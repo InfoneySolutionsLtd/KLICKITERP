@@ -9,8 +9,47 @@ import { SendResult } from "../ports/send-result";
 export interface FcmPushConfig {
   projectId: string;
   clientEmail: string;
-  /** PEM private key from the Firebase service account JSON — `\n` escape sequences are un-escaped before use (a common artifact of storing PEM text inside JSON). */
+  /** PEM private key from the Firebase service account JSON. Normalised by `normalizeFcmPrivateKey()` before use: `\n` escape sequences are un-escaped, and a pasted whole-JSON file has its `private_key` extracted. */
   privateKey: string;
+}
+
+const PRIVATE_KEY_HELP =
+  'Paste only the "private_key" value from the Firebase service account JSON (it begins with -----BEGIN PRIVATE KEY-----), or paste the whole JSON file.';
+
+/**
+ * Turns whatever was pasted into the private-key field into a plain PEM
+ * string. Accepts, in order of how often they actually happen:
+ *  - the WHOLE service-account JSON file (its `private_key` is extracted) —
+ *    the most common mistake, since the file is what Firebase hands you;
+ *  - the key with its `\n` escape sequences still literal (copied straight
+ *    out of the JSON string), optionally wrapped in the JSON string's quotes;
+ *  - a bare PEM with real newlines (or CRLFs).
+ * Anything that still isn't a PEM private key afterwards is rejected with a
+ * message that says what to paste, instead of OpenSSL's bare
+ * "error:1E08010C:DECODER routines::unsupported".
+ */
+export function normalizeFcmPrivateKey(raw: string): string {
+  let key = raw.trim();
+
+  if (key.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(key) as { private_key?: unknown };
+      if (typeof parsed.private_key === "string") key = parsed.private_key.trim();
+    } catch {
+      // Not valid JSON — fall through; the PEM check below reports it.
+    }
+  }
+
+  if (key.length >= 2 && key.startsWith('"') && key.endsWith('"')) {
+    key = key.slice(1, -1);
+  }
+
+  key = key.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").trim();
+
+  if (!/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(key) || !/-----END [A-Z ]*PRIVATE KEY-----/.test(key)) {
+    throw new Error(`The FCM private key is not a PEM private key. ${PRIVATE_KEY_HELP}`);
+  }
+  return key;
 }
 
 /**
@@ -25,16 +64,16 @@ export class FcmPushAdapter implements PushPort {
   private readonly app: App;
 
   constructor(private readonly config: FcmPushConfig) {
-    this.app = initializeApp(
-      {
-        credential: cert({
-          projectId: config.projectId,
-          clientEmail: config.clientEmail,
-          privateKey: config.privateKey.replace(/\\n/g, "\n"),
-        }),
-      },
-      `comms-fcm-${generateUuidV7()}`,
-    );
+    const privateKey = normalizeFcmPrivateKey(config.privateKey);
+    let credential: ReturnType<typeof cert>;
+    try {
+      credential = cert({ projectId: config.projectId, clientEmail: config.clientEmail, privateKey });
+    } catch (error) {
+      // Looks like a PEM but OpenSSL still can't read it (truncated/mangled).
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`${detail} — ${PRIVATE_KEY_HELP}`);
+    }
+    this.app = initializeApp({ credential }, `comms-fcm-${generateUuidV7()}`);
   }
 
   async send(recipient: string, body: string, meta?: Record<string, unknown>): Promise<SendResult> {
