@@ -75,4 +75,50 @@ describe("AdapterResolverService", () => {
     expect(first).toBeInstanceOf(SmtpMailAdapter);
     expect(integrationConfigService.getDecryptedConfig).toHaveBeenCalledTimes(1);
   });
+
+  describe("editing a config in place (same id, new credentials)", () => {
+    const smtpRow = (configEnc: Buffer) => ({ id: "smtp-1", kind: "SMTP", isEnabled: true, priority: 0, configEnc });
+
+    it("rebuilds the adapter from the new credentials instead of serving the stale one", async () => {
+      // Regression: the SMTP port was corrected 993 -> 465 and saved, but "Test
+      // connection" kept hitting 993 because the cache was keyed on the id
+      // alone. `update()` re-encrypts into the SAME row, so only the blob changes.
+      integrationConfigService.list.mockResolvedValue([smtpRow(Buffer.from("ciphertext-v1"))]);
+      integrationConfigService.getDecryptedConfig.mockResolvedValueOnce({ host: "mail.example.com", port: 993, fromAddress: "a@example.com" });
+      const before = await service.resolveMail();
+
+      integrationConfigService.list.mockResolvedValue([smtpRow(Buffer.from("ciphertext-v2"))]);
+      integrationConfigService.getDecryptedConfig.mockResolvedValueOnce({ host: "mail.example.com", port: 465, fromAddress: "a@example.com" });
+      const after = await service.resolveMail();
+
+      expect(after).not.toBe(before);
+      expect(after).toBeInstanceOf(SmtpMailAdapter);
+      expect(integrationConfigService.getDecryptedConfig).toHaveBeenCalledTimes(2);
+    });
+
+    it("still reuses the cached adapter when the stored credentials are byte-for-byte unchanged", async () => {
+      integrationConfigService.list.mockResolvedValue([smtpRow(Buffer.from("same-ciphertext"))]);
+      integrationConfigService.getDecryptedConfig.mockResolvedValue({ host: "mail.example.com", port: 465, fromAddress: "a@example.com" });
+      const first = await service.resolveMail();
+
+      // A fresh Buffer instance with identical bytes, as a new DB read would return.
+      integrationConfigService.list.mockResolvedValue([smtpRow(Buffer.from("same-ciphertext"))]);
+      const second = await service.resolveMail();
+
+      expect(second).toBe(first);
+      expect(integrationConfigService.getDecryptedConfig).toHaveBeenCalledTimes(1);
+    });
+
+    it("applies to SMS too (same cache pattern)", async () => {
+      const smsRow = (configEnc: Buffer) => ({ id: "sms-1", kind: "SMS", isEnabled: true, priority: 0, configEnc });
+      integrationConfigService.getDecryptedConfig.mockResolvedValue({ endpoint: "https://gw.example.com/send" });
+
+      integrationConfigService.list.mockResolvedValue([smsRow(Buffer.from("v1"))]);
+      const before = await service.resolveSms();
+      integrationConfigService.list.mockResolvedValue([smsRow(Buffer.from("v2"))]);
+      const after = await service.resolveSms();
+
+      expect(after).not.toBe(before);
+    });
+  });
 });

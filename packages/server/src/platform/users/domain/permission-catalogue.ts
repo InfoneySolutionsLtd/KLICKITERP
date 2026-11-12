@@ -121,6 +121,16 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
     description: "Create/update integration configs and trigger Test Connection",
     isWrite: true,
   },
+  {
+    code: "settings:integration:reveal",
+    module: "settings",
+    description: "Reveal an integration's saved credentials in the clear (passwords, API keys, secrets) so they can be edited",
+    // Effectively a READ, but deliberately `isWrite: true`: BR-SEC-04 bars
+    // auditor-class roles from holding any `isWrite` permission, and a
+    // permission that decrypts secrets must never be grantable to an Auditor
+    // (the 0900/0259 seed rule gives "all isWrite=false" to Auditor).
+    isWrite: true,
+  },
   // settings:custom-field:*
   { code: "settings:custom-field:view", module: "settings", description: "View custom field definitions", isWrite: false },
   {

@@ -1078,6 +1078,26 @@ export interface paths {
         patch: operations["IntegrationConfigsController_update"];
         trace?: never;
     };
+    "/api/v1/integration-configs/{id}/credentials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read back an integration's saved credentials so they can be edited
+         * @description Decrypts and returns the saved credential payload ({ config }) for pre-filling the Edit form. Requires its own permission, settings:integration:reveal — separate from settings:integration:manage, so a role can change integrations without being able to read their secrets (and is never grantable to auditor-class roles). Never cached; every call is logged (who/which config — never the values). The list/detail routes still never return credentials. 422 when the stored blob can no longer be decrypted (e.g. the encryption key changed).
+         */
+        get: operations["IntegrationConfigsController_credentials"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/integration-configs/{id}/test-connection": {
         parameters: {
             query?: never;
@@ -16496,6 +16516,25 @@ export interface operations {
                 "application/json": components["schemas"]["UpdateIntegrationConfigDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    IntegrationConfigsController_credentials: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

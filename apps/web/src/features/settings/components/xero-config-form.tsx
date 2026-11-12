@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import type { XeroConfig } from "../types";
 
@@ -33,8 +34,8 @@ export function XeroConfigForm({ value, onChange, disabled }: { value: XeroConfi
       </div>
       <div className="space-y-1.5">
         <Label required>{t("clientSecret")}</Label>
-        <Input
-          type="password"
+        <PasswordInput
+          showLockIcon={false}
           value={value.clientSecret}
           onChange={(e) => set("clientSecret", e.target.value)}
           disabled={disabled}
@@ -43,8 +44,8 @@ export function XeroConfigForm({ value, onChange, disabled }: { value: XeroConfi
       </div>
       <div className="space-y-1.5">
         <Label required>{t("refreshToken")}</Label>
-        <Input
-          type="password"
+        <PasswordInput
+          showLockIcon={false}
           value={value.refreshToken}
           onChange={(e) => set("refreshToken", e.target.value)}
           disabled={disabled}

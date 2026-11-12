@@ -12,15 +12,16 @@ import type { IntegrationConfig, IntegrationKind, TestConnectionResult } from ".
  * have zero `@ApiResponse({type})` decorators — a real, confirmed codegen
  * gap, not a bug in this wrapper).
  *
- * `configEnc` (the encrypted credential blob) is stripped from EVERY
- * response by the controller's own `toView()` mapper (confirmed by reading
- * it directly: `const { configEnc: _configEnc, ...view } = entity`) — this
- * app can never read a saved credential back. `updateIntegrationConfig()`'s
- * `config` field is accordingly treated as "replace the whole payload if
- * supplied at all", never a partial-field patch — `<EditIntegrationDialog>`
- * only ever sends a full, freshly-typed `MpesaConfig` when the user
- * deliberately opts into resubmitting credentials, never a merge of new
- * fields onto whatever was there before (which this app has no way to know).
+ * `configEnc` (the encrypted credential blob) is stripped from the list/
+ * detail/create/update responses by the controller's own `toView()` mapper
+ * (`const { configEnc: _configEnc, ...view } = entity`). The ONE way to read
+ * saved credentials back is `getIntegrationConfigCredentials()` below — a
+ * dedicated endpoint behind its own `settings:integration:reveal` permission,
+ * uncached and logged, used only by `<EditIntegrationDialog>` to pre-fill its form.
+ * `updateIntegrationConfig()`'s `config` field is still "replace the whole
+ * payload if supplied at all", never a partial-field patch: the dialog loads
+ * the saved configuration, lets the user change fields, and sends the full
+ * result back.
  */
 export interface CreateIntegrationConfigInput {
   kind: IntegrationKind;
@@ -43,6 +44,23 @@ export async function listIntegrationConfigs(): Promise<IntegrationConfig[]> {
 
 export async function getIntegrationConfig(id: string): Promise<IntegrationConfig> {
   return unwrapApiResult<IntegrationConfig>(await apiClient.GET("/api/v1/integration-configs/{id}", { params: { path: { id } } }));
+}
+
+/** `GET .../{id}/credentials` response — the decrypted credential payload exactly as it was saved (kind-specific shape; see `../types.ts`). */
+export interface IntegrationConfigCredentials {
+  config: Record<string, unknown>;
+}
+
+/**
+ * Reads the saved credentials back, in the clear, so the Edit dialog can
+ * pre-fill them. Treat the result as sensitive: keep it in component state
+ * only for as long as the dialog is open, never in the TanStack Query cache
+ * or any storage (which is why the hook for this is a mutation, not a query).
+ */
+export async function getIntegrationConfigCredentials(id: string): Promise<IntegrationConfigCredentials> {
+  return unwrapApiResult<IntegrationConfigCredentials>(
+    await apiClient.GET("/api/v1/integration-configs/{id}/credentials", { params: { path: { id } } }),
+  );
 }
 
 export async function createIntegrationConfig(input: CreateIntegrationConfigInput): Promise<IntegrationConfig> {

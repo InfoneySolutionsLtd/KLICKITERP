@@ -54,7 +54,27 @@ export class SmtpMailAdapter implements MailPort {
       return { ok: true, message: `SMTP connection to ${this.config.host}:${this.config.port} verified` };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      if (looksLikeMailboxServerGreeting(message)) {
+        // The most common misconfiguration: the mail host's RECEIVING ports
+        // (IMAP 143/993, POP3 110/995) entered as the SMTP port. nodemailer
+        // surfaces that as a bare "Invalid greeting. response=* OK [CAPABILITY
+        // IMAP4rev1 ...] Dovecot ready" — accurate but opaque to whoever is
+        // filling in the Integrations form, so say what it means and what to
+        // enter instead (keeping the server's own words for support).
+        return {
+          ok: false,
+          message:
+            `SMTP verify failed: ${this.config.host}:${this.config.port} answered like an IMAP/POP3 mailbox server, not an SMTP (mail-sending) server. ` +
+            `Ports 143/993/110/995 are for receiving mail. Use your provider's SMTP port instead — usually 465 with "Use TLS/SSL" ticked, ` +
+            `or 587 with "Use TLS/SSL" unticked (STARTTLS). Server said: ${message}`,
+        };
+      }
       return { ok: false, message: `SMTP verify failed: ${message}` };
     }
   }
+}
+
+/** True when nodemailer's "Invalid greeting" error carries an IMAP (`* OK [CAPABILITY IMAP4rev1 …`) or POP3 (`+OK …`) banner instead of an SMTP `220`. */
+function looksLikeMailboxServerGreeting(message: string): boolean {
+  return /invalid greeting/i.test(message) && /IMAP4|\* OK\b|\+OK\b|\bPOP3\b/i.test(message);
 }

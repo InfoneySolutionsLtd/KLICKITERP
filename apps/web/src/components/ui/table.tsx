@@ -1,8 +1,20 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+  /**
+   * Classes for the wrapper `<div>` that owns this table's scrolling
+   * (`overflow-auto`). Additive and optional — every existing caller omits it.
+   * A height cap (e.g. `max-h-[28rem]`) goes HERE, not on an outer element,
+   * because this wrapper is the nearest scroll container a `sticky` header cell
+   * resolves against; capping an ancestor instead would leave the header
+   * scrolling away with the rows.
+   */
+  containerClassName?: string;
+}
+
+const Table = React.forwardRef<HTMLTableElement, TableProps>(({ className, containerClassName, ...props }, ref) => (
+  <div className={cn("relative w-full overflow-auto", containerClassName)}>
     <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
   </div>
 ));

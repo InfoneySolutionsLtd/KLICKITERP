@@ -2,18 +2,18 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import type { SmtpConfig } from "../types";
 
 /**
  * Controlled form for `SmtpConfig` — the exact real field names
  * `SmtpMailAdapter`'s `SmtpMailConfig` interface declares (see `../types.ts`'s
- * own doc comment). `pass` is masked (`type="password"`), same convention
- * `<MpesaConfigForm>` already establishes. Reused verbatim by both
- * `<NewIntegrationDialog>` and `<EditIntegrationDialog>`'s "resubmit
- * credentials" branch — same "always a fresh, fully blank credential entry"
- * shape every configurable kind's form already follows (`configEnc` is never
- * readable back over HTTP).
+ * own doc comment). `pass` is masked with a show/hide toggle
+ * (`<PasswordInput>`), same as every other secret field in the Integrations
+ * forms. Reused verbatim by both `<NewIntegrationDialog>` (starting from
+ * `EMPTY_SMTP_CONFIG`) and `<EditIntegrationDialog>`'s "resubmit credentials"
+ * branch (starting from the saved configuration, fetched on demand).
  */
 export function SmtpConfigForm({ value, onChange, disabled }: { value: SmtpConfig; onChange: (next: SmtpConfig) => void; disabled?: boolean }) {
   const t = useTranslations("settings.integrations.smtpForm");
@@ -45,7 +45,7 @@ export function SmtpConfigForm({ value, onChange, disabled }: { value: SmtpConfi
       </div>
       <div className="space-y-1.5">
         <Label>{t("pass")}</Label>
-        <Input type="password" value={value.pass ?? ""} onChange={(e) => set("pass", e.target.value)} disabled={disabled} />
+        <PasswordInput showLockIcon={false} value={value.pass ?? ""} onChange={(e) => set("pass", e.target.value)} disabled={disabled} />
       </div>
       <div className="space-y-1.5">
         <Label required>{t("fromAddress")}</Label>
@@ -74,10 +74,16 @@ export function SmtpConfigForm({ value, onChange, disabled }: { value: SmtpConfi
   );
 }
 
+/**
+ * New-integration defaults: port 465 with "Use TLS/SSL" ticked (implicit TLS —
+ * the combination `nodemailer` expects for 465). The alternative submission
+ * setup is 587 with TLS/SSL UNticked (STARTTLS); ports 993/995 are IMAP/POP3
+ * mailbox ports and will fail an SMTP connection test.
+ */
 export const EMPTY_SMTP_CONFIG: SmtpConfig = {
   host: "",
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   user: "",
   pass: "",
   fromAddress: "",

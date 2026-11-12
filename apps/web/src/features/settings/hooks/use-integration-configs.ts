@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createIntegrationConfig,
   getIntegrationConfig,
+  getIntegrationConfigCredentials,
   listIntegrationConfigs,
   testIntegrationConfigConnection,
   updateIntegrationConfig,
@@ -47,6 +48,17 @@ export function useUpdateIntegrationConfig() {
       queryClient.invalidateQueries({ queryKey: detailKey(config.id) });
     },
   });
+}
+
+/**
+ * Loads an integration's saved credentials (decrypted) for the Edit dialog.
+ * Deliberately a MUTATION, not a `useQuery`: a query would park the plaintext
+ * secrets in the shared TanStack Query cache (shared across components and
+ * retained after the dialog closes), while a mutation's result lives only with
+ * the caller. The dialog copies it into its own form state and discards it.
+ */
+export function useLoadIntegrationCredentials() {
+  return useMutation({ mutationFn: (id: string) => getIntegrationConfigCredentials(id) });
 }
 
 /**
