@@ -145,7 +145,7 @@ export default function ClassesAndStreamsPage() {
         </CardHeader>
         <CardContent>
           <QueryBoundary query={classesQuery} isEmpty={(d) => d.length === 0}>
-            {(data) => <DataTable columns={classColumns} data={data} />}
+            {(data) => <DataTable columns={classColumns} data={data} scrollable />}
           </QueryBoundary>
         </CardContent>
       </Card>
@@ -183,7 +183,7 @@ export default function ClassesAndStreamsPage() {
         <CardContent>
           {selectedClassId ? (
             <QueryBoundary query={streamsQuery} isEmpty={(d) => d.length === 0}>
-              {(data) => <DataTable columns={streamColumns} data={data} />}
+              {(data) => <DataTable columns={streamColumns} data={data} scrollable />}
             </QueryBoundary>
           ) : (
             <p className="text-sm text-muted-foreground">{t("selectClassForStreams")}</p>

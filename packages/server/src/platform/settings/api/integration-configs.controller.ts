@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Header, Param, Patch, Post, Req } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { RequirePermission } from "../../../shared/rbac/require-permission.decorator";
 import { IntegrationConfigService } from "../application/integration-config.service";
@@ -60,6 +60,22 @@ export class IntegrationConfigsController {
   @ApiOperation({ summary: "Get an integration config by id" })
   async findOne(@Param("id") id: string) {
     return toView(await this.integrationConfigService.findByIdOrFail(id));
+  }
+
+  @Get(":id/credentials")
+  @RequirePermission("settings:integration:reveal")
+  @Header("Cache-Control", "no-store")
+  @ApiOperation({
+    summary: "Read back an integration's saved credentials so they can be edited",
+    description:
+      "Decrypts and returns the saved credential payload ({ config }) for pre-filling the Edit form. " +
+      "Requires its own permission, settings:integration:reveal — separate from settings:integration:manage, so a role can " +
+      "change integrations without being able to read their secrets (and is never grantable to auditor-class roles). " +
+      "Never cached; every call is logged (who/which config — never the values). The list/detail routes still never return " +
+      "credentials. 422 when the stored blob can no longer be decrypted (e.g. the encryption key changed).",
+  })
+  async credentials(@Param("id") id: string, @Req() req: AuthenticatedRequest) {
+    return { config: await this.integrationConfigService.revealConfigForEdit(id, req.user?.sub ?? null) };
   }
 
   @Patch(":id")

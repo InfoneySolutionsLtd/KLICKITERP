@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import type { BankFeedConfig } from "../types";
 
@@ -56,7 +57,7 @@ export function BankFeedConfigForm({ value, onChange, disabled }: { value: BankF
           </div>
           <div className="space-y-1.5">
             <Label>{t("authHeaderValue")}</Label>
-            <Input type="password" value={value.authHeaderValue ?? ""} onChange={(e) => set("authHeaderValue", e.target.value)} disabled={disabled} />
+            <PasswordInput showLockIcon={false} value={value.authHeaderValue ?? ""} onChange={(e) => set("authHeaderValue", e.target.value)} disabled={disabled} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("transactionsPath")}</Label>

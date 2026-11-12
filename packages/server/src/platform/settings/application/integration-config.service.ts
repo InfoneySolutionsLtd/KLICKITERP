@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { AppConfigService } from "../../../shared/config/app-config.service";
 import { decryptFromBuffer, encryptToBuffer } from "../../../shared/crypto/aes-gcm.util";
 import { ConflictException } from "../../../shared/exceptions/conflict.exception";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
+import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { SetIntegrationConfigEntity, SetIntegrationKind } from "../domain/set-integration-config.entity";
 import { SetIntegrationConfigRepository } from "../infrastructure/set-integration-config.repository";
 import { fetchDarajaOAuthToken } from "../infrastructure/mpesa-oauth-probe";
@@ -35,6 +36,8 @@ export interface TestConnectionResult {
  */
 @Injectable()
 export class IntegrationConfigService {
+  private readonly logger = new Logger(IntegrationConfigService.name);
+
   constructor(
     private readonly integrationConfigRepository: SetIntegrationConfigRepository,
     private readonly config: AppConfigService,
@@ -71,6 +74,36 @@ export class IntegrationConfigService {
   async getDecryptedConfig(id: string): Promise<Record<string, unknown>> {
     const row = await this.findByIdOrFail(id);
     return this.decode(row.configEnc);
+  }
+
+  /**
+   * Returns the saved credential payload in the clear so the Edit dialog can
+   * pre-fill it, instead of making an editor re-type an entire configuration
+   * to change one field. This is a deliberate, product-owner-requested
+   * relaxation of the earlier "credentials can never be read back" rule —
+   * storage is unchanged (still AES-256-GCM at rest, `config_enc` is still
+   * never serialized by the list/detail routes); only this one explicit,
+   * permission-gated read path decrypts.
+   *
+   * Every call leaves a log line naming WHO revealed WHICH config (never the
+   * values) — the codebase has no application-level audit writer for reads, so
+   * this is the available trail. A blob that can no longer be decrypted (e.g.
+   * the APP_ENCRYPTION_KEY was rotated since it was saved) surfaces as a clear
+   * 422 rather than a 500, so the UI can fall back to a blank form.
+   */
+  async revealConfigForEdit(id: string, actorId: string | null): Promise<Record<string, unknown>> {
+    const row = await this.findByIdOrFail(id);
+    let config: Record<string, unknown>;
+    try {
+      config = this.decode(row.configEnc);
+    } catch {
+      this.logger.warn(`Could not decrypt saved credentials for ${row.kind} integration config ${id} (requested by ${actorId ?? "unknown"})`);
+      throw new ValidationException(
+        "The saved credentials could not be decrypted (the encryption key may have changed since they were saved). Enter them again to replace them.",
+      );
+    }
+    this.logger.log(`Credentials revealed for editing: ${row.kind} integration config ${id} by user ${actorId ?? "unknown"}`);
+    return config;
   }
 
   async update(

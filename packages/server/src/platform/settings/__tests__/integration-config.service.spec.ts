@@ -1,5 +1,8 @@
+import { Logger } from "@nestjs/common";
 import { AppConfigService } from "../../../shared/config/app-config.service";
 import { ConflictException } from "../../../shared/exceptions/conflict.exception";
+import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
+import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { IntegrationConfigService } from "../application/integration-config.service";
 import { SetIntegrationConfigEntity, SetIntegrationKind } from "../domain/set-integration-config.entity";
 import { fetchDarajaOAuthToken } from "../infrastructure/mpesa-oauth-probe";
@@ -69,6 +72,62 @@ describe("IntegrationConfigService", () => {
       await expect(service.create({ kind: "SMTP", name: "primary", config: {} }, null)).rejects.toBeInstanceOf(
         ConflictException,
       );
+    });
+  });
+
+  describe("revealConfigForEdit (pre-fills the Edit dialog)", () => {
+    it("returns the full saved credential payload, secrets included", async () => {
+      const created = await service.create(
+        { kind: "SMTP", name: "primary", config: { host: "mail.example.com", port: 465, secure: true, user: "erp@example.com", pass: "s3cr3t-value" } },
+        null,
+      );
+      repository.findById.mockResolvedValue(created);
+
+      await expect(service.revealConfigForEdit(created.id, "actor-1")).resolves.toEqual({
+        host: "mail.example.com",
+        port: 465,
+        secure: true,
+        user: "erp@example.com",
+        pass: "s3cr3t-value",
+      });
+    });
+
+    it("reveals the CURRENT credentials after an in-place update, not the originals", async () => {
+      const created = await service.create({ kind: "SMTP", name: "primary", config: { port: 993 } }, null);
+      repository.findById.mockResolvedValue(created);
+      const updated = await service.update(created.id, { config: { port: 465 } }, "actor-2");
+      repository.findById.mockResolvedValue(updated);
+
+      await expect(service.revealConfigForEdit(created.id, "actor-2")).resolves.toEqual({ port: 465 });
+    });
+
+    it("never writes the credential values to the log — only who/which config", async () => {
+      const created = await service.create({ kind: "SMTP", name: "primary", config: { pass: "s3cr3t-value" } }, null);
+      repository.findById.mockResolvedValue(created);
+      const logSpy = jest.spyOn(Logger.prototype, "log").mockImplementation(() => undefined);
+
+      await service.revealConfigForEdit(created.id, "actor-7");
+
+      const logged = logSpy.mock.calls.map((call) => String(call[0])).join("\n");
+      expect(logged).toContain("actor-7");
+      expect(logged).toContain(created.id);
+      expect(logged).not.toContain("s3cr3t-value");
+      logSpy.mockRestore();
+    });
+
+    it("answers 422 (not 500) when the stored blob can no longer be decrypted", async () => {
+      const created = await service.create({ kind: "SMTP", name: "primary", config: { pass: "x" } }, null);
+      created.configEnc[created.configEnc.length - 1] ^= 0xff; // corrupt the GCM auth tag, as a rotated key would
+      repository.findById.mockResolvedValue(created);
+      const warnSpy = jest.spyOn(Logger.prototype, "warn").mockImplementation(() => undefined);
+
+      await expect(service.revealConfigForEdit(created.id, "actor-1")).rejects.toBeInstanceOf(ValidationException);
+      warnSpy.mockRestore();
+    });
+
+    it("404s for an unknown config", async () => {
+      repository.findById.mockResolvedValue(null);
+      await expect(service.revealConfigForEdit("missing", "actor-1")).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

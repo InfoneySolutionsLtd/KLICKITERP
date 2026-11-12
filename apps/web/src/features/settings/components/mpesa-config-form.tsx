@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { MpesaConfig } from "../types";
@@ -10,17 +11,12 @@ import type { MpesaConfig } from "../types";
  * Controlled form for `MpesaConfig` — the exact real field names
  * `MpesaAdapterResolverService`'s `DarajaConfig` interface declares (see
  * `../types.ts`'s own doc comment). `consumerSecret`/`passkey`/
- * `securityCredential` are masked (`type="password"`, per the plan's own
- * explicit instruction) — the same plain-input convention this codebase
- * already uses for the login/change-password screens, no custom
- * show/hide-toggle component exists anywhere in this app to reuse.
+ * `securityCredential` are masked with a show/hide toggle (`<PasswordInput>`,
+ * the same component every secret field in the Integrations forms now uses).
  *
- * Reused verbatim by BOTH `<NewIntegrationDialog>` and
- * `<EditIntegrationDialog>`'s "resubmit credentials" branch — a real design
- * consequence of `configEnc` never being readable back (see `../api/
- * integration-configs.api.ts`'s own doc comment): there is no "pre-filled,
- * edit one field" form anywhere in this feature, only ever a fresh, fully
- * blank credential entry.
+ * Reused verbatim by BOTH `<NewIntegrationDialog>` (starting blank) and
+ * `<EditIntegrationDialog>`'s "edit credentials" branch (starting from the
+ * saved configuration, loaded on demand — see that dialog's doc comment).
  */
 export function MpesaConfigForm({ value, onChange, disabled }: { value: MpesaConfig; onChange: (next: MpesaConfig) => void; disabled?: boolean }) {
   const t = useTranslations("settings.integrations.mpesaForm");
@@ -54,8 +50,8 @@ export function MpesaConfigForm({ value, onChange, disabled }: { value: MpesaCon
         </div>
         <div className="space-y-1.5">
           <Label required>{t("consumerSecret")}</Label>
-          <Input
-            type="password"
+          <PasswordInput
+            showLockIcon={false}
             value={value.consumerSecret}
             onChange={(e) => set("consumerSecret", e.target.value)}
             disabled={disabled}
@@ -64,7 +60,7 @@ export function MpesaConfigForm({ value, onChange, disabled }: { value: MpesaCon
         </div>
         <div className="space-y-1.5">
           <Label required>{t("passkey")}</Label>
-          <Input type="password" value={value.passkey} onChange={(e) => set("passkey", e.target.value)} disabled={disabled} placeholder={t("passkeyPlaceholder")} />
+          <PasswordInput showLockIcon={false} value={value.passkey} onChange={(e) => set("passkey", e.target.value)} disabled={disabled} placeholder={t("passkeyPlaceholder")} />
         </div>
         <div className="space-y-1.5">
           <Label required>{t("callbackBaseUrl")}</Label>
@@ -86,7 +82,7 @@ export function MpesaConfigForm({ value, onChange, disabled }: { value: MpesaCon
           </div>
           <div className="space-y-1.5">
             <Label>{t("securityCredential")}</Label>
-            <Input type="password" value={value.securityCredential ?? ""} onChange={(e) => set("securityCredential", e.target.value)} disabled={disabled} />
+            <PasswordInput showLockIcon={false} value={value.securityCredential ?? ""} onChange={(e) => set("securityCredential", e.target.value)} disabled={disabled} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("b2cShortcode")}</Label>

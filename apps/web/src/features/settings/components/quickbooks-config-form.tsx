@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { QuickBooksConfig } from "../types";
@@ -55,8 +56,8 @@ export function QuickBooksConfigForm({
       </div>
       <div className="space-y-1.5">
         <Label required>{t("clientSecret")}</Label>
-        <Input
-          type="password"
+        <PasswordInput
+          showLockIcon={false}
           value={value.clientSecret}
           onChange={(e) => set("clientSecret", e.target.value)}
           disabled={disabled}
@@ -65,8 +66,8 @@ export function QuickBooksConfigForm({
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label required>{t("refreshToken")}</Label>
-        <Input
-          type="password"
+        <PasswordInput
+          showLockIcon={false}
           value={value.refreshToken}
           onChange={(e) => set("refreshToken", e.target.value)}
           disabled={disabled}

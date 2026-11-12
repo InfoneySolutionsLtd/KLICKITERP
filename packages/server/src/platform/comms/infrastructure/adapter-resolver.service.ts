@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { Injectable } from "@nestjs/common";
 import { IntegrationConfigService, SetIntegrationConfigEntity, SetIntegrationKind } from "../../settings";
 import { CommChannel } from "../domain/comm-template.entity";
@@ -11,6 +12,8 @@ import { SmsPort } from "./ports/sms.port";
 
 interface CacheEntry<TPort> {
   configId: string;
+  /** Fingerprint of the row's encrypted credentials when this adapter was built — see `configVersion()`. */
+  configVersion: string;
   adapter: TPort;
 }
 
@@ -92,13 +95,14 @@ export class AdapterResolverService {
   async resolveSmsWithConfigId(): Promise<ResolvedAdapter<SmsPort>> {
     const enabled = await this.findEnabled("SMS");
     if (!enabled) return { adapter: this.logOnlyAdapter, configId: null };
-    if (this.smsCache?.configId === enabled.id) return { adapter: this.smsCache.adapter, configId: enabled.id };
+    const cachedSms = this.cachedAdapterIfCurrent(this.smsCache, enabled);
+    if (cachedSms) return { adapter: cachedSms, configId: enabled.id };
 
     const config = (await this.integrationConfigService.getDecryptedConfig(
       enabled.id,
     )) as unknown as GenericHttpSmsConfig;
     const adapter = new GenericHttpSmsAdapter(config);
-    this.smsCache = { configId: enabled.id, adapter };
+    this.smsCache = { configId: enabled.id, configVersion: this.configVersion(enabled), adapter };
     return { adapter, configId: enabled.id };
   }
 
@@ -109,11 +113,12 @@ export class AdapterResolverService {
   async resolveMailWithConfigId(): Promise<ResolvedAdapter<MailPort>> {
     const enabled = await this.findEnabled("SMTP");
     if (!enabled) return { adapter: this.logOnlyAdapter, configId: null };
-    if (this.mailCache?.configId === enabled.id) return { adapter: this.mailCache.adapter, configId: enabled.id };
+    const cachedMail = this.cachedAdapterIfCurrent(this.mailCache, enabled);
+    if (cachedMail) return { adapter: cachedMail, configId: enabled.id };
 
     const config = (await this.integrationConfigService.getDecryptedConfig(enabled.id)) as unknown as SmtpMailConfig;
     const adapter = new SmtpMailAdapter(config);
-    this.mailCache = { configId: enabled.id, adapter };
+    this.mailCache = { configId: enabled.id, configVersion: this.configVersion(enabled), adapter };
     return { adapter, configId: enabled.id };
   }
 
@@ -124,7 +129,8 @@ export class AdapterResolverService {
   async resolvePushWithConfigId(): Promise<ResolvedAdapter<PushPort>> {
     const enabled = await this.findEnabled("FCM");
     if (!enabled) return { adapter: this.logOnlyAdapter, configId: null };
-    if (this.pushCache?.configId === enabled.id) return { adapter: this.pushCache.adapter, configId: enabled.id };
+    const cachedPush = this.cachedAdapterIfCurrent(this.pushCache, enabled);
+    if (cachedPush) return { adapter: cachedPush, configId: enabled.id };
 
     const previous = this.pushCache?.adapter;
     if (previous instanceof FcmPushAdapter) {
@@ -133,7 +139,7 @@ export class AdapterResolverService {
 
     const config = (await this.integrationConfigService.getDecryptedConfig(enabled.id)) as unknown as FcmPushConfig;
     const adapter = new FcmPushAdapter(config);
-    this.pushCache = { configId: enabled.id, adapter };
+    this.pushCache = { configId: enabled.id, configVersion: this.configVersion(enabled), adapter };
     return { adapter, configId: enabled.id };
   }
 
@@ -153,14 +159,41 @@ export class AdapterResolverService {
   async resolveWhatsappWithConfigId(): Promise<ResolvedAdapter<SmsPort>> {
     const enabled = await this.findEnabled("WHATSAPP");
     if (!enabled) return { adapter: this.logOnlyAdapter, configId: null };
-    if (this.whatsappCache?.configId === enabled.id) return { adapter: this.whatsappCache.adapter, configId: enabled.id };
+    const cachedWhatsapp = this.cachedAdapterIfCurrent(this.whatsappCache, enabled);
+    if (cachedWhatsapp) return { adapter: cachedWhatsapp, configId: enabled.id };
 
     const config = (await this.integrationConfigService.getDecryptedConfig(
       enabled.id,
     )) as unknown as GenericHttpSmsConfig;
     const adapter = new GenericHttpSmsAdapter(config);
-    this.whatsappCache = { configId: enabled.id, adapter };
+    this.whatsappCache = { configId: enabled.id, configVersion: this.configVersion(enabled), adapter };
     return { adapter, configId: enabled.id };
+  }
+
+  /**
+   * A cached adapter is reusable only while BOTH the winning config's id AND
+   * its credentials are unchanged. Keying on the id alone (the original
+   * behaviour) meant editing an integration in place — same row, same id, new
+   * host/port/password — kept serving the adapter built from the OLD
+   * credentials until the process restarted: a corrected SMTP port still
+   * tested and sent against the previous one. `IntegrationConfigService
+   * .update()` re-encrypts into the same row, so the id never changes on edit.
+   */
+  private cachedAdapterIfCurrent<TPort>(entry: CacheEntry<TPort> | null, enabled: SetIntegrationConfigEntity): TPort | null {
+    if (entry && entry.configId === enabled.id && entry.configVersion === this.configVersion(enabled)) return entry.adapter;
+    return null;
+  }
+
+  /**
+   * Fingerprint of a row's encrypted credentials. AES-GCM uses a fresh random
+   * IV per encryption, so re-saving credentials (even identical ones) always
+   * yields a different blob — a cheap, secret-free "has this config been
+   * replaced?" signal that needs neither the key nor the plaintext. Only
+   * `config_enc` matters here: enabled/priority changes already alter which
+   * row `findEnabled()` returns.
+   */
+  private configVersion(row: SetIntegrationConfigEntity): string {
+    return Buffer.isBuffer(row.configEnc) ? createHash("sha256").update(row.configEnc).digest("hex") : "";
   }
 
   private async findEnabled(kind: SetIntegrationKind): Promise<SetIntegrationConfigEntity | undefined> {
