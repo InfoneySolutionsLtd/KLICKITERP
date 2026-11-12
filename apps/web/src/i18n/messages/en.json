@@ -2724,7 +2724,7 @@
         "clientEmailPlaceholder": "firebase-adminsdk@my-school-app.iam.gserviceaccount.com",
         "privateKey": "Service account private key",
         "privateKeyPlaceholder": "-----BEGIN PRIVATE KEY-----...",
-        "privateKeyHint": "The full PEM private key from the Firebase service account JSON file."
+        "privateKeyHint": "Paste the private_key value from the Firebase service account JSON (it starts with -----BEGIN PRIVATE KEY-----). Pasting the whole JSON file also works — the project ID and client email are filled in for you."
       },
       "whatsappForm": {
         "endpoint": "WhatsApp Business API endpoint",
