@@ -22,7 +22,7 @@ function parseRecipients(raw: string): string[] {
   return Array.from(new Set(emails));
 }
 
-/** Cron/recipients/active-toggle only — `format` stays fixed at `"CSV"`, never exposed for editing (see `ScheduleReportDialog`'s own doc comment for why). */
+/** Cron/recipients/active-toggle only — a schedule's `format` (chosen when it is created, see `ScheduleReportDialog`) is not editable here. */
 export function EditScheduleDialog({ schedule }: { schedule: ScheduleResponseDto }) {
   const t = useTranslations("reports.schedules.editDialog");
   const tCommon = useTranslations("common");

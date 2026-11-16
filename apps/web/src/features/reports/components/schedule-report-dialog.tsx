@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api-error";
 import { useCreateSchedule } from "../hooks/use-schedules";
@@ -21,11 +22,13 @@ function parseRecipients(raw: string): string[] {
   return Array.from(new Set(emails));
 }
 
+type ScheduleFormat = "PDF" | "CSV";
+
 /**
- * Format is deliberately FIXED to `"CSV"`, never offered as a choice — XLSX/
- * PDF are confirmed queued-forever placeholders server-side (no worker
- * exists to ever process them); offering them here would silently promise a
- * report that never arrives.
+ * Format is a choice between PDF (the default — branded, with a verification
+ * QR code) and CSV (raw data). XLSX is deliberately NOT offered: it is still a
+ * queued-forever placeholder server-side (no worker exists to ever process
+ * it), so offering it would silently promise a report that never arrives.
  */
 export function ScheduleReportDialog({
   reportCode,
@@ -41,6 +44,7 @@ export function ScheduleReportDialog({
   const [open, setOpen] = React.useState(false);
   const [cron, setCron] = React.useState(DEFAULT_CRON);
   const [recipientsText, setRecipientsText] = React.useState("");
+  const [format, setFormat] = React.useState<ScheduleFormat>("PDF");
   const [error, setError] = React.useState<string | null>(null);
   const createMutation = useCreateSchedule();
 
@@ -49,6 +53,7 @@ export function ScheduleReportDialog({
     if (next) {
       setCron(DEFAULT_CRON);
       setRecipientsText("");
+      setFormat("PDF");
       setError(null);
     }
   }
@@ -60,7 +65,7 @@ export function ScheduleReportDialog({
     if (!canSubmit) return;
     setError(null);
     try {
-      await createMutation.mutateAsync({ reportCode, params, cron, recipients, format: "CSV" });
+      await createMutation.mutateAsync({ reportCode, params, cron, recipients, format });
       setOpen(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t("genericError"));
@@ -102,7 +107,19 @@ export function ScheduleReportDialog({
             />
             <p className="text-xs text-muted-foreground">{t("recipientsHint", { count: recipients.length })}</p>
           </div>
-          <p className="text-xs text-muted-foreground">{t("formatNote")}</p>
+          <div className="space-y-1.5">
+            <Label>{t("formatLabel")}</Label>
+            <Select value={format} onValueChange={(value) => setFormat(value as ScheduleFormat)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PDF">{t("formatPdf")}</SelectItem>
+                <SelectItem value="CSV">{t("formatCsv")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{t("formatHint")}</p>
+          </div>
         </div>
 
         <DialogFooter>
