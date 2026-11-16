@@ -4,7 +4,8 @@ import { FilesService } from "../../../platform/files";
 import { RptExportJobEntity } from "../domain/rpt-export-job.entity";
 import { RptExportJobRepository } from "../infrastructure/rpt-export-job.repository";
 import { buildCsv } from "./csv-export.util";
-import { ReportRegistryService } from "./report-registry.service";
+import { ReportPdfService } from "./pdf/report-pdf.service";
+import { ReportRegistryService, type ReportResult } from "./report-registry.service";
 
 export type ExportJobFormat = "CSV" | "XLSX" | "PDF";
 
@@ -38,16 +39,22 @@ const EXPORT_JOB_FILE_ENTITY_TYPE = "rpt_export_job";
  * `csv-export.util.ts`), uploaded via `platform/files`' `FilesService.upload()`,
  * `file_id` set, `status='DONE'`.
  *
- * **XLSX/PDF — deliberately `status='QUEUED'` and STOP THERE.** Real
- * spreadsheet/PDF rendering (with branding, headers/footers, per
- * FR-RPT-003.1) is a genuinely large templating/rendering subsystem that
- * does not belong half-built in this pass — same honest deferral this
- * codebase already applies to payslip PDFs (`PyrlRunLineEntity.payslipFileId`
- * stays null) and real statutory filing-format outputs
- * (`StatutorySummaryReport`'s own doc comment). A job left `QUEUED` here is
- * NOT picked up by anything yet — no worker/queue exists in this codebase
- * (same structural gap `RptExportJobRepository.findQueued()`'s own doc
- * comment already names).
+ * **PDF — real, synchronous, branded and verifiable** (`ReportPdfService`,
+ * `pdf/`): the school's logo, header / footer / watermark text and signatures
+ * from the Branding page, readable parameters, a local date-time stamp, and a
+ * QR code (a `docv_record` minted inside THIS job's transaction) that opens
+ * the public `/verify/[token]` page — on every page. Uploaded like the CSV,
+ * `file_id` set, `status='DONE'`. A PDF over `PDF_MAX_ROWS` rows is refused
+ * with a pointer to CSV rather than rendered inline.
+ *
+ * **XLSX — deliberately `status='QUEUED'` and STOP THERE.** Real spreadsheet
+ * rendering is a separate subsystem that does not belong half-built here —
+ * same honest deferral this codebase already applies to payslip PDFs
+ * (`PyrlRunLineEntity.payslipFileId` stays null) and real statutory
+ * filing-format outputs (`StatutorySummaryReport`'s own doc comment). A job
+ * left `QUEUED` here is NOT picked up by anything yet — no worker/queue
+ * processes it (same structural gap `RptExportJobRepository.findQueued()`'s
+ * own doc comment already names).
  *
  * **Row-count threshold (FR-RPT-005.1)** — `>10k rows` is checked and
  * documented as a structural placeholder for a future background-worker
@@ -66,6 +73,8 @@ export class ExportJobsService {
     private readonly registry: ReportRegistryService,
     private readonly exportJobRepository: RptExportJobRepository,
     private readonly filesService: FilesService,
+    // Appended at the END of the param list: the branded PDF renderer (see class doc comment).
+    private readonly reportPdfService: ReportPdfService,
   ) {}
 
   async createJob(em: EntityManager, input: CreateExportJobInput): Promise<RptExportJobEntity> {
@@ -94,12 +103,12 @@ export class ExportJobsService {
         // to the identical synchronous processing below — see class doc comment.
       }
 
-      if (input.format === "CSV") {
-        const buffer = buildCsv(definition.columns, result.rows);
+      const artifact = await this.buildArtifact(em, input, definition, result, job.id);
+      if (artifact) {
         const file = await this.filesService.upload({
-          buffer,
-          originalName: `${input.reportCode}-${job.id}.csv`,
-          mime: "text/csv",
+          buffer: artifact.buffer,
+          originalName: `${input.reportCode}-${job.id}.${artifact.extension}`,
+          mime: artifact.mime,
           uploadedByUserId: input.requestedBy,
           entityType: EXPORT_JOB_FILE_ENTITY_TYPE,
           entityId: job.id,
@@ -107,7 +116,7 @@ export class ExportJobsService {
         job.fileId = file.id;
         job.status = "DONE";
       } else {
-        // XLSX/PDF — deferred, see class doc comment.
+        // XLSX — deferred, see class doc comment.
         job.status = "QUEUED";
       }
 
@@ -120,6 +129,32 @@ export class ExportJobsService {
       await this.exportJobRepository.save(job, em);
       this.logger.warn(`Export job ${job.id} (${input.reportCode}) failed: ${(error as Error).message}`);
       throw error;
+    }
+  }
+
+  /**
+   * The bytes + file type for the requested format, or `null` for a format with no renderer
+   * yet (XLSX). PDF is the branded, verifiable document (`ReportPdfService`); CSV stays the
+   * raw, lossless data export — no letterhead, no QR, ISO timestamps — for spreadsheets.
+   */
+  private async buildArtifact(
+    em: EntityManager,
+    input: CreateExportJobInput,
+    definition: ReturnType<ReportRegistryService["get"]>,
+    result: ReportResult,
+    jobId: string,
+  ): Promise<{ buffer: Buffer; extension: string; mime: string } | null> {
+    switch (input.format) {
+      case "CSV":
+        return { buffer: buildCsv(definition.columns, result.rows), extension: "csv", mime: "text/csv" };
+      case "PDF":
+        return {
+          buffer: await this.reportPdfService.generate(em, { definition, params: input.params, result, jobId, requestedBy: input.requestedBy }),
+          extension: "pdf",
+          mime: "application/pdf",
+        };
+      default:
+        return null;
     }
   }
 

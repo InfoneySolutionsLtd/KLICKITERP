@@ -7,6 +7,11 @@ import { PayrollModule } from "../payroll";
 import { ProcurementModule } from "../procurement";
 import { FilesModule } from "../../platform/files";
 import { CommsModule } from "../../platform/comms";
+// Branded, verifiable PDF exports (`ExportJobsService` -> `ReportPdfService`): the school's
+// logo/header/footer/watermark/signatures come from `ThemesService`, and each PDF's QR code is a
+// `DocumentVerificationService.mint()` record — the same mechanism receipts use.
+import { BrandingModule } from "../../platform/branding";
+import { DocumentVerificationModule } from "../../platform/document-verification";
 import { AuditLogEntity } from "../../shared/audit/audit-log.entity";
 import { RptSavedParamsEntity } from "./domain/rpt-saved-params.entity";
 import { RptScheduleEntity } from "./domain/rpt-schedule.entity";
@@ -51,6 +56,9 @@ import { ChequeRegisterReport } from "./application/cheque-register.report";
 import { DashboardKpisService } from "./application/dashboard-kpis.service";
 import { MvRefreshService } from "./application/mv-refresh.service";
 import { ExportJobsService } from "./application/export-jobs.service";
+import { ReportBrandingService } from "./application/pdf/report-branding.service";
+import { ReportParamLabelsService } from "./application/pdf/report-param-labels.service";
+import { ReportPdfService } from "./application/pdf/report-pdf.service";
 import { ReportSchedulesService } from "./application/report-schedules.service";
 import { ReportsController } from "./api/reports.controller";
 import { DashboardController } from "./api/dashboard.controller";
@@ -160,6 +168,8 @@ const ALL_REPORT_PROVIDERS = [
     ProcurementModule,
     FilesModule,
     CommsModule,
+    BrandingModule,
+    DocumentVerificationModule,
   ],
   // **Order matters here — a real routing bug, not stylistic.** `ReportsController`'s
   // `GET /reports/:code` is a single-segment wildcard that ALSO structurally matches
@@ -184,6 +194,9 @@ const ALL_REPORT_PROVIDERS = [
     ...ALL_REPORT_PROVIDERS,
     DashboardKpisService,
     MvRefreshService,
+    ReportBrandingService,
+    ReportParamLabelsService,
+    ReportPdfService,
     ExportJobsService,
     ReportSchedulesService,
   ],
