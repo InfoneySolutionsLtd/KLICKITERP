@@ -66,6 +66,7 @@ function invalidateRunQueries(queryClient: ReturnType<typeof useQueryClient>, ru
 export function useCreateDepreciationRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFaDepreciationRunDto) => createDepreciationRun(dto),
     onSuccess: (created) => invalidateRunQueries(queryClient, created),
   });
@@ -74,6 +75,7 @@ export function useCreateDepreciationRun() {
 export function useSubmitDepreciationRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitDepreciationRun(id),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -82,6 +84,7 @@ export function useSubmitDepreciationRun() {
 export function useDecideDepreciationRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideFaDepreciationRunDto }) => decideDepreciationRun(id, dto),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -99,6 +102,7 @@ export function useDecideDepreciationRun() {
 export function usePostDepreciationRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postDepreciationRun(id),
     onSuccess: (updated) => {
       invalidateRunQueries(queryClient, updated);

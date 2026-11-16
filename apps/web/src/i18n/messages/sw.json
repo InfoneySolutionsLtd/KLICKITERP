@@ -1,4 +1,37 @@
 {
+  "toast": {
+    "success": {
+      "generated": "Imetengenezwa kwa mafanikio",
+      "created": "Imeundwa kwa mafanikio",
+      "updated": "Imesasishwa kwa mafanikio",
+      "deleted": "Imefutwa kwa mafanikio",
+      "removed": "Imeondolewa kwa mafanikio",
+      "added": "Imeongezwa kwa mafanikio",
+      "submitted": "Imewasilishwa kwa mafanikio",
+      "approved": "Imeidhinishwa kwa mafanikio",
+      "rejected": "Imekataliwa kwa mafanikio",
+      "decided": "Uamuzi umerekodiwa",
+      "posted": "Imewekwa kwenye leja kwa mafanikio",
+      "activated": "Imewezeshwa kwa mafanikio",
+      "deactivated": "Imezimwa kwa mafanikio",
+      "published": "Imechapishwa kwa mafanikio",
+      "sent": "Imetumwa kwa mafanikio",
+      "cancelled": "Imeghairiwa kwa mafanikio",
+      "voided": "Imebatilishwa kwa mafanikio",
+      "reversed": "Imerudishwa nyuma kwa mafanikio",
+      "requested": "Ombi limewasilishwa",
+      "recorded": "Imerekodiwa kwa mafanikio",
+      "completed": "Imekamilika kwa mafanikio"
+    },
+    "error": {
+      "network": "Imeshindikana kufikia seva. Angalia muunganisho wako kisha ujaribu tena.",
+      "sessionExpired": "Kipindi chako kimeisha. Tafadhali ingia tena.",
+      "permission": "Huna ruhusa ya kufanya hivyo.",
+      "server": "Hitilafu imetokea upande wetu. Tafadhali jaribu tena.",
+      "validation": "Tafadhali angalia fomu: {details}",
+      "generic": "Hitilafu imetokea. Tafadhali jaribu tena."
+    }
+  },
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
@@ -763,6 +796,12 @@
   },
   "billing": {
     "feeCategories": {
+      "toast": {
+        "created": "Kategoria ya ada imeundwa",
+        "updated": "Kategoria ya ada imesasishwa",
+        "activated": "Kategoria ya ada imewezeshwa",
+        "deactivated": "Kategoria ya ada imezimwa"
+      },
       "title": "Fee Categories",
       "subtitle": "Manage the fee categories used to build fee structures and invoices.",
       "newCategory": "New category",
@@ -793,6 +832,13 @@
       }
     },
     "feeStructures": {
+      "toast": {
+        "created": "Muundo wa ada umeundwa",
+        "published": "Muundo wa ada umechapishwa",
+        "deleted": "Muundo wa ada umefutwa",
+        "lineAdded": "Mstari wa ada umeongezwa",
+        "lineUpdated": "Mstari wa ada umesasishwa"
+      },
       "title": "Fee Structures",
       "subtitle": "Build and publish fee structures scoped to an academic year and class; each fee line carries its own term and due date.",
       "newStructure": "New fee structure",
@@ -1100,6 +1146,15 @@
       "resultSkippedEntry": "{student}: tayari ametozwa {categories} muhula huu — imerukwa.",
       "resultPartialSkipTitle": "Imetengenezwa kwa kategoria zilizobaki",
       "resultPartialSkipEntry": "{student}: imetengenezwa kwa kategoria zilizobaki; tayari ametozwa {categories} muhula huu.",
+      "openingInvoices": "Inafungua ankara…",
+      "toast": {
+        "generated": "Ankara {invoices} zimetengenezwa kwa wanafunzi {students}.",
+        "partialFailure": "Ankara {invoices} zimetengenezwa kwa wanafunzi {students}, lakini wanafunzi {failed} wameshindwa. Tazama maelezo hapa chini.",
+        "collectionAttention": "Ankara {invoices} zimetengenezwa kwa wanafunzi {students}, lakini baadhi ya makusanyo ya pochi au salio la mkopo yanahitaji kuangaliwa. Tazama maelezo hapa chini.",
+        "noneGenerated": "Hakuna ankara zilizotengenezwa — wanafunzi {failed} wameshindwa. Tazama maelezo hapa chini.",
+        "nothingToGenerate": "Hakuna cha kutengeneza — kila mwanafunzi aliyechaguliwa tayari ametozwa kwa kategoria hizi.",
+        "skippedNote": "Wanafunzi {count} walirukwa baadhi ya kategoria kwa kuwa tayari wametozwa."
+      },
       "walletResultTitle": "Wallet collection",
       "walletSettled": "Settled: {count}",
       "walletPartialShortfall": "Bado kuna pungufu: {count}",

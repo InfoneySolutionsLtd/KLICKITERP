@@ -48,6 +48,7 @@ export function useServicePointOperators(id: string | undefined) {
 export function useCreateServicePoint() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateServicePointDto) => createServicePoint(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: SERVICE_POINTS_QUERY_KEY }),
   });
@@ -56,6 +57,7 @@ export function useCreateServicePoint() {
 export function useUpdateServicePoint(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateServicePointDto) => updateServicePoint(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: detailKey(id) });
@@ -67,6 +69,7 @@ export function useUpdateServicePoint(id: string) {
 export function useAssignServicePointOperator(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: (dto: AssignOperatorDto) => assignServicePointOperator(id, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: operatorsKey(id) }),
   });
@@ -75,6 +78,7 @@ export function useAssignServicePointOperator(id: string) {
 export function useUnassignServicePointOperator(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: (userId: string) => unassignServicePointOperator(id, userId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: operatorsKey(id) }),
   });

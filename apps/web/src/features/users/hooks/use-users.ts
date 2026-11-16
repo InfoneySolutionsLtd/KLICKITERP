@@ -53,6 +53,7 @@ export function useUser(id: string | undefined) {
 export function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateUserDto) => createUser(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY }),
   });
@@ -62,6 +63,7 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateUserDto }) => updateUser(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -79,6 +81,7 @@ export function useUpdateUser() {
 export function useSuspendUser() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => suspendUser(id),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -90,6 +93,7 @@ export function useSuspendUser() {
 export function useReactivateUser() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => reactivateUser(id),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -101,6 +105,7 @@ export function useReactivateUser() {
 export function useDeactivateUser() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => deactivateUser(id),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -113,6 +118,7 @@ export function useDeactivateUser() {
 export function useAssignDepartment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: ({ id, dto }: { id: string; dto: AssignDepartmentDto }) => assignDepartment(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -125,6 +131,7 @@ export function useAssignDepartment() {
 export function useSetAuthorityLimit() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: SetAuthorityLimitDto }) => setAuthorityLimit(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
@@ -142,6 +149,7 @@ export function useUserRoles(userId: string | undefined) {
 export function useAssignRoleToUser(userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: (roleId: string) => assignRoleToUser(userId, roleId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: rolesKey(userId) }),
   });
@@ -150,6 +158,7 @@ export function useAssignRoleToUser(userId: string) {
 export function useUnassignRoleFromUser(userId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: (roleId: string) => unassignRoleFromUser(userId, roleId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: rolesKey(userId) }),
   });

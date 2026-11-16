@@ -42,6 +42,7 @@ function invalidateExternalTransferQueries(queryClient: ReturnType<typeof useQue
 export function useCreateExternalTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateBankExternalTransferDto) => createExternalTransfer(dto),
     onSuccess: (created) => invalidateExternalTransferQueries(queryClient, created.id),
   });
@@ -50,6 +51,7 @@ export function useCreateExternalTransfer() {
 export function useUpdateExternalTransferReference() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, referenceNo }: { id: string; referenceNo: string }) => updateExternalTransferReference(id, referenceNo),
     onSuccess: (updated) => invalidateExternalTransferQueries(queryClient, updated.id),
   });
@@ -58,6 +60,7 @@ export function useUpdateExternalTransferReference() {
 export function useSubmitExternalTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitExternalTransfer(id),
     onSuccess: (updated) => invalidateExternalTransferQueries(queryClient, updated.id),
   });
@@ -66,6 +69,7 @@ export function useSubmitExternalTransfer() {
 export function useApproveExternalTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveExternalTransfer(id),
     onSuccess: (updated) => invalidateExternalTransferQueries(queryClient, updated.id),
   });
@@ -74,6 +78,7 @@ export function useApproveExternalTransfer() {
 export function useRejectExternalTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectExternalTransfer(id),
     onSuccess: (updated) => invalidateExternalTransferQueries(queryClient, updated.id),
   });
@@ -82,6 +87,7 @@ export function useRejectExternalTransfer() {
 export function usePostExternalTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postExternalTransfer(id),
     onSuccess: (updated) => invalidateExternalTransferQueries(queryClient, updated.id),
   });

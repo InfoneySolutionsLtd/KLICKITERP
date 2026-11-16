@@ -28,6 +28,7 @@ export function useSponsor(id: string) {
 export function useCreateSponsor() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateSponsorDto) => createSponsor(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: SPONSORS_QUERY_KEY }),
   });
@@ -36,6 +37,7 @@ export function useCreateSponsor() {
 export function useUpdateSponsor(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateSponsorDto) => updateSponsor(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SPONSORS_QUERY_KEY });

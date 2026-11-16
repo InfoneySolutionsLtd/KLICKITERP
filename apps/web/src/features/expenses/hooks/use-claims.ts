@@ -60,6 +60,7 @@ function invalidateClaimQueries(queryClient: ReturnType<typeof useQueryClient>, 
 export function useCreateClaim() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateClaimDto) => createClaim(dto),
     onSuccess: () => invalidateClaimQueries(queryClient),
   });
@@ -69,6 +70,7 @@ export function useCreateClaim() {
 export function useAddClaimLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: ({ claimId, dto }: { claimId: string; dto: AddClaimLineDto }) => addClaimLine(claimId, dto),
     onSuccess: (line) => {
       queryClient.invalidateQueries({ queryKey: linesKey(line.claimId) });
@@ -81,6 +83,7 @@ export function useAddClaimLine() {
 export function useUpdateClaimLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ lineId, dto }: { claimId: string; lineId: string; dto: UpdateClaimLineDto }) => updateClaimLine(lineId, dto),
     onSuccess: (line) => {
       queryClient.invalidateQueries({ queryKey: linesKey(line.claimId) });
@@ -93,6 +96,7 @@ export function useUpdateClaimLine() {
 export function useDeleteClaimLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: ({ lineId }: { claimId: string; lineId: string }) => deleteClaimLine(lineId),
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: linesKey(variables.claimId) });
@@ -105,6 +109,7 @@ export function useDeleteClaimLine() {
 export function useSubmitClaim() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitClaim(id),
     onSuccess: (updated) => invalidateClaimQueries(queryClient, updated.id),
   });
@@ -114,6 +119,7 @@ export function useSubmitClaim() {
 export function useApproveClaim() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveClaim(id),
     onSuccess: (updated) => invalidateClaimQueries(queryClient, updated.id),
   });
@@ -123,6 +129,7 @@ export function useApproveClaim() {
 export function useRejectClaim() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectClaim(id),
     onSuccess: (updated) => invalidateClaimQueries(queryClient, updated.id),
   });
@@ -132,6 +139,7 @@ export function useRejectClaim() {
 export function useReimburseClaim() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, method }: { id: string; method?: ClaimMethod }) => reimburseClaim(id, method),
     onSuccess: (updated) => invalidateClaimQueries(queryClient, updated.id),
   });

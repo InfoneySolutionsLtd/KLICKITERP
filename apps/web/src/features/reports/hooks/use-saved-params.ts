@@ -23,6 +23,7 @@ export function useSavedParams(id: string | undefined) {
 export function useCreateSavedParams() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: ({ reportCode, name, params }: { reportCode: string; name: string; params: Record<string, unknown> }) =>
       createSavedParams(reportCode, name, params),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: savedParamsListKey() }),
@@ -33,6 +34,7 @@ export function useCreateSavedParams() {
 export function useUpdateSavedParams() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, name, params }: { id: string; name?: string; params?: Record<string, unknown> }) =>
       updateSavedParams(id, { name, params }),
     onSuccess: (updated) => {
@@ -45,6 +47,7 @@ export function useUpdateSavedParams() {
 export function useDeleteSavedParams() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteSavedParams(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: savedParamsListKey() }),
   });

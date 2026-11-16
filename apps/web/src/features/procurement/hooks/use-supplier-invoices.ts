@@ -39,6 +39,7 @@ function invalidateSupplierInvoiceQueries(queryClient: ReturnType<typeof useQuer
 export function useCaptureSupplierInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "recorded" },
     mutationFn: (dto: CaptureSupplierInvoiceDto) => captureSupplierInvoice(dto),
     onSuccess: (created) => invalidateSupplierInvoiceQueries(queryClient, created.id),
   });
@@ -48,6 +49,7 @@ export function useCaptureSupplierInvoice() {
 export function useMatchSupplierInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => matchSupplierInvoice(id),
     onSuccess: (updated) => invalidateSupplierInvoiceQueries(queryClient, updated.id),
   });
@@ -56,6 +58,7 @@ export function useMatchSupplierInvoice() {
 export function useResolveSupplierInvoiceException() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: ResolveMatchExceptionDto }) => resolveSupplierInvoiceException(id, dto),
     onSuccess: (updated) => invalidateSupplierInvoiceQueries(queryClient, updated.id),
   });
@@ -64,6 +67,7 @@ export function useResolveSupplierInvoiceException() {
 export function usePostSupplierInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postSupplierInvoice(id),
     onSuccess: (updated) => invalidateSupplierInvoiceQueries(queryClient, updated.id),
   });

@@ -57,6 +57,7 @@ export function useMovementHistory(itemId: string | undefined, storeId: string |
 export function useIssueStock() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (input: IssueStockInput) => issueStock(input),
     onSuccess: (_movement, variables) => {
       queryClient.invalidateQueries({ queryKey: STOCK_MOVEMENTS_QUERY_KEY });

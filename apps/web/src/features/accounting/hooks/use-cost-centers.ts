@@ -29,6 +29,7 @@ export function useCostCenter(id: string | undefined) {
 export function useCreateCostCenter() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateCostCenterDto) => createCostCenter(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: COST_CENTERS_QUERY_KEY }),
   });
@@ -37,6 +38,7 @@ export function useCreateCostCenter() {
 export function useUpdateCostCenter() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateCostCenterDto }) => updateCostCenter(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: COST_CENTERS_QUERY_KEY });
@@ -48,6 +50,7 @@ export function useUpdateCostCenter() {
 export function useDeactivateCostCenter() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => deactivateCostCenter(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: COST_CENTERS_QUERY_KEY }),
   });
@@ -56,6 +59,7 @@ export function useDeactivateCostCenter() {
 export function useActivateCostCenter() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => activateCostCenter(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: COST_CENTERS_QUERY_KEY }),
   });

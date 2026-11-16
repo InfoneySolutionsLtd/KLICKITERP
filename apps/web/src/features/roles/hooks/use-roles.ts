@@ -22,6 +22,7 @@ export function useRole(id: string | undefined) {
 export function useCreateRole() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateRoleDto) => createRole(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY }),
   });
@@ -31,6 +32,7 @@ export function useCreateRole() {
 export function useUpdateRole() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateRoleDto }) => updateRole(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });

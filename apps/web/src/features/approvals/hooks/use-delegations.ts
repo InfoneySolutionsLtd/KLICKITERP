@@ -22,6 +22,7 @@ export function useDelegation(id: string | undefined) {
 export function useCreateDelegation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateDelegationDto) => createDelegation(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: DELEGATIONS_QUERY_KEY }),
   });
@@ -30,6 +31,7 @@ export function useCreateDelegation() {
 export function useUpdateDelegation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateDelegationDto }) => updateDelegation(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: DELEGATIONS_QUERY_KEY });
@@ -41,6 +43,7 @@ export function useUpdateDelegation() {
 export function useDeleteDelegation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteDelegation(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: DELEGATIONS_QUERY_KEY }),
   });

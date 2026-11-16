@@ -25,6 +25,7 @@ export function useRolePermissions(roleId: string | undefined) {
 export function useGrantPermission(roleId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: (permissionCode: string) => grantPermission(roleId, permissionCode),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: rolePermissionsKey(roleId) }),
   });
@@ -33,6 +34,7 @@ export function useGrantPermission(roleId: string) {
 export function useRevokePermission(roleId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: (permissionCode: string) => revokePermission(roleId, permissionCode),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: rolePermissionsKey(roleId) }),
   });

@@ -22,6 +22,7 @@ export function useFeeCategories() {
 export function useCreateFeeCategory() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeCategories.toast.created" },
     mutationFn: (dto: CreateFeeCategoryDto) => createFeeCategory(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FEE_CATEGORIES_QUERY_KEY }),
   });
@@ -30,6 +31,7 @@ export function useCreateFeeCategory() {
 export function useUpdateFeeCategory(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeCategories.toast.updated" },
     mutationFn: (dto: UpdateFeeCategoryDto) => updateFeeCategory(id, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FEE_CATEGORIES_QUERY_KEY }),
   });
@@ -39,6 +41,7 @@ export function useUpdateFeeCategory(id: string) {
 export function useDeactivateFeeCategory() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeCategories.toast.deactivated" },
     mutationFn: (id: string) => deactivateFeeCategory(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FEE_CATEGORIES_QUERY_KEY }),
   });
@@ -47,6 +50,7 @@ export function useDeactivateFeeCategory() {
 export function useActivateFeeCategory() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeCategories.toast.activated" },
     mutationFn: (id: string) => activateFeeCategory(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FEE_CATEGORIES_QUERY_KEY }),
   });

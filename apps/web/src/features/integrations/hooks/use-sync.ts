@@ -11,5 +11,5 @@ export function useSyncLog(params: ListSyncLogParams) {
 
 /** The REAL accounting-sync connection test (`POST /integrations/sync/test-connection`) — see `../api/sync.api.ts`'s own doc comment for why this is genuinely distinct from Module 2's own permanent stub. */
 export function useTestAccountingSyncConnection() {
-  return useMutation({ mutationFn: (kind: AccountingSyncKind) => testAccountingSyncConnection(kind) });
+  return useMutation({ meta: { toast: false }, mutationFn: (kind: AccountingSyncKind) => testAccountingSyncConnection(kind) });
 }

@@ -49,6 +49,7 @@ function invalidatePeriodQueries(queryClient: ReturnType<typeof useQueryClient>,
 export function useOpenPeriod() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id }: TransitionArgs) => openPeriod(id),
     onSuccess: (_data, args) => invalidatePeriodQueries(queryClient, args),
   });
@@ -58,6 +59,7 @@ export function useOpenPeriod() {
 export function useSoftClosePeriod() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id }: TransitionArgs) => softClosePeriod(id),
     onSuccess: (_data, args) => invalidatePeriodQueries(queryClient, args),
   });
@@ -67,6 +69,7 @@ export function useSoftClosePeriod() {
 export function useHardClosePeriod() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id }: TransitionArgs) => hardClosePeriod(id),
     onSuccess: (_data, args) => invalidatePeriodQueries(queryClient, args),
   });

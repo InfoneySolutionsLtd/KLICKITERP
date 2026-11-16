@@ -32,6 +32,7 @@ function invalidateJournalQueries(queryClient: ReturnType<typeof useQueryClient>
 export function useCreateJournal() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: PostJournalDto) => createJournal(dto),
     onSuccess: () => invalidateJournalQueries(queryClient),
   });
@@ -41,6 +42,7 @@ export function useCreateJournal() {
 export function useReverseJournal() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "reversed" },
     mutationFn: ({ id, narration }: { id: string; narration: string }) => reverseJournal(id, narration),
     onSuccess: (reversal, { id }) => {
       invalidateJournalQueries(queryClient, id);

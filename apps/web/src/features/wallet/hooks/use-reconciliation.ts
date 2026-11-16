@@ -17,6 +17,7 @@ export function useWalletReconciliationStatus() {
 export function useRunWalletReconciliation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: () => runWalletReconciliation(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: RECONCILIATION_QUERY_KEY }),
   });

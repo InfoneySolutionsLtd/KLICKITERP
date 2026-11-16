@@ -24,6 +24,7 @@ export function useFiscalYear(id: string | undefined) {
 export function useCreateFiscalYear() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFiscalYearDto) => createFiscalYear(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FISCAL_YEARS_QUERY_KEY }),
   });

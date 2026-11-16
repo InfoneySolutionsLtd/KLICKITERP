@@ -39,6 +39,7 @@ export function useTheme(id: string | undefined) {
 export function useCreateTheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateThemeDto) => createTheme(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: THEMES_QUERY_KEY }),
   });
@@ -48,6 +49,7 @@ export function useCreateTheme() {
 export function useUpdateTheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateThemePayload }) => updateTheme(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: THEMES_QUERY_KEY });
@@ -69,6 +71,7 @@ export function useUpdateTheme() {
 export function usePublishTheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "published" },
     mutationFn: (id: string) => publishTheme(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: THEMES_QUERY_KEY }),
   });
@@ -78,6 +81,7 @@ export function usePublishTheme() {
 export function useRevertTheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (id: string) => revertTheme(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: THEMES_QUERY_KEY }),
   });

@@ -23,6 +23,7 @@ export function useTemplate(id: string | undefined) {
 export function useCreateTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateTemplateDto) => createTemplate(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY }),
   });
@@ -32,6 +33,7 @@ export function useCreateTemplate() {
 export function useUpdateTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateTemplateDto }) => updateTemplate(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY });
@@ -44,6 +46,7 @@ export function useUpdateTemplate() {
 export function useDeleteTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteTemplate(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY }),
   });

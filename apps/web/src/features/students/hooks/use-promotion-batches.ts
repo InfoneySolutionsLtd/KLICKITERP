@@ -33,6 +33,7 @@ export function usePromotionBatch(id: string | undefined) {
 export function usePromoteBatch() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: PromoteBatchDto) => promoteBatch(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROMOTION_BATCHES_QUERY_KEY });

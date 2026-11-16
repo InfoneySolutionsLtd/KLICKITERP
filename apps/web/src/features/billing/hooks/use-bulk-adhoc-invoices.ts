@@ -25,6 +25,7 @@ export function useCategoriesForScope(academicYearId: string | undefined, classI
 export function useBulkGenerateAdhocInvoices() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: (dto: BulkGenerateAdhocInvoicesDto) => bulkGenerateAdhocInvoices(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });

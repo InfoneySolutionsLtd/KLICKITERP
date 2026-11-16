@@ -43,6 +43,7 @@ function invalidate(queryClient: ReturnType<typeof useQueryClient>, employeeId: 
 export function useAddEmployeeComponent() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: (dto: AddEmployeeComponentDto) => addEmployeeComponent(dto),
     onSuccess: (created) => invalidate(queryClient, created.employeeId),
   });
@@ -52,6 +53,7 @@ export function useAddEmployeeComponent() {
 export function useEndEmployeeComponent() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ employeeId, dto }: { employeeId: string; dto: EndEmployeeComponentDto }) => endEmployeeComponent(employeeId, dto),
     onSuccess: (updated) => invalidate(queryClient, updated.employeeId),
   });

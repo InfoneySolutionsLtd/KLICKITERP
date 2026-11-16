@@ -44,6 +44,7 @@ export function useDebitNoteLines(id: string | undefined) {
 export function useCreateDebitNote(studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateDebitNoteDto) => createDebitNote(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentDebitNotesKey(studentId) });
@@ -65,6 +66,7 @@ export function useCreateDebitNote(studentId: string) {
 export function usePostDebitNote(studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postDebitNote(id),
     onSuccess: (note) => {
       queryClient.invalidateQueries({ queryKey: detailKey(note.id) });

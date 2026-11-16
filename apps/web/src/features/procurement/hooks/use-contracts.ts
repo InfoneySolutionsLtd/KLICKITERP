@@ -49,6 +49,7 @@ function invalidateContractQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateContract() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateContractDto) => createContract(dto),
     onSuccess: (created) => invalidateContractQueries(queryClient, created.id),
   });
@@ -57,6 +58,7 @@ export function useCreateContract() {
 export function useUpdateContract() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateContractDto }) => updateContract(id, dto),
     onSuccess: (updated) => invalidateContractQueries(queryClient, updated.id),
   });
@@ -65,6 +67,7 @@ export function useUpdateContract() {
 export function useTerminateContract() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: (id: string) => terminateContract(id),
     onSuccess: (updated) => invalidateContractQueries(queryClient, updated.id),
   });
@@ -73,6 +76,7 @@ export function useTerminateContract() {
 export function useMarkContractExpired() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (id: string) => markContractExpired(id),
     onSuccess: (updated) => invalidateContractQueries(queryClient, updated.id),
   });

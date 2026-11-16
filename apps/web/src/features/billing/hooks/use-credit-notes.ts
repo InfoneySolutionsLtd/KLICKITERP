@@ -53,6 +53,7 @@ export function useCreditNoteLines(id: string | undefined) {
 export function useCreateCreditNote(invoiceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateCreditNoteDto) => createCreditNote(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invoiceCreditNotesKey(invoiceId) });
@@ -63,6 +64,7 @@ export function useCreateCreditNote(invoiceId: string) {
 export function useSubmitCreditNote(invoiceId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitCreditNote(id),
     onSuccess: (note) => {
       queryClient.invalidateQueries({ queryKey: detailKey(note.id) });
@@ -74,6 +76,7 @@ export function useSubmitCreditNote(invoiceId: string | undefined) {
 export function useDecideCreditNote(invoiceId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideCreditNoteDto }) => decideCreditNote(id, dto),
     onSuccess: (note) => {
       queryClient.invalidateQueries({ queryKey: detailKey(note.id) });
@@ -96,6 +99,7 @@ export function useDecideCreditNote(invoiceId: string | undefined) {
 export function usePostCreditNote(invoiceId: string, studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postCreditNote(id),
     onSuccess: (note) => {
       queryClient.invalidateQueries({ queryKey: detailKey(note.id) });

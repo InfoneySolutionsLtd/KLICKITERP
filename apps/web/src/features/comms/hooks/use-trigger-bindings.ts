@@ -23,6 +23,7 @@ export function useTriggerBinding(id: string | undefined) {
 export function useCreateTriggerBinding() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateTriggerBindingDto) => createTriggerBinding(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: TRIGGER_BINDINGS_QUERY_KEY }),
   });
@@ -32,6 +33,7 @@ export function useCreateTriggerBinding() {
 export function useUpdateTriggerBinding() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateTriggerBindingDto }) => updateTriggerBinding(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: TRIGGER_BINDINGS_QUERY_KEY });

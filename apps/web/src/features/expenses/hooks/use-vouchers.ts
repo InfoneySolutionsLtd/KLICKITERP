@@ -49,6 +49,7 @@ function invalidateVoucherQueries(queryClient: ReturnType<typeof useQueryClient>
 export function useCreateVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateVoucherDto) => createVoucher(dto),
     onSuccess: () => invalidateVoucherQueries(queryClient),
   });
@@ -57,6 +58,7 @@ export function useCreateVoucher() {
 export function useUpdateVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateVoucherDto }) => updateVoucher(id, dto),
     onSuccess: (updated) => invalidateVoucherQueries(queryClient, updated.id),
   });
@@ -66,6 +68,7 @@ export function useUpdateVoucher() {
 export function useSubmitVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitVoucher(id),
     onSuccess: (updated) => invalidateVoucherQueries(queryClient, updated.id),
   });
@@ -75,6 +78,7 @@ export function useSubmitVoucher() {
 export function useApproveVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveVoucher(id),
     onSuccess: (updated) => invalidateVoucherQueries(queryClient, updated.id),
   });
@@ -84,6 +88,7 @@ export function useApproveVoucher() {
 export function useRejectVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectVoucher(id),
     onSuccess: (updated) => invalidateVoucherQueries(queryClient, updated.id),
   });
@@ -93,6 +98,7 @@ export function useRejectVoucher() {
 export function usePayVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => payVoucher(id),
     onSuccess: (updated) => invalidateVoucherQueries(queryClient, updated.id),
   });

@@ -69,6 +69,7 @@ export function useConcession(id: string | undefined) {
 export function useRequestConcession(studentId: string | undefined, invoiceId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: (dto: RequestConcessionDto) => requestConcession(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentConcessionsKey(studentId) });
@@ -88,6 +89,7 @@ export function useRequestConcession(studentId: string | undefined, invoiceId: s
 export function useDecideConcession(studentId: string | undefined, invoiceId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideConcessionDto }) => decideConcession(id, dto),
     onSuccess: (concession) => {
       queryClient.invalidateQueries({ queryKey: detailKey(concession.id) });
@@ -111,6 +113,7 @@ export function useDecideConcession(studentId: string | undefined, invoiceId: st
 export function usePostStandaloneConcession(studentId: string | undefined, invoiceId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postStandaloneConcession(id),
     onSuccess: (concession) => {
       queryClient.invalidateQueries({ queryKey: detailKey(concession.id) });

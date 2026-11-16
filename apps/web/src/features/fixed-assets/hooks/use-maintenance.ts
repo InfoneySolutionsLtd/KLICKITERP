@@ -28,6 +28,7 @@ export function useMaintenanceByAsset(assetId: string | undefined) {
 export function useScheduleMaintenance() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: ScheduleFaMaintenanceDto) => scheduleMaintenance(dto),
     onSuccess: (created: FaMaintenanceResponseDto) => {
       queryClient.invalidateQueries({ queryKey: fixedAssetsMaintenanceQueryKey(created.assetId) });
@@ -40,6 +41,7 @@ export function useScheduleMaintenance() {
 export function useCompleteMaintenance() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: CompleteFaMaintenanceDto }) => completeMaintenance(id, dto),
     onSuccess: (updated: FaMaintenanceResponseDto) => {
       queryClient.invalidateQueries({ queryKey: fixedAssetsMaintenanceQueryKey(updated.assetId) });

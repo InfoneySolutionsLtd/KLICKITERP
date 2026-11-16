@@ -51,6 +51,7 @@ export function useAllTerms() {
 export function useCreateAcademicYear() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateAcademicYearDto) => createAcademicYear(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ACADEMIC_YEARS_QUERY_KEY }),
   });
@@ -60,6 +61,7 @@ export function useCreateAcademicYear() {
 export function useCreateTerm() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateTermDto) => createTerm(dto),
     onSuccess: (created) => queryClient.invalidateQueries({ queryKey: termsQueryKey(created.academicYearId) }),
   });

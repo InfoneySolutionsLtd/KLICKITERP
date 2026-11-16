@@ -80,6 +80,7 @@ function invalidateStockTakeQueries(queryClient: ReturnType<typeof useQueryClien
 export function useCreateStockTake() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateStockTakeDto) => createStockTake(dto),
     onSuccess: () => invalidateStockTakeQueries(queryClient),
   });
@@ -88,6 +89,7 @@ export function useCreateStockTake() {
 export function useRecordStockTakeCounts() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "recorded" },
     mutationFn: ({ id, dto }: { id: string; dto: RecordCountsDto }) => recordStockTakeCounts(id, dto),
     onSuccess: (stockTake) => invalidateStockTakeQueries(queryClient, stockTake.id),
   });
@@ -96,6 +98,7 @@ export function useRecordStockTakeCounts() {
 export function useSubmitStockTake() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitStockTake(id),
     onSuccess: (stockTake) => invalidateStockTakeQueries(queryClient, stockTake.id, stockTake.approvalRef),
   });
@@ -105,6 +108,7 @@ export function useSubmitStockTake() {
 export function useDecideStockTake() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideStockTakeDto }) => decideStockTake(id, dto),
     onSuccess: (stockTake) => invalidateStockTakeQueries(queryClient, stockTake.id, stockTake.approvalRef),
   });
@@ -113,6 +117,7 @@ export function useDecideStockTake() {
 export function usePostStockTake() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postStockTake(id),
     onSuccess: (stockTake) => invalidateStockTakeQueries(queryClient, stockTake.id, stockTake.approvalRef),
   });

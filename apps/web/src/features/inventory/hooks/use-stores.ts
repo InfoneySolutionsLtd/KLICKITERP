@@ -32,6 +32,7 @@ function invalidateStoreQueries(queryClient: ReturnType<typeof useQueryClient>, 
 export function useCreateStore() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateStoreDto) => createStore(dto),
     onSuccess: () => invalidateStoreQueries(queryClient),
   });
@@ -41,6 +42,7 @@ export function useCreateStore() {
 export function useUpdateStore() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateStoreDto }) => updateStore(id, dto),
     onSuccess: (updated) => invalidateStoreQueries(queryClient, updated.id),
   });

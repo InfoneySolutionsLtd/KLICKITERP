@@ -20,6 +20,7 @@ export function useStreamsForClass(classId: string | undefined | null) {
 export function useCreateStream(classId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateStreamDto) => createStream(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: streamsQueryKey(classId) }),
   });
@@ -28,6 +29,7 @@ export function useCreateStream(classId: string) {
 export function useUpdateStream(classId: string, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateStreamDto) => updateStream(id, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: streamsQueryKey(classId) }),
   });
@@ -37,6 +39,7 @@ export function useUpdateStream(classId: string, id: string) {
 export function useDeleteStream(classId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteStream(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: streamsQueryKey(classId) }),
   });

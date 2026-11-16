@@ -23,6 +23,7 @@ export function useClasses() {
 export function useCreateClass() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateClassDto) => createClass(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: CLASSES_QUERY_KEY }),
   });
@@ -31,6 +32,7 @@ export function useCreateClass() {
 export function useUpdateClass(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateClassDto) => updateClass(id, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: CLASSES_QUERY_KEY }),
   });
@@ -40,6 +42,7 @@ export function useUpdateClass(id: string) {
 export function useDeleteClass() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteClass(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: CLASSES_QUERY_KEY }),
   });

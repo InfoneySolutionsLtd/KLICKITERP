@@ -31,6 +31,7 @@ export function useBroadcast(id: string | undefined) {
 export function useCreateBroadcast() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateBroadcastDto) => createBroadcast(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BROADCASTS_QUERY_KEY }),
   });
@@ -47,6 +48,7 @@ export function useCreateBroadcast() {
 export function useSubmitForApproval(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (dto: SubmitBroadcastApprovalDto) => submitForApproval(id, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BROADCASTS_QUERY_KEY }),
   });
@@ -55,6 +57,7 @@ export function useSubmitForApproval(id: string) {
 export function useApproveBroadcast(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: () => approveBroadcast(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BROADCASTS_QUERY_KEY }),
   });
@@ -63,6 +66,7 @@ export function useApproveBroadcast(id: string) {
 export function useCancelBroadcast(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: () => cancelBroadcast(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BROADCASTS_QUERY_KEY }),
   });
@@ -71,6 +75,7 @@ export function useCancelBroadcast(id: string) {
 export function useSendBroadcast(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "sent" },
     mutationFn: () => sendBroadcast(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BROADCASTS_QUERY_KEY }),
   });

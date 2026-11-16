@@ -82,6 +82,7 @@ function invalidateRunQueries(queryClient: ReturnType<typeof useQueryClient>, ru
 export function useCreateRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePyrlRunDto) => createRun(dto),
     onSuccess: (created) => invalidateRunQueries(queryClient, created),
   });
@@ -91,6 +92,7 @@ export function useCreateRun() {
 export function useComputeRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (id: string) => computeRun(id),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -99,6 +101,7 @@ export function useComputeRun() {
 export function useReviewRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => reviewRun(id),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -107,6 +110,7 @@ export function useReviewRun() {
 export function useSubmitRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitRun(id),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -115,6 +119,7 @@ export function useSubmitRun() {
 export function useDecideRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecidePyrlRunDto }) => decideRun(id, dto),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -132,6 +137,7 @@ export function useDecideRun() {
 export function useCommitRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => commitRun(id),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -140,6 +146,7 @@ export function useCommitRun() {
 export function usePayRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: PayPyrlRunDto }) => payRun(id, dto),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
@@ -148,6 +155,7 @@ export function usePayRun() {
 export function useFileRun() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => fileRun(id),
     onSuccess: (updated) => invalidateRunQueries(queryClient, updated),
   });
