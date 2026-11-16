@@ -10,6 +10,7 @@ describe("FilesService", () => {
   let storage: {
     putObject: jest.Mock;
     getSignedUrl: jest.Mock;
+    getObject: jest.Mock;
     deleteObject: jest.Mock;
   };
   let fileObjectRepository: {
@@ -39,6 +40,7 @@ describe("FilesService", () => {
         sizeBytes: body.byteLength,
       })),
       getSignedUrl: jest.fn(async () => "https://minio.example/signed"),
+      getObject: jest.fn(async () => Buffer.from("image-bytes")),
       deleteObject: jest.fn(async () => undefined),
     };
 
@@ -193,6 +195,46 @@ describe("FilesService", () => {
     it("propagates NotFoundException for an unknown file id", async () => {
       fileObjectRepository.findByIdOrFail.mockRejectedValue(new NotFoundException("FileObject", "missing"));
       await expect(service.getSignedUrl("missing")).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe("read", () => {
+    const logoRow = {
+      id: "file-1",
+      bucket: "klickit-files",
+      objectKey: "abc/logo.png",
+      mime: "image/png",
+      originalName: "logo.png",
+      sizeBytes: "11",
+    } as FileObjectEntity;
+
+    it("reads the object's bytes from the storage port and returns them with the file's mime and name", async () => {
+      fileObjectRepository.findByIdOrFail.mockResolvedValue(logoRow);
+
+      const result = await service.read("file-1");
+
+      expect(storage.getObject).toHaveBeenCalledWith("klickit-files", "abc/logo.png");
+      expect(result.buffer.toString()).toBe("image-bytes");
+      expect(result.mime).toBe("image/png");
+      expect(result.originalName).toBe("logo.png");
+    });
+
+    it("refuses a file bigger than the limit WITHOUT touching storage — it buffers the whole body", async () => {
+      fileObjectRepository.findByIdOrFail.mockResolvedValue({ ...logoRow, sizeBytes: String(6 * 1024 * 1024) } as FileObjectEntity);
+
+      await expect(service.read("file-1")).rejects.toBeInstanceOf(ValidationException);
+      expect(storage.getObject).not.toHaveBeenCalled();
+    });
+
+    it("honours an explicit, larger limit", async () => {
+      fileObjectRepository.findByIdOrFail.mockResolvedValue({ ...logoRow, sizeBytes: String(6 * 1024 * 1024) } as FileObjectEntity);
+
+      await expect(service.read("file-1", 10 * 1024 * 1024)).resolves.toBeDefined();
+    });
+
+    it("propagates NotFoundException for an unknown file id", async () => {
+      fileObjectRepository.findByIdOrFail.mockRejectedValue(new NotFoundException("FileObject", "missing"));
+      await expect(service.read("missing")).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
