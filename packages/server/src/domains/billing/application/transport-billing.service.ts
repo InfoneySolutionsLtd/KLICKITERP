@@ -1,15 +1,20 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, EntityManager } from "typeorm";
 import { runInTransaction } from "../../../shared/database/tx";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { Money } from "../../../shared/money/money";
 import { AcademicCalendarService } from "../../../platform/settings";
+// Barrel import (a pure application-layer service dependency, not an entity
+// file) — same import `BulkBillingService` uses, see billing.module.ts's own
+// doc comment on import ordering.
+import { StdStudentRepository } from "../../students";
 import { BillFeeCategoryRepository } from "../infrastructure/bill-fee-category.repository";
 import { BillTransportRouteRepository } from "../infrastructure/bill-transport-route.repository";
 import { BillInvoiceLineRepository } from "../infrastructure/bill-invoice-line.repository";
 import { BillTransportBillingLineRepository } from "../infrastructure/bill-transport-billing-line.repository";
 import { InvoicingService } from "./invoicing.service";
+import { formatStudentLabel } from "./student-label";
 
 /**
  * Migration `0245`'s idempotent seed (mirroring `LATE_FEE_INCOME_CATEGORY_NAME`'s
@@ -29,11 +34,15 @@ export interface BillTransportInput {
 
 export interface BillTransportSuccess {
   studentId: string;
+  /** "First Last (admission no.)" — see `formatStudentLabel()`. Optional so the UI can fall back to the id. */
+  studentLabel?: string;
   invoiceIds: string[];
 }
 
 export interface BillTransportFailure {
   studentId: string;
+  /** "First Last (admission no.)" — see `formatStudentLabel()`. Optional so the UI can fall back to the id. */
+  studentLabel?: string;
   error: string;
 }
 
@@ -55,6 +64,8 @@ export interface TransportRegenerateSuccess {
 /** Not an error — no qualifying prior-term transport billing to carry forward, or already billed for transport this term. */
 export interface TransportRegenerateSkip {
   studentId: string;
+  /** "First Last (admission no.)" — see `formatStudentLabel()`. Optional so the UI can fall back to the id. */
+  studentLabel?: string;
   reason: string;
 }
 
@@ -100,6 +111,8 @@ type RegenerateForStudentResult =
  */
 @Injectable()
 export class TransportBillingService {
+  private readonly logger = new Logger(TransportBillingService.name);
+
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly transportRouteRepository: BillTransportRouteRepository,
@@ -108,7 +121,27 @@ export class TransportBillingService {
     private readonly billInvoiceLineRepository: BillInvoiceLineRepository,
     private readonly billingLineRepository: BillTransportBillingLineRepository,
     private readonly academicCalendarService: AcademicCalendarService,
+    // Appended at the END of the param list — only used to put student names
+    // into batch results (see `loadStudentLabels()`).
+    private readonly studentRepository: StdStudentRepository,
   ) {}
+
+  /**
+   * Display labels for a batch's students, in ONE query. Best-effort by design:
+   * the invoices in a batch are generated and posted in their own committed
+   * transactions, so a failure while looking up names must never turn a
+   * successful billing run into an error response — the caller just gets no
+   * labels and the UI falls back to showing the id.
+   */
+  private async loadStudentLabels(studentIds: string[]): Promise<Map<string, string>> {
+    try {
+      const students = await this.studentRepository.findByIds(studentIds);
+      return new Map(students.map((student) => [student.id, formatStudentLabel(student)]));
+    } catch (error) {
+      this.logger.warn(`Could not load student names for a batch result: ${error instanceof Error ? error.message : String(error)}`);
+      return new Map();
+    }
+  }
 
   async billStudents(input: BillTransportInput, initiatedBy: string): Promise<BillTransportResult> {
     const route = await this.transportRouteRepository.findByIdOrFail(input.routeId);
@@ -122,15 +155,17 @@ export class TransportBillingService {
 
     const succeeded: BillTransportSuccess[] = [];
     const failed: BillTransportFailure[] = [];
+    const labels = await this.loadStudentLabels(input.studentIds);
 
     for (const studentId of input.studentIds) {
+      const studentLabel = labels.get(studentId);
       try {
         const invoiceIds = await runInTransaction(this.dataSource, (manager) =>
           this.billOneStudent(manager, studentId, route.id, route.name, route.amount, category.id, input.termId, input.issueDate, initiatedBy),
         );
-        succeeded.push({ studentId, invoiceIds });
+        succeeded.push({ studentId, studentLabel, invoiceIds });
       } catch (error) {
-        failed.push({ studentId, error: error instanceof Error ? error.message : String(error) });
+        failed.push({ studentId, studentLabel, error: error instanceof Error ? error.message : String(error) });
       }
     }
 
@@ -222,8 +257,9 @@ export class TransportBillingService {
     );
     if (!precedingTerm) {
       throw new NotFoundException(
-        "SetTerm(preceding)",
-        `no term with seq=${targetTerm.seq - 1} exists in academic year ${targetTerm.academicYearId} — term "${targetTerm.name}" (seq ${targetTerm.seq}) has no preceding term to carry forward transport billing from`,
+        // Shown verbatim to the accountant: names the term, never an academic-year id or "seq=" internals.
+        "Preceding term",
+        `${targetTerm.name} has no earlier term in its academic year, so there is no transport billing to carry forward from`,
       );
     }
 
@@ -255,18 +291,21 @@ export class TransportBillingService {
     const failed: BillTransportFailure[] = [];
     const skipped: TransportRegenerateSkip[] = [];
 
+    const labels = await this.loadStudentLabels([...priorRouteByStudent.keys()]);
+
     for (const [studentId, routeId] of priorRouteByStudent) {
+      const studentLabel = labels.get(studentId);
       try {
         const result = await runInTransaction(this.dataSource, (manager) =>
           this.regenerateOneStudent(manager, studentId, routeId, category.id, termId, alreadyBilledStudents, initiatedBy),
         );
         if (result.kind === "skipped") {
-          skipped.push({ studentId, reason: result.reason });
+          skipped.push({ studentId, studentLabel, reason: result.reason });
         } else {
           succeeded.push({ studentId, invoiceIds: result.invoiceIds, routeId: result.routeId });
         }
       } catch (error) {
-        failed.push({ studentId, error: error instanceof Error ? error.message : String(error) });
+        failed.push({ studentId, studentLabel, error: error instanceof Error ? error.message : String(error) });
       }
     }
 

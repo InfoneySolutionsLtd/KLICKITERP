@@ -26,6 +26,9 @@ export class BillTransportSuccessDto {
   @ApiProperty({ format: "uuid" })
   studentId!: string;
 
+  @ApiPropertyOptional({ description: 'Display label "First Last (admission no.)" — show this instead of the id' })
+  studentLabel?: string;
+
   @ApiProperty({ type: [String] })
   invoiceIds!: string[];
 }
@@ -33,6 +36,9 @@ export class BillTransportSuccessDto {
 export class BillTransportFailureDto {
   @ApiProperty({ format: "uuid" })
   studentId!: string;
+
+  @ApiPropertyOptional({ description: 'Display label "First Last (admission no.)" — show this instead of the id' })
+  studentLabel?: string;
 
   @ApiProperty()
   error!: string;
@@ -71,6 +77,9 @@ export class TransportRegenerateSuccessDto {
 export class TransportRegenerateSkipDto {
   @ApiProperty({ format: "uuid" })
   studentId!: string;
+
+  @ApiPropertyOptional({ description: 'Display label "First Last (admission no.)" — show this instead of the id' })
+  studentLabel?: string;
 
   @ApiProperty({ description: "Why nothing was generated for this student (not an error)" })
   reason!: string;

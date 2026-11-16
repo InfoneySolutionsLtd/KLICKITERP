@@ -20,12 +20,14 @@ export type BillTransportRouteDto = z.infer<typeof BillTransportRouteDtoSchema>;
 
 export const BillTransportSuccessDtoSchema = z.object({
     studentId: z.string(),
+    studentLabel: z.string().optional(),
     invoiceIds: z.array(z.string()),
 });
 export type BillTransportSuccessDto = z.infer<typeof BillTransportSuccessDtoSchema>;
 
 export const BillTransportFailureDtoSchema = z.object({
     studentId: z.string(),
+    studentLabel: z.string().optional(),
     error: z.string(),
 });
 export type BillTransportFailureDto = z.infer<typeof BillTransportFailureDtoSchema>;
@@ -51,6 +53,7 @@ export type TransportRegenerateSuccessDto = z.infer<typeof TransportRegenerateSu
 
 export const TransportRegenerateSkipDtoSchema = z.object({
     studentId: z.string(),
+    studentLabel: z.string().optional(),
     reason: z.string(),
 });
 export type TransportRegenerateSkipDto = z.infer<typeof TransportRegenerateSkipDtoSchema>;

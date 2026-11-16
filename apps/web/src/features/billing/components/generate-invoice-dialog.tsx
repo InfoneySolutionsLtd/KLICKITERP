@@ -69,7 +69,7 @@ interface DialogCreditBalanceOutcome {
   receiptId?: string;
 }
 
-/** Mirrors `bulk-generate-invoice-form.tsx`'s own `sortInvoiceIdsByDueDate()` — see its doc comment for why this re-sort is necessary rather than trusting `invoiceIds` array order as-is. */
+/** Same re-sort as `../lib/order-invoices-by-due-date.ts` — see its doc comment for why this is necessary rather than trusting `invoiceIds` array order as-is. (This dialog needs only the ids, so it keeps its own throwing variant.) */
 async function sortInvoiceIdsByDueDate(invoiceIds: string[]): Promise<string[]> {
   const withDueDate = await Promise.all(invoiceIds.map(async (invoiceId) => ({ invoiceId, dueDate: (await getInvoice(invoiceId)).dueDate })));
   return withDueDate.sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0)).map((i) => i.invoiceId);
