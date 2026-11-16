@@ -21,6 +21,7 @@ describe("BulkAdhocInvoicesService", () => {
   let feeCategoryRepository: { findByIdOrFail: jest.Mock };
   let invoicingService: { generateInvoice: jest.Mock; postInvoice: jest.Mock };
   let billInvoiceLineRepository: { listAlreadyBilledCategoryIds: jest.Mock };
+  let academicCalendarService: { findTermByIdOrFail: jest.Mock };
   let dataSource: DataSource;
   let service: BulkAdhocInvoicesService;
 
@@ -46,6 +47,10 @@ describe("BulkAdhocInvoicesService", () => {
     billInvoiceLineRepository = {
       listAlreadyBilledCategoryIds: jest.fn(async () => new Set<string>()),
     };
+    // Only consulted to put a term NAME into failure messages.
+    academicCalendarService = {
+      findTermByIdOrFail: jest.fn(async (id: string) => ({ id, name: "Term 3" })),
+    };
     dataSource = {
       transaction: jest.fn(async (_isolation: string, work: (manager: EntityManager) => Promise<unknown>) =>
         work({} as EntityManager),
@@ -59,6 +64,7 @@ describe("BulkAdhocInvoicesService", () => {
       feeCategoryRepository as never,
       invoicingService as never,
       billInvoiceLineRepository as never,
+      academicCalendarService as never,
     );
   });
 
@@ -119,6 +125,10 @@ describe("BulkAdhocInvoicesService", () => {
     expect(result.failed).toHaveLength(1);
     expect(result.failed[0].studentId).toBe("s2");
     expect(result.failed[0].error).toMatch(/BR-BILL-02/);
+    // Readable: names the term, carries no raw ids (the old message embedded student= and term= ids).
+    expect(result.failed[0].error).toContain("Term 3");
+    expect(result.failed[0].error).not.toContain("s2");
+    expect(result.failed[0].error).not.toContain("term-1");
     // s1/s3 still fully succeeded despite s2's failure — the batch was never aborted.
     expect(invoicingService.generateInvoice).toHaveBeenCalledTimes(2);
   });
@@ -136,6 +146,39 @@ describe("BulkAdhocInvoicesService", () => {
       { studentId: "s1", error: expect.stringContaining("None of the selected fee categories") },
     ]);
     expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
+  });
+
+  it("the 'no selected category on the structure' failure names the term and the selected categories — no structure/term/student ids", async () => {
+    feeStructureLineRepository.listByStructureAndTerm.mockResolvedValue([makeLine({ feeCategoryId: "cat-OTHER" })]);
+    feeStructuresService.findApplicableFor.mockResolvedValue({ id: "structure-UUID-1" });
+
+    const result = await service.bulkGenerate(
+      { termId: "term-UUID-1", classId: "class-1", feeCategoryIds: ["cat-1", "cat-2"], studentIds: ["student-UUID-1"] },
+      "initiator-1",
+    );
+
+    const message = result.failed[0].error;
+    expect(message).toBe(
+      "None of the selected fee categories (Category cat-1, Category cat-2) appear on this student's applicable fee structure for Term 3",
+    );
+    expect(message).not.toContain("structure-UUID-1");
+    expect(message).not.toContain("term-UUID-1");
+    expect(message).not.toContain("student-UUID-1");
+  });
+
+  it("falls back to ids in the message (rather than masking the real failure) when a name lookup itself fails", async () => {
+    feeStructureLineRepository.listByStructureAndTerm.mockResolvedValue([makeLine({ feeCategoryId: "cat-OTHER" })]);
+    academicCalendarService.findTermByIdOrFail.mockRejectedValue(new Error("boom"));
+    feeCategoryRepository.findByIdOrFail.mockRejectedValue(new Error("boom"));
+
+    const result = await service.bulkGenerate(
+      { termId: "term-1", classId: "class-1", feeCategoryIds: ["cat-1"], studentIds: ["s1"] },
+      "initiator-1",
+    );
+
+    expect(result.failed).toEqual([
+      { studentId: "s1", error: "None of the selected fee categories (cat-1) appear on this student's applicable fee structure for term-1" },
+    ]);
   });
 
   it("a postInvoice() failure on one due-date group aborts the remaining groups for that student (one transaction per student, not per group)", async () => {

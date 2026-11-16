@@ -12,13 +12,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ApiError } from "@/lib/api-error";
 import { formatMoney } from "@/lib/money";
 import { useActiveClasses } from "@/features/students/hooks/use-classes";
+import { useStudents } from "@/features/students/hooks/use-students";
 import { findWalletByStudent, sweepToInvoices } from "@/features/wallet/api/wallets.api";
 import { isInsufficientBalanceError, isTransferNeedsApprovalError } from "@/features/wallet/lib/errors";
 import { applyStudentCredit } from "../api/student-credit.api";
 import { AcademicYearTermSelect } from "./academic-year-term-select";
 import { FeeCategoryChipPicker } from "./fee-category-chip-picker";
 import { StudentSelectionGrid } from "./student-selection-grid";
-import { getInvoice } from "../api/invoices.api";
+import { orderInvoicesByDueDate } from "../lib/order-invoices-by-due-date";
 import { useBulkGenerateAdhocInvoices, useCategoriesForScope } from "../hooks/use-bulk-adhoc-invoices";
 
 /**
@@ -39,6 +40,8 @@ export type WalletOutcomeKind = "settled" | "partialShortfall" | "needsApproval"
 export interface WalletOutcome {
   studentId: string;
   invoiceId: string;
+  /** The invoice's own number (e.g. "INV-000123") — what result lines show; `invoiceId` is only the fallback if it couldn't be loaded. */
+  invoiceNumber?: string;
   amount: string;
   outcome: WalletOutcomeKind;
   message?: string;
@@ -72,31 +75,13 @@ export type CreditBalanceOutcomeKind = "settled" | "partialShortfall" | "failed"
 export interface CreditBalanceOutcome {
   studentId: string;
   invoiceId: string;
+  /** The invoice's own number (e.g. "INV-000123") — what result lines show; `invoiceId` is only the fallback if it couldn't be loaded. */
+  invoiceNumber?: string;
   amount: string;
   outcome: CreditBalanceOutcomeKind;
   message?: string;
   /** Only ever set on a `"settled"` outcome, and only when `applyStudentCredit()` actually created a receipt (i.e. SOME amount was applied this call). */
   receiptId?: string;
-}
-
-/**
- * Sorts the given invoice ids by their real `dueDate` ascending (oldest
- * first) — `sweepToInvoices()`'s own contract requires a caller-ordered,
- * oldest-due-first list (see `wallets.api.ts`'s doc comment), and
- * `BulkAdhocInvoicesService.generateForStudent()`'s own due-date grouping
- * (`packages/server/.../bulk-adhoc-invoices.service.ts`) builds its
- * `invoiceIds` result from `BillFeeStructureLineRepository
- * .listByStructureAndTerm()`, which issues a plain `.find()` with NO
- * `ORDER BY` clause (confirmed by reading it directly) — so the array order
- * `result.succeeded[].invoiceIds` comes back in is NOT actually guaranteed
- * to be due-date order at the SQL level, just usually-coincidentally close
- * to it. Rather than trust that coincidence, this re-sorts explicitly by
- * each invoice's own real `dueDate` (an ISO `YYYY-MM-DD` string, so a plain
- * lexicographic compare is correct) before ever calling `sweepToInvoices()`.
- */
-async function sortInvoiceIdsByDueDate(invoiceIds: string[]): Promise<string[]> {
-  const withDueDate = await Promise.all(invoiceIds.map(async (invoiceId) => ({ invoiceId, dueDate: (await getInvoice(invoiceId)).dueDate })));
-  return withDueDate.sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0)).map((i) => i.invoiceId);
 }
 
 /**
@@ -181,6 +166,17 @@ export function BulkGenerateInvoiceForm() {
   const categoriesQuery = useCategoriesForScope(academicYearId ?? undefined, classId ?? undefined);
   const bulkGenerateMutation = useBulkGenerateAdhocInvoices();
 
+  // Identical params to `<StudentSelectionGrid>`'s own query, so this shares its
+  // cache entry (no extra request) — it is the source of the student names the
+  // result card shows in place of the bare ids the API returns.
+  const studentsQuery = useStudents({ classId: classId ?? undefined, status: "ACTIVE", pageSize: 200 }, { enabled: !!classId });
+  // A snapshot taken when the form is submitted, not a live lookup: changing the
+  // class afterwards swaps the student list, but the result card on screen must
+  // keep naming the students it was generated for.
+  const [resultStudentNames, setResultStudentNames] = React.useState<Map<string, string>>(() => new Map());
+  /** "First Last (admission no.)" — the same label the student grid shows; the raw id only if a student somehow isn't in the loaded list. */
+  const studentLabel = (id: string) => resultStudentNames.get(id) ?? id;
+
   // A different class means a different category catalog AND a different student population —
   // stale selections from the previous class must not silently carry over.
   React.useEffect(() => {
@@ -228,6 +224,10 @@ export function BulkGenerateInvoiceForm() {
       return;
     }
 
+    setResultStudentNames(
+      new Map((studentsQuery.data?.items ?? []).map((s) => [s.id, `${s.firstName} ${s.lastName} (${s.admissionNo})`])),
+    );
+
     let result;
     try {
       result = await bulkGenerateMutation.mutateAsync({ termId, classId, feeCategoryIds, studentIds });
@@ -268,7 +268,7 @@ export function BulkGenerateInvoiceForm() {
    * succeeded student (not one `transferToFees()` call per invoice, Slice
    * 8's original design), each call covering ALL of that student's own
    * newly-generated invoices at once, oldest-due-first
-   * (`sortInvoiceIdsByDueDate()` above).
+   * (`orderInvoicesByDueDate()`).
    *
    * Response mapping (per the plan's own explicit spec):
    *  - every invoice in `response.allocations` gets a `"settled"` outcome
@@ -300,6 +300,11 @@ export function BulkGenerateInvoiceForm() {
     const walletIdByStudent = new Map<string, string | null>();
 
     for (const student of succeeded) {
+      // One load per student: gives the due-date order the sweep needs AND the
+      // invoice numbers every result line below shows (see `orderInvoicesByDueDate()`).
+      const ordering = await orderInvoicesByDueDate(student.invoiceIds);
+      const invoiceNumber = (invoiceId: string) => ordering.numberById.get(invoiceId);
+
       let walletId = walletIdByStudent.get(student.studentId);
       if (walletId === undefined) {
         const wallet = await findWalletByStudent(student.studentId).catch(() => null);
@@ -309,19 +314,20 @@ export function BulkGenerateInvoiceForm() {
 
       if (!walletId) {
         for (const invoiceId of student.invoiceIds) {
-          outcomes.push({ studentId: student.studentId, invoiceId, amount: "0.0000", outcome: "noWallet" });
+          outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "0.0000", outcome: "noWallet" });
         }
         continue;
       }
 
       try {
-        const orderedInvoiceIds = await sortInvoiceIdsByDueDate(student.invoiceIds);
-        const result = await sweepToInvoices(walletId, { invoiceIds: orderedInvoiceIds });
+        if (!ordering.ok) throw ordering.error;
+        const result = await sweepToInvoices(walletId, { invoiceIds: ordering.orderedIds });
 
         for (const alloc of result.allocations) {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: alloc.invoiceId,
+            invoiceNumber: invoiceNumber(alloc.invoiceId),
             amount: alloc.amount,
             outcome: "settled",
             receiptId: result.receiptId ?? undefined,
@@ -331,6 +337,7 @@ export function BulkGenerateInvoiceForm() {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: shortfall.invoiceId,
+            invoiceNumber: invoiceNumber(shortfall.invoiceId),
             amount: shortfall.remainingBalance,
             outcome: "partialShortfall",
           });
@@ -338,16 +345,16 @@ export function BulkGenerateInvoiceForm() {
       } catch (err) {
         if (isTransferNeedsApprovalError(err)) {
           for (const invoiceId of student.invoiceIds) {
-            outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "needsApproval" });
+            outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "needsApproval" });
           }
         } else if (isInsufficientBalanceError(err)) {
           for (const invoiceId of student.invoiceIds) {
-            outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "insufficientBalance" });
+            outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "insufficientBalance" });
           }
         } else {
           const message = err instanceof ApiError ? err.message : t("genericError");
           for (const invoiceId of student.invoiceIds) {
-            outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "failed", message });
+            outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "failed", message });
           }
         }
       }
@@ -363,7 +370,7 @@ export function BulkGenerateInvoiceForm() {
    * both checkboxes are checked (see `handleSubmit()`'s own ordering
    * comment). One real `applyStudentCredit()` call per succeeded student,
    * covering ALL of that student's own newly-generated invoices at once,
-   * oldest-due-first (`sortInvoiceIdsByDueDate()` above —
+   * oldest-due-first (`orderInvoicesByDueDate()` —
    * `applyStudentCreditToInvoices()` has the identical caller-ordered
    * contract `sweepToInvoices()` does).
    *
@@ -385,14 +392,19 @@ export function BulkGenerateInvoiceForm() {
     const outcomes: CreditBalanceOutcome[] = [];
 
     for (const student of succeeded) {
+      // One load per student — see the same line in `runWalletCollection()`.
+      const ordering = await orderInvoicesByDueDate(student.invoiceIds);
+      const invoiceNumber = (invoiceId: string) => ordering.numberById.get(invoiceId);
+
       try {
-        const orderedInvoiceIds = await sortInvoiceIdsByDueDate(student.invoiceIds);
-        const result = await applyStudentCredit({ studentId: student.studentId, invoiceIds: orderedInvoiceIds });
+        if (!ordering.ok) throw ordering.error;
+        const result = await applyStudentCredit({ studentId: student.studentId, invoiceIds: ordering.orderedIds });
 
         for (const alloc of result.allocations) {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: alloc.invoiceId,
+            invoiceNumber: invoiceNumber(alloc.invoiceId),
             amount: alloc.amount,
             outcome: "settled",
             receiptId: result.receiptId ?? undefined,
@@ -402,6 +414,7 @@ export function BulkGenerateInvoiceForm() {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: shortfall.invoiceId,
+            invoiceNumber: invoiceNumber(shortfall.invoiceId),
             amount: shortfall.remainingBalance,
             outcome: "partialShortfall",
           });
@@ -409,7 +422,7 @@ export function BulkGenerateInvoiceForm() {
       } catch (err) {
         const message = err instanceof ApiError ? err.message : t("genericError");
         for (const invoiceId of student.invoiceIds) {
-          outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "failed", message });
+          outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "failed", message });
         }
       }
     }
@@ -533,7 +546,7 @@ export function BulkGenerateInvoiceForm() {
                 <ul className="list-inside list-disc text-sm text-muted-foreground">
                   {summary.failed.map((f) => (
                     <li key={f.studentId}>
-                      {f.studentId}: {f.error}
+                      {studentLabel(f.studentId)}: {f.error}
                     </li>
                   ))}
                 </ul>
@@ -548,7 +561,7 @@ export function BulkGenerateInvoiceForm() {
                   {summary.skipped.map((s) => (
                     <li key={s.studentId}>
                       {t("resultSkippedEntry", {
-                        studentId: s.studentId,
+                        student: studentLabel(s.studentId),
                         categories: formatCategoryNames(s.alreadyBilledCategoryIds, categoryNameById),
                       })}
                     </li>
@@ -565,7 +578,7 @@ export function BulkGenerateInvoiceForm() {
                   {summary.partiallySkipped.map((s) => (
                     <li key={s.studentId}>
                       {t("resultPartialSkipEntry", {
-                        studentId: s.studentId,
+                        student: studentLabel(s.studentId),
                         categories: formatCategoryNames(s.alreadyBilledCategoryIds, categoryNameById),
                       })}
                     </li>
@@ -588,7 +601,7 @@ export function BulkGenerateInvoiceForm() {
                 <ul className="list-inside list-disc text-xs text-muted-foreground">
                   {walletOutcomes.map((o) => (
                     <li key={`${o.invoiceId}-${o.outcome}`}>
-                      {o.studentId.slice(0, 8)}… / {o.invoiceId.slice(0, 8)}…: {t(`walletOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
+                      {studentLabel(o.studentId)} / {o.invoiceNumber ?? `${o.invoiceId.slice(0, 8)}…`}: {t(`walletOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
                       {o.message ? ` — ${o.message}` : ""}
                       {o.outcome === "settled" && o.receiptId && (
                         <>
@@ -620,7 +633,7 @@ export function BulkGenerateInvoiceForm() {
                 <ul className="list-inside list-disc text-xs text-muted-foreground">
                   {creditBalanceOutcomes.map((o) => (
                     <li key={`${o.invoiceId}-${o.outcome}`}>
-                      {o.studentId.slice(0, 8)}… / {o.invoiceId.slice(0, 8)}…: {t(`creditBalanceOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
+                      {studentLabel(o.studentId)} / {o.invoiceNumber ?? `${o.invoiceId.slice(0, 8)}…`}: {t(`creditBalanceOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
                       {o.message ? ` — ${o.message}` : ""}
                       {o.outcome === "settled" && o.receiptId && (
                         <>
