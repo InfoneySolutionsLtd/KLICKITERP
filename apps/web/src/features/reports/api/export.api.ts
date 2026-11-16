@@ -3,11 +3,12 @@ import { apiClient } from "@/lib/api-client";
 import { unwrapApiResult } from "@/lib/api-error";
 
 /**
- * `POST /reports/export`: CSV completes synchronously server-side
+ * `POST /reports/export`: CSV and PDF complete synchronously server-side
  * (`status: "DONE"`, `fileId` populated in the same response — confirmed by
- * reading `export-jobs.service.ts` directly). XLSX/PDF are queued-forever
- * placeholders with no worker to ever pick them up, so this slice only ever
- * sends `format: "CSV"`.
+ * reading `export-jobs.service.ts` directly). PDF is the branded document
+ * (letterhead, watermark, signatures, QR verification); CSV is raw data. XLSX
+ * is a queued-forever placeholder with no worker to ever pick it up, so the
+ * UI never sends it.
  *
  * `CreateExportJobDto.params` degrades to a generated, gapped
  * `Record<string, never>` (same reason as `execute.api.ts`'s own
