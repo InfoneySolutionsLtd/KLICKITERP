@@ -154,6 +154,8 @@
         "platform/files",
         "platform/auth",
         "platform/comms",
+        "platform/branding",
+        "platform/document-verification",
         "domains/students",
         "domains/billing",
         "domains/payments",

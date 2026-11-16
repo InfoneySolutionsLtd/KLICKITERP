@@ -23,8 +23,8 @@ function toView(entity: RptExportJobEntity): ExportJobResponseDto {
 }
 
 /**
- * `POST /reports/export` (create + synchronously run a CSV export, or queue
- * an XLSX/PDF placeholder — see `ExportJobsService`'s own doc comment) and
+ * `POST /reports/export` (create + synchronously run a CSV or branded PDF
+ * export, or queue an XLSX placeholder — see `ExportJobsService`'s own doc comment) and
  * `GET /reports/export/:id`. Both routes are gated by the single
  * `reports:export:create` code (per the task brief's own explicit
  * permission-code list) — a caller who may create an export may also check
@@ -45,14 +45,14 @@ export class ExportJobsController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: "Create and run an export job (CSV: synchronous, real; XLSX/PDF: queued placeholder — see ExportJobsService)" })
+  @ApiOperation({ summary: "Create and run an export job (CSV and branded, QR-verifiable PDF: synchronous, real; XLSX: queued placeholder — see ExportJobsService)" })
   @ApiResponse({ status: 201, type: ExportJobResponseDto })
   async create(@Body() dto: CreateExportJobDto, @Req() req: AuthenticatedRequest): Promise<ExportJobResponseDto> {
     const requestedBy = req.user?.sub;
     if (!requestedBy) throw new AuthenticationException("Authentication required");
 
     // READ COMMITTED, not this helper's REPEATABLE READ default: `createJob()`
-    // calls `FilesService.upload()` for CSV exports, which commits the new
+    // calls `FilesService.upload()` for CSV and PDF exports, which commits the new
     // `file_object` row in its OWN separate, nested transaction. Under
     // REPEATABLE READ, this transaction's snapshot is fixed before that
     // nested commit, so the later `UPDATE rpt_export_job SET file_id = ...`

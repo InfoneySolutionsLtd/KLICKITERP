@@ -9,6 +9,7 @@ import type { ReportDefinitionResponseDto, ReportResultResponseDto } from "@klic
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { ApiError } from "@/lib/api-error";
 import { useReportDefinition } from "@/features/reports/hooks/use-catalogue";
@@ -29,17 +30,21 @@ import { buildExecuteParams, isParamsComplete } from "@/features/reports/lib/rep
  * Run is a mutation (`useExecuteReport`), not a `useQuery` — every POST call
  * site in this codebase is a mutation, and a 403 (caller lacks that report's
  * own `reports:<code>:view`) surfaces via a local try/catch + `ApiError`
- * message, same as `voucher-status-actions.tsx`. Export always requests
- * `format: "CSV"` — CSV completes synchronously server-side (a real `fileId`
- * comes back in the same response); XLSX/PDF are queued-forever placeholders
- * and aren't offered here.
+ * message, same as `voucher-status-actions.tsx`. Export offers PDF (the
+ * default — the school's letterhead, watermark, signatures and a QR code that
+ * verifies the document) and CSV (raw data for spreadsheets); both complete
+ * synchronously server-side (a real `fileId` comes back in the same
+ * response). XLSX is still a queued-forever placeholder and isn't offered.
  */
+type ExportFormat = "PDF" | "CSV";
+
 function ReportDetailBody({ report, savedParamsId }: { report: ReportDefinitionResponseDto; savedParamsId: string | undefined }) {
   const t = useTranslations("reports.detail");
   const [paramValues, setParamValues] = React.useState<Record<string, string>>({});
   const [result, setResult] = React.useState<ReportResultResponseDto | null>(null);
   const [runError, setRunError] = React.useState<string | null>(null);
   const [exportError, setExportError] = React.useState<string | null>(null);
+  const [exportFormat, setExportFormat] = React.useState<ExportFormat>("PDF");
   const [updateSavedError, setUpdateSavedError] = React.useState<string | null>(null);
   const [updateSavedMessage, setUpdateSavedMessage] = React.useState<string | null>(null);
 
@@ -82,15 +87,29 @@ function ReportDetailBody({ report, savedParamsId }: { report: ReportDefinitionR
   async function handleExport() {
     if (!result) return;
     setExportError(null);
+
+    // A PDF opens in the browser's own viewer (where it can be read and printed). Rendering it takes
+    // a moment, and a window opened only AFTER that wait can be blocked as a popup — so the tab is
+    // opened right now, inside the click, and pointed at the file once it is ready. A CSV is a plain
+    // download, which needs no tab.
+    const viewerTab = exportFormat === "PDF" ? window.open("about:blank", "_blank") : null;
+    if (viewerTab) viewerTab.opener = null;
+
     try {
-      const job = await exportMutation.mutateAsync({ reportCode: report.code, params: buildExecuteParams(paramValues), format: "CSV" });
+      const job = await exportMutation.mutateAsync({ reportCode: report.code, params: buildExecuteParams(paramValues), format: exportFormat });
       if (!job.fileId) {
+        viewerTab?.close();
         setExportError(t("exportError"));
         return;
       }
       const signed = await signedUrlMutation.mutateAsync(job.fileId);
-      window.open(signed.url, "_blank", "noreferrer");
+      if (viewerTab) {
+        viewerTab.location.href = signed.url;
+      } else {
+        window.open(signed.url, "_blank", "noreferrer");
+      }
     } catch (err) {
+      viewerTab?.close();
       setExportError(err instanceof ApiError ? err.message : t("exportError"));
     }
   }
@@ -159,10 +178,21 @@ function ReportDetailBody({ report, savedParamsId }: { report: ReportDefinitionR
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
             <CardTitle className="text-base text-foreground">{t("resultsTitle")}</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => void handleExport()} disabled={exporting}>
-              {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-              {exporting ? t("exporting") : t("exportButton")}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as ExportFormat)} disabled={exporting}>
+                <SelectTrigger className="h-8 w-[15rem]" aria-label={t("exportFormatLabel")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PDF">{t("formatPdf")}</SelectItem>
+                  <SelectItem value="CSV">{t("formatCsv")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="button" variant="outline" size="sm" onClick={() => void handleExport()} disabled={exporting}>
+                {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+                {exporting ? t("exporting") : t("exportButton")}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {exportError && (

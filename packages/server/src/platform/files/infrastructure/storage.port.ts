@@ -14,6 +14,8 @@ export interface PutObjectResult {
 export interface StoragePort {
   putObject(bucket: string, key: string, body: Buffer, contentType: string): Promise<PutObjectResult>;
   getSignedUrl(bucket: string, key: string, expirySeconds: number): Promise<string>;
+  /** Reads a whole object into memory — for small assets only (e.g. a branding logo/signature image rendered into a PDF), never large files. */
+  getObject(bucket: string, key: string): Promise<Buffer>;
   deleteObject(bucket: string, key: string): Promise<void>;
 }
 

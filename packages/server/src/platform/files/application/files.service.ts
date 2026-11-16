@@ -24,6 +24,9 @@ export interface UploadFileInput {
 
 const DEFAULT_SIGNED_URL_EXPIRY_SECONDS = 300;
 
+/** `FilesService.read()` buffers the whole object, so it is for small assets (logos, signatures) only. */
+const DEFAULT_READ_MAX_BYTES = 5 * 1024 * 1024;
+
 /**
  * Files are immutable once uploaded (delete-and-reupload, never edit — see
  * `FileObjectEntity`'s doc comment) so this service exposes upload/read/
@@ -108,6 +111,23 @@ export class FilesService {
   async getSignedUrl(fileId: string, expirySeconds: number = DEFAULT_SIGNED_URL_EXPIRY_SECONDS): Promise<string> {
     const file = await this.fileObjectRepository.findByIdOrFail(fileId);
     return this.storage.getSignedUrl(file.bucket, file.objectKey, expirySeconds);
+  }
+
+  /**
+   * Reads a stored file's bytes into memory, for server-side rendering (e.g. putting the
+   * branding logo / signature images into a PDF). Buffers the whole body, so it refuses
+   * anything bigger than `maxBytes` (default 5 MB) instead of pulling a large file into memory.
+   */
+  async read(fileId: string, maxBytes: number = DEFAULT_READ_MAX_BYTES): Promise<{ buffer: Buffer; mime: string; originalName: string }> {
+    const file = await this.fileObjectRepository.findByIdOrFail(fileId);
+    if (Number(file.sizeBytes) > maxBytes) {
+      throw new ValidationException(`File is too large to read into memory (${file.sizeBytes} bytes; limit ${maxBytes})`, {
+        sizeBytes: file.sizeBytes,
+        maxBytes,
+      });
+    }
+    const buffer = await this.storage.getObject(file.bucket, file.objectKey);
+    return { buffer, mime: file.mime, originalName: file.originalName };
   }
 
   async delete(fileId: string, actorId: string | null): Promise<void> {

@@ -43,6 +43,16 @@ export class MinioStorageAdapter implements StoragePort {
     });
   }
 
+  async getObject(bucket: string, key: string): Promise<Buffer> {
+    // The internal client (not the signing one): this read happens server-side, so it must use the
+    // endpoint the API container can actually reach, not the browser-facing public one.
+    const response = await this.client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    if (!response.Body) {
+      throw new Error(`Storage object has no body: ${bucket}/${key}`);
+    }
+    return Buffer.from(await response.Body.transformToByteArray());
+  }
+
   async deleteObject(bucket: string, key: string): Promise<void> {
     await this.client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
   }
