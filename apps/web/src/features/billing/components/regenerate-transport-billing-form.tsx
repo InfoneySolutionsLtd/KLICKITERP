@@ -18,8 +18,9 @@ const ALL_ROUTES_SENTINEL = "__all__";
 
 interface RegenerateResultSummary {
   succeeded: { studentId: string; invoiceIds: string[]; routeId: string }[];
-  failed: { studentId: string; error: string }[];
-  skipped: { studentId: string; reason: string }[];
+  /** `studentLabel` is "First Last (admission no.)" from the server; the id is only the fallback. */
+  failed: { studentId: string; studentLabel?: string; error: string }[];
+  skipped: { studentId: string; studentLabel?: string; reason: string }[];
 }
 
 /**
@@ -213,7 +214,7 @@ export function RegenerateTransportBillingForm() {
                 <ul className="list-inside list-disc text-sm text-muted-foreground">
                   {result.failed.map((f) => (
                     <li key={f.studentId}>
-                      {f.studentId}: {f.error}
+                      {f.studentLabel ?? f.studentId}: {f.error}
                     </li>
                   ))}
                 </ul>
@@ -227,7 +228,7 @@ export function RegenerateTransportBillingForm() {
                 <ul className="list-inside list-disc text-sm text-muted-foreground">
                   {result.skipped.map((s) => (
                     <li key={s.studentId}>
-                      {s.studentId}: {s.reason}
+                      {s.studentLabel ?? s.studentId}: {s.reason}
                     </li>
                   ))}
                 </ul>

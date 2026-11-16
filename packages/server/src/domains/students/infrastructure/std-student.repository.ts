@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { StdStudentEntity, StdStudentStatus } from "../domain/std-student.entity";
 
@@ -95,6 +95,12 @@ export class StdStudentRepository {
     const row = await this.findById(id, manager);
     if (!row) throw new NotFoundException("StdStudent", id);
     return row;
+  }
+
+  /** Many students in ONE query (e.g. to label a batch result with names). Order is unspecified; an id with no row is simply absent from the result. */
+  async findByIds(ids: string[], manager?: EntityManager): Promise<StdStudentEntity[]> {
+    if (ids.length === 0) return [];
+    return (manager?.getRepository(StdStudentEntity) ?? this.repo).find({ where: { id: In(ids) } });
   }
 
   async findByAdmissionNo(admissionNo: string, manager?: EntityManager): Promise<StdStudentEntity | null> {

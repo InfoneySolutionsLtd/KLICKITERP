@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, EntityManager } from "typeorm";
+import { AcademicCalendarService } from "../../../platform/settings";
 import { runInTransaction } from "../../../shared/database/tx";
-import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { BillFeeCategoryEntity } from "../domain/bill-fee-category.entity";
 import { BillFeeStructureLineEntity } from "../domain/bill-fee-structure-line.entity";
@@ -74,10 +74,12 @@ export interface BulkAdhocGenerateResult {
  * a discriminated union returned rather than thrown for the "already fully
  * billed" case, since it is NOT an error: `bulkGenerate()`'s existing
  * try/catch around `generateForStudent()` (unchanged) still exists purely
- * for genuine failures (`NotFoundException`/`ValidationException` — no
- * applicable structure at all, or none of the selected categories appear on
- * it), which stay real thrown exceptions exactly as before and still land in
- * `failed[]`. A full duplicate-billing skip is a normal, successful outcome
+ * for genuine failures (`ValidationException` — no applicable structure at
+ * all, or none of the selected categories appear on it), which stay real
+ * thrown exceptions and still land in `failed[]`. (The no-structure case used
+ * to be a `NotFoundException`, whose fixed "<entity> not found: <id>" format
+ * forced raw ids into the message the accountant reads; it never left this
+ * class as an exception, so the type change is not observable elsewhere.) A full duplicate-billing skip is a normal, successful outcome
  * of running the guard — modeling it as a return value (not a thrown
  * exception subclass the caller would need to specifically catch) keeps
  * exceptions reserved for genuine errors and lets `bulkGenerate()`'s routing
@@ -180,6 +182,10 @@ export class BulkAdhocInvoicesService {
     private readonly feeCategoryRepository: BillFeeCategoryRepository,
     private readonly invoicingService: InvoicingService,
     private readonly billInvoiceLineRepository: BillInvoiceLineRepository,
+    // Appended at the END of the param list (same precedent as the line above)
+    // — only used to put a human-readable term name into per-student failure
+    // messages; never consulted on the success path.
+    private readonly academicCalendarService: AcademicCalendarService,
   ) {}
 
   async bulkGenerate(input: BulkAdhocGenerateInput, initiatedBy: string): Promise<BulkAdhocGenerateResult> {
@@ -219,19 +225,28 @@ export class BulkAdhocInvoicesService {
     categorySet: Set<string>,
     initiatedBy: string,
   ): Promise<GenerateForStudentResult> {
+    // Failure messages below name the term and the selected categories, never
+    // raw ids: they are shown verbatim to the accountant in the result card,
+    // which already prefixes each one with the student's name (a fee structure
+    // has no name of its own to show). Names are resolved only on these
+    // failure paths, so a normal run pays no extra lookups.
     const structure = await this.feeStructuresService.findApplicableFor(studentId, termId, manager);
     if (!structure) {
-      throw new NotFoundException(
-        "BillFeeStructure(applicable)",
-        `no PUBLISHED fee structure matches student=${studentId} term=${termId} (BR-BILL-02)`,
+      const termName = await this.termLabel(manager, termId);
+      throw new ValidationException(
+        `No published fee structure applies to this student for ${termName} (BR-BILL-02) — publish one for their class and academic year first`,
       );
     }
 
     const structureLines = await this.feeStructureLineRepository.listByStructureAndTerm(structure.id, termId, manager);
     const matchedLines = structureLines.filter((line) => categorySet.has(line.feeCategoryId));
     if (matchedLines.length === 0) {
+      const [termName, categoryNames] = await Promise.all([
+        this.termLabel(manager, termId),
+        this.categoryLabels(manager, categorySet),
+      ]);
       throw new ValidationException(
-        `None of the selected fee categories appear on student ${studentId}'s applicable fee structure ${structure.id} for term ${termId}`,
+        `None of the selected fee categories (${categoryNames}) appear on this student's applicable fee structure for ${termName}`,
       );
     }
 
@@ -306,5 +321,28 @@ export class BulkAdhocInvoicesService {
     }
 
     return { kind: "generated", invoiceIds, alreadyBilledCategoryIds };
+  }
+
+  /** Term's display name for a failure message; falls back to the id so a lookup problem never masks the real failure. */
+  private async termLabel(manager: EntityManager, termId: string): Promise<string> {
+    try {
+      return (await this.academicCalendarService.findTermByIdOrFail(termId, manager)).name;
+    } catch {
+      return termId;
+    }
+  }
+
+  /** Comma-joined display names of the given fee categories, each falling back to its id if it can't be resolved. */
+  private async categoryLabels(manager: EntityManager, categoryIds: Iterable<string>): Promise<string> {
+    const names = await Promise.all(
+      [...categoryIds].map(async (id) => {
+        try {
+          return (await this.feeCategoryRepository.findByIdOrFail(id, manager)).name;
+        } catch {
+          return id;
+        }
+      }),
+    );
+    return names.join(", ");
   }
 }

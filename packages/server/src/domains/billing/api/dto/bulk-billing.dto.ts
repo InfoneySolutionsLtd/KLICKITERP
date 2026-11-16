@@ -41,6 +41,9 @@ export class BulkGenerateFailureDto {
   @ApiProperty({ format: "uuid" })
   studentId!: string;
 
+  @ApiPropertyOptional({ description: 'Display label "First Last (admission no.)" — show this instead of the id' })
+  studentLabel?: string;
+
   @ApiProperty()
   error!: string;
 }
@@ -48,6 +51,9 @@ export class BulkGenerateFailureDto {
 export class BulkGenerateSkipDto {
   @ApiProperty({ format: "uuid" })
   studentId!: string;
+
+  @ApiPropertyOptional({ description: 'Display label "First Last (admission no.)" — show this instead of the id' })
+  studentLabel?: string;
 
   @ApiProperty({ description: "Why nothing was generated for this student (not an error)" })
   reason!: string;

@@ -6,6 +6,10 @@ import { Money } from "../../../shared/money/money";
 const TARGET_TERM = { id: "term-2", academicYearId: "year-1", seq: 2, name: "Term 2" };
 const PRECEDING_TERM = { id: "term-1", academicYearId: "year-1", seq: 1, name: "Term 1" };
 
+/** A full student row (production rows are `StdStudentEntity`s, so they always carry a name). */
+const S1 = { id: "s1", streamId: null, firstName: "Amina", lastName: "Otieno", admissionNo: "ADM-001" };
+const S1_LABEL = "Amina Otieno (ADM-001)";
+
 function makeStructureLine(overrides: Partial<{ feeCategoryId: string; dueDate: string; amount: Money }> = {}) {
   return { feeCategoryId: "cat-tuition", dueDate: "2026-05-01", amount: Money.fromInt(1000), ...overrides };
 }
@@ -27,7 +31,7 @@ describe("BulkBillingService", () => {
   let service: BulkBillingService;
 
   beforeEach(() => {
-    studentRepository = { list: jest.fn(async () => [[{ id: "s1" }], 1]) };
+    studentRepository = { list: jest.fn(async () => [[S1], 1]) };
     invoiceRepository = {
       findMostRecentNonVoidByStudentAndTerm: jest.fn(async () => ({ id: "prior-invoice-1", number: "INV-000001" })),
     };
@@ -115,7 +119,12 @@ describe("BulkBillingService", () => {
     expect(result.skipped).toEqual([]);
     expect(result.failed).toHaveLength(1);
     expect(result.failed[0].studentId).toBe("s1");
+    expect(result.failed[0].studentLabel).toBe(S1_LABEL);
     expect(result.failed[0].error).toContain("Category cat-swimming");
+    // Reads in names, not ids: the preceding/target TERM names and the prior invoice's number.
+    expect(result.failed[0].error).toBe(
+      "This student's most recent invoice (INV-000001) from Term 1 billed categories that are no longer on the Term 2 fee structure: Category cat-swimming",
+    );
     expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
   });
 
@@ -126,6 +135,11 @@ describe("BulkBillingService", () => {
 
     expect(result.failed).toHaveLength(1);
     expect(result.failed[0].error).toContain("BR-BILL-02");
+    expect(result.failed[0].studentLabel).toBe(S1_LABEL);
+    // Names the term; carries no raw term/student id (the old message embedded `student=<id> term=<id>`).
+    expect(result.failed[0].error).toContain("Term 2");
+    expect(result.failed[0].error).not.toContain("term-2");
+    expect(result.failed[0].error).not.toContain("student=");
   });
 
   it("no non-VOID invoice in the preceding term -> skipped, not failed", async () => {
@@ -135,7 +149,9 @@ describe("BulkBillingService", () => {
 
     expect(result.succeeded).toEqual([]);
     expect(result.failed).toEqual([]);
-    expect(result.skipped).toEqual([{ studentId: "s1", reason: expect.stringContaining("no non-VOID invoice") }]);
+    expect(result.skipped).toEqual([
+      { studentId: "s1", studentLabel: S1_LABEL, reason: expect.stringContaining("no non-VOID invoice") },
+    ]);
   });
 
   it("every carried-forward category already billed this term -> full skip", async () => {
@@ -145,7 +161,7 @@ describe("BulkBillingService", () => {
 
     expect(result.succeeded).toEqual([]);
     expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
-    expect(result.skipped).toEqual([{ studentId: "s1", reason: expect.stringContaining("already billed") }]);
+    expect(result.skipped).toEqual([{ studentId: "s1", studentLabel: S1_LABEL, reason: expect.stringContaining("already billed") }]);
   });
 
   it("partial already-billed skip still generates for the remaining categories and surfaces which were skipped", async () => {
@@ -198,6 +214,19 @@ describe("BulkBillingService", () => {
     expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
   });
 
+  it("the up-front 'no preceding term' rejection names the term and carries no academic-year id or seq internals", async () => {
+    academicCalendarService.findTermByYearAndSeq.mockResolvedValue(null);
+
+    const error = await service.bulkGenerate("term-2", {}, "initiator-1").catch((e: Error) => e);
+
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect((error as Error).message).toBe(
+      "Preceding term not found: Term 2 has no earlier term in its academic year, so there are no invoices to carry forward from",
+    );
+    expect((error as Error).message).not.toContain("year-1");
+    expect((error as Error).message).not.toContain("seq");
+  });
+
   it("seq>1 but the seq-1 term row genuinely doesn't exist — same up-front rejection", async () => {
     academicCalendarService.findTermByYearAndSeq.mockResolvedValue(null);
 
@@ -215,7 +244,7 @@ describe("BulkBillingService", () => {
 
     expect(first.succeeded).toHaveLength(1);
     expect(second.succeeded).toEqual([]);
-    expect(second.skipped).toEqual([{ studentId: "s1", reason: expect.stringContaining("already billed") }]);
+    expect(second.skipped).toEqual([{ studentId: "s1", studentLabel: S1_LABEL, reason: expect.stringContaining("already billed") }]);
   });
 
   describe("resolveStudents() scoping — unchanged from the prior implementation", () => {
