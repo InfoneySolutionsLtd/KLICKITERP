@@ -176,6 +176,7 @@ const REFRESH_MVS_TIMEOUT_MS = 20_000;
 export function useRefreshDashboard() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: async () => {
       const result = await Promise.race([
         apiClient.POST("/api/v1/dashboard/refresh-mvs"),

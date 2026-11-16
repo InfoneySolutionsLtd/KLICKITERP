@@ -44,6 +44,7 @@ export function useBackupRun(id: string) {
 export function useRunBackup() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (kind: BackupRunKind) => runBackup(kind),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BACKUPS_QUERY_KEY }),
   });
@@ -53,6 +54,7 @@ export function useRunBackup() {
 export function useVerifyRestore(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (target: VerifyRestoreTarget) => verifyRestore(id, target),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: detailKey(id) }),
   });
@@ -62,6 +64,7 @@ export function useVerifyRestore(id: string) {
 export function usePruneBackups() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: () => pruneBackups(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BACKUPS_QUERY_KEY }),
   });

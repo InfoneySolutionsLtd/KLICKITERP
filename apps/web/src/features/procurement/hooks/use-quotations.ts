@@ -40,6 +40,7 @@ export function useQuotationLines(id: string | undefined) {
 export function useCreateQuotation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateQuotationDto) => createQuotation(dto),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: listKey(created.requisitionId) });
@@ -58,6 +59,7 @@ export function useCreateQuotation() {
 export function useAwardQuotation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, awardReason }: { id: string; awardReason: string }) => awardQuotation(id, awardReason),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: listKey(updated.requisitionId) });

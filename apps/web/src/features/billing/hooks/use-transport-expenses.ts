@@ -26,6 +26,7 @@ export function useTransportRouteSummary(routeId: string) {
 export function useLogTransportExpense(routeId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "recorded" },
     mutationFn: (dto: LogTransportExpenseDto) => logTransportExpense(routeId, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...TRANSPORT_EXPENSES_QUERY_KEY, routeId] });

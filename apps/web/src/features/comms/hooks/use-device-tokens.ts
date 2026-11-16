@@ -21,6 +21,7 @@ export function useMyDeviceTokens() {
 export function useRegisterDeviceToken() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: (dto: RegisterDeviceTokenDto) => registerDeviceToken(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: DEVICE_TOKENS_QUERY_KEY }),
   });
@@ -30,6 +31,7 @@ export function useRegisterDeviceToken() {
 export function useUnregisterDeviceToken() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: (dto: UnregisterDeviceTokenDto) => unregisterDeviceToken(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: DEVICE_TOKENS_QUERY_KEY }),
   });

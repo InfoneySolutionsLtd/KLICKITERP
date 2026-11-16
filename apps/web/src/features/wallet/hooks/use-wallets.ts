@@ -91,6 +91,7 @@ export function useWalletTransactions(id: string | undefined) {
 export function useCreateWalletForStudent(studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: () => getOrCreateWalletForStudent(studentId as string),
     onSuccess: (wallet) => {
       queryClient.invalidateQueries({ queryKey: byStudentKey(studentId) });
@@ -110,6 +111,7 @@ function invalidateWalletEverywhere(queryClient: ReturnType<typeof useQueryClien
 export function useTopUpWallet(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: TopUpDto) => topUpWallet(walletId, dto),
     onSuccess: () => invalidateWalletEverywhere(queryClient, walletId, studentId),
   });
@@ -118,6 +120,7 @@ export function useTopUpWallet(walletId: string, studentId?: string) {
 export function useSpendWallet(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: SpendDto) => spendWallet(walletId, dto),
     onSuccess: () => invalidateWalletEverywhere(queryClient, walletId, studentId),
   });
@@ -126,6 +129,7 @@ export function useSpendWallet(walletId: string, studentId?: string) {
 export function useSetWalletStatus(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: SetWalletStatusInput) => setWalletStatus(walletId, dto),
     onSuccess: () => invalidateWalletEverywhere(queryClient, walletId, studentId),
   });
@@ -134,6 +138,7 @@ export function useSetWalletStatus(walletId: string, studentId?: string) {
 export function useUpdateWalletLimits(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateWalletLimitsInput) => updateWalletLimits(walletId, dto),
     onSuccess: () => invalidateWalletEverywhere(queryClient, walletId, studentId),
   });
@@ -142,6 +147,7 @@ export function useUpdateWalletLimits(walletId: string, studentId?: string) {
 export function useCloseWallet(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: CloseWalletDto) => closeWallet(walletId, dto),
     onSuccess: () => invalidateWalletEverywhere(queryClient, walletId, studentId),
   });
@@ -168,6 +174,7 @@ function invalidateApprovalDomain(queryClient: ReturnType<typeof useQueryClient>
 export function useTransferToFees(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: TransferToFeesDto) => transferToFees(walletId, dto),
     onSuccess: () => {
       invalidateWalletEverywhere(queryClient, walletId, studentId);
@@ -180,6 +187,7 @@ export function useTransferToFees(walletId: string, studentId?: string) {
 export function useRequestTransferToFees(walletId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: (dto: TransferToFeesDto) => requestTransferToFees(walletId, dto),
     onSuccess: () => invalidateApprovalDomain(queryClient, WALLET_TRANSFER_APPROVAL_DOMAIN_CODE),
   });
@@ -189,6 +197,7 @@ export function useRequestTransferToFees(walletId: string) {
 export function useTransferToWallet(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: TransferToWalletDto) => transferToWallet(walletId, dto),
     onSuccess: (_result, dto) => {
       invalidateWalletEverywhere(queryClient, walletId, studentId);
@@ -201,6 +210,7 @@ export function useTransferToWallet(walletId: string, studentId?: string) {
 export function useRequestTransferToWallet(walletId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: (dto: TransferToWalletDto) => requestTransferToWallet(walletId, dto),
     onSuccess: () => invalidateApprovalDomain(queryClient, WALLET_TRANSFER_APPROVAL_DOMAIN_CODE),
   });
@@ -210,6 +220,7 @@ export function useRequestTransferToWallet(walletId: string) {
 export function useRequestRefund(walletId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: (dto: RefundWalletDto) => requestRefund(walletId, dto),
     onSuccess: () => invalidateApprovalDomain(queryClient, WALLET_REFUND_APPROVAL_DOMAIN_CODE),
   });
@@ -218,6 +229,7 @@ export function useRequestRefund(walletId: string) {
 export function useRefundWallet(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: RefundWalletDto) => refundWallet(walletId, dto),
     onSuccess: () => {
       invalidateWalletEverywhere(queryClient, walletId, studentId);
@@ -230,6 +242,7 @@ export function useRefundWallet(walletId: string, studentId?: string) {
 export function useRequestAdjust(walletId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: (dto: AdjustWalletDto) => requestAdjust(walletId, dto),
     onSuccess: () => invalidateApprovalDomain(queryClient, WALLET_ADJUSTMENT_APPROVAL_DOMAIN_CODE),
   });
@@ -238,6 +251,7 @@ export function useRequestAdjust(walletId: string) {
 export function useAdjustWallet(walletId: string, studentId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: AdjustWalletDto) => adjustWallet(walletId, dto),
     onSuccess: () => {
       invalidateWalletEverywhere(queryClient, walletId, studentId);

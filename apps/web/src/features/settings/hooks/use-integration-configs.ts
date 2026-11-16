@@ -32,6 +32,7 @@ export function useIntegrationConfig(id: string | undefined) {
 export function useCreateIntegrationConfig() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (input: CreateIntegrationConfigInput) => createIntegrationConfig(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listKey() });
@@ -42,6 +43,7 @@ export function useCreateIntegrationConfig() {
 export function useUpdateIntegrationConfig() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, input }: { id: string; input: UpdateIntegrationConfigInput }) => updateIntegrationConfig(id, input),
     onSuccess: (config) => {
       queryClient.invalidateQueries({ queryKey: listKey() });
@@ -58,7 +60,7 @@ export function useUpdateIntegrationConfig() {
  * the caller. The dialog copies it into its own form state and discards it.
  */
 export function useLoadIntegrationCredentials() {
-  return useMutation({ mutationFn: (id: string) => getIntegrationConfigCredentials(id) });
+  return useMutation({ meta: { toast: false }, mutationFn: (id: string) => getIntegrationConfigCredentials(id) });
 }
 
 /**
@@ -73,6 +75,7 @@ export function useLoadIntegrationCredentials() {
 export function useTestIntegrationConfigConnection() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (id: string) => testIntegrationConfigConnection(id),
     onSuccess: (_result, id) => {
       queryClient.invalidateQueries({ queryKey: listKey() });

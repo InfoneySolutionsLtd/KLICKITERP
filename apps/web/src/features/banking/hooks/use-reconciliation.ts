@@ -64,6 +64,7 @@ function invalidateReconciliationQueries(queryClient: ReturnType<typeof useQuery
 export function useStartReconciliation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: StartReconciliationDto) => startReconciliation(dto),
     onSuccess: (created) => invalidateReconciliationQueries(queryClient, created.id),
   });
@@ -73,6 +74,7 @@ export function useStartReconciliation() {
 export function useAutoMatch() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (id: string) => autoMatch(id),
     onSuccess: (_result, id) => invalidateReconciliationQueries(queryClient, id),
   });
@@ -81,6 +83,7 @@ export function useAutoMatch() {
 export function useManualMatch() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: ManualMatchDto }) => manualMatch(id, dto),
     onSuccess: (_result, { id }) => invalidateReconciliationQueries(queryClient, id),
   });
@@ -89,6 +92,7 @@ export function useManualMatch() {
 export function useCreateAdjustment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: ({ id, dto }: { id: string; dto: CreateAdjustmentDto }) => createAdjustment(id, dto),
     onSuccess: (_result, { id }) => invalidateReconciliationQueries(queryClient, id),
   });
@@ -98,6 +102,7 @@ export function useCreateAdjustment() {
 export function useLockReconciliation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => lockReconciliation(id),
     onSuccess: (updated) => invalidateReconciliationQueries(queryClient, updated.id),
   });
@@ -106,6 +111,7 @@ export function useLockReconciliation() {
 export function useReopenReconciliation() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: ReopenReconciliationDto }) => reopenReconciliation(id, dto),
     onSuccess: (updated) => invalidateReconciliationQueries(queryClient, updated.id),
   });

@@ -54,6 +54,7 @@ function invalidateGrnQueries(queryClient: ReturnType<typeof useQueryClient>, po
 export function useReceiveGrn() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: ReceiveGrnDto) => receiveGrn(dto),
     onSuccess: (grn) => invalidateGrnQueries(queryClient, grn.poId, grn.id),
   });
@@ -62,6 +63,7 @@ export function useReceiveGrn() {
 export function usePostGrn() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postGrn(id),
     onSuccess: (grn) => invalidateGrnQueries(queryClient, grn.poId, grn.id),
   });

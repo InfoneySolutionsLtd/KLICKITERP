@@ -23,12 +23,13 @@ export function useFile(id: string | undefined) {
 
 /** A mutation, not a query — a signed URL is single-use-ish (short expiry) and opened immediately via `window.open()`, never cached/displayed, same shape `features/expenses/hooks/use-voucher-attachments.ts`'s own `useOpenVoucherAttachment()` establishes. */
 export function useFileSignedUrl() {
-  return useMutation({ mutationFn: (id: string) => getFileSignedUrl(id) });
+  return useMutation({ meta: { toast: false }, mutationFn: (id: string) => getFileSignedUrl(id) });
 }
 
 export function useDeleteFile() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteFile(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FILES_QUERY_KEY }),
   });

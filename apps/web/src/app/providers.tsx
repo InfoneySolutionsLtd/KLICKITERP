@@ -4,6 +4,7 @@ import * as React from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
+import { ToastProvider } from "@/components/ui/toaster";
 import { createQueryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/lib/auth-store";
 import { refreshSession } from "@/lib/session-api";
@@ -52,7 +53,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
             is required in addition to, not instead of, the existing
             CSS-only reduced-motion block in `app/globals.css`). */}
         <MotionConfig reducedMotion="user" transition={{ duration: 0.2, ease: "easeOut" }}>
-          <AuthBootstrap>{children}</AuthBootstrap>
+          {/* One app-wide toast host (top of the screen). It lives here, above every page, so a toast
+              raised just before a client-side redirect is still showing on the page that loads next. */}
+          <ToastProvider>
+            <AuthBootstrap>{children}</AuthBootstrap>
+          </ToastProvider>
         </MotionConfig>
       </ThemeProvider>
     </QueryClientProvider>

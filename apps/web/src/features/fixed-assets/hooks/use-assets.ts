@@ -65,6 +65,7 @@ function invalidateAssetQueries(queryClient: ReturnType<typeof useQueryClient>, 
 export function useCreateAsset() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFaAssetDto) => createAsset(dto),
     onSuccess: () => invalidateAssetQueries(queryClient),
   });
@@ -74,6 +75,7 @@ export function useCreateAsset() {
 export function useUpdateAsset() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateAssetInput }) => updateAsset(id, dto),
     onSuccess: (updated) => invalidateAssetQueries(queryClient, updated.id),
   });
@@ -83,6 +85,7 @@ export function useUpdateAsset() {
 export function useUpdateAssetCondition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateFaAssetConditionDto }) => updateAssetCondition(id, dto),
     onSuccess: (updated) => invalidateAssetQueries(queryClient, updated.id),
   });

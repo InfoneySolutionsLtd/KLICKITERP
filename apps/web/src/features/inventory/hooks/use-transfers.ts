@@ -60,6 +60,7 @@ function invalidateTransferQueries(queryClient: ReturnType<typeof useQueryClient
 export function useIssueTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: IssueTransferDto) => issueTransfer(dto),
     onSuccess: (transfer) => invalidateTransferQueries(queryClient, transfer.id),
   });
@@ -69,6 +70,7 @@ export function useIssueTransfer() {
 export function useReceiveTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => receiveTransfer(id),
     onSuccess: (transfer) => invalidateTransferQueries(queryClient, transfer.id),
   });
@@ -78,6 +80,7 @@ export function useReceiveTransfer() {
 export function useCancelTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: (id: string) => cancelTransfer(id),
     onSuccess: (transfer) => invalidateTransferQueries(queryClient, transfer.id),
   });

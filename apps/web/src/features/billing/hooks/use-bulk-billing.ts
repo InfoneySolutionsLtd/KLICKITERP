@@ -22,6 +22,7 @@ import { INVOICES_QUERY_KEY } from "./use-invoices";
 export function useBulkBilling() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (dto: BulkGenerateDto) => generateBulkBilling(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });

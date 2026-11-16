@@ -36,6 +36,7 @@ function invalidateScheduleQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateSchedule() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: ({
       reportCode,
       params,
@@ -56,6 +57,7 @@ export function useCreateSchedule() {
 export function useUpdateSchedule() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: { cron?: string; recipients?: string[]; isActive?: boolean } }) =>
       updateSchedule(id, dto),
     onSuccess: (updated) => invalidateScheduleQueries(queryClient, updated.id),
@@ -65,6 +67,7 @@ export function useUpdateSchedule() {
 export function useDeleteSchedule() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteSchedule(id),
     onSuccess: () => invalidateScheduleQueries(queryClient),
   });
@@ -74,6 +77,7 @@ export function useDeleteSchedule() {
 export function useRunSchedulesDue() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (asOfDate?: string) => runSchedulesDue(asOfDate),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: schedulesListKey() }),
   });

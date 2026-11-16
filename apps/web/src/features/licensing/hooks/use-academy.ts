@@ -23,6 +23,7 @@ export function useAcademyStatus() {
 /** `POST /license/academy/onboarding/start` — submit the school code, Academy sends an OTP. */
 export function useStartAcademyOnboarding() {
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: (schoolCode: string) => startAcademyOnboarding(schoolCode),
   });
 }
@@ -31,6 +32,7 @@ export function useStartAcademyOnboarding() {
 export function useVerifyAcademyOnboarding() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: ({ schoolId, refId, code }: { schoolId: string; refId: string; code: string }) =>
       verifyAcademyOnboarding(schoolId, refId, code),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ACADEMY_QUERY_KEY }),
@@ -41,6 +43,7 @@ export function useVerifyAcademyOnboarding() {
 export function useRecheckAcademyEntitlement() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: () => recheckAcademyEntitlement(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ACADEMY_QUERY_KEY }),
   });
@@ -49,6 +52,7 @@ export function useRecheckAcademyEntitlement() {
 /** `POST /license/academy/first-run/start` — the pre-login counterpart to `useStartAcademyOnboarding()`, used only by the first-run setup wizard. */
 export function useStartFirstRunOnboarding() {
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: (schoolCode: string) => startFirstRunOnboarding(schoolCode),
   });
 }
@@ -56,6 +60,7 @@ export function useStartFirstRunOnboarding() {
 /** `POST /license/academy/first-run/verify` — the pre-login counterpart to `useVerifyAcademyOnboarding()`. */
 export function useVerifyFirstRunOnboarding() {
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: ({ schoolId, refId, code }: { schoolId: string; refId: string; code: string }) =>
       verifyFirstRunOnboarding(schoolId, refId, code),
   });

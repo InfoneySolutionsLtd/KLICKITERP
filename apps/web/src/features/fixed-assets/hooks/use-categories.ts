@@ -40,6 +40,7 @@ function invalidateCategoryQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFaCategoryDto) => createCategory(dto),
     onSuccess: () => invalidateCategoryQueries(queryClient),
   });
@@ -49,6 +50,7 @@ export function useCreateCategory() {
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateFaCategoryDto }) => updateCategory(id, dto),
     onSuccess: (updated) => invalidateCategoryQueries(queryClient, updated.id),
   });

@@ -1,4 +1,37 @@
 {
+  "toast": {
+    "success": {
+      "generated": "Généré avec succès",
+      "created": "Créé avec succès",
+      "updated": "Mis à jour avec succès",
+      "deleted": "Supprimé avec succès",
+      "removed": "Retiré avec succès",
+      "added": "Ajouté avec succès",
+      "submitted": "Soumis avec succès",
+      "approved": "Approuvé avec succès",
+      "rejected": "Rejeté avec succès",
+      "decided": "Décision enregistrée",
+      "posted": "Comptabilisé avec succès",
+      "activated": "Activé avec succès",
+      "deactivated": "Désactivé avec succès",
+      "published": "Publié avec succès",
+      "sent": "Envoyé avec succès",
+      "cancelled": "Annulé avec succès",
+      "voided": "Invalidé avec succès",
+      "reversed": "Contre-passé avec succès",
+      "requested": "Demande soumise",
+      "recorded": "Enregistré avec succès",
+      "completed": "Opération terminée avec succès"
+    },
+    "error": {
+      "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+      "permission": "Vous n'avez pas la permission d'effectuer cette action.",
+      "server": "Un problème est survenu de notre côté. Veuillez réessayer.",
+      "validation": "Veuillez vérifier le formulaire : {details}",
+      "generic": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
@@ -763,6 +796,12 @@
   },
   "billing": {
     "feeCategories": {
+      "toast": {
+        "created": "Catégorie de frais créée",
+        "updated": "Catégorie de frais mise à jour",
+        "activated": "Catégorie de frais activée",
+        "deactivated": "Catégorie de frais désactivée"
+      },
       "title": "Fee Categories",
       "subtitle": "Manage the fee categories used to build fee structures and invoices.",
       "newCategory": "New category",
@@ -793,6 +832,13 @@
       }
     },
     "feeStructures": {
+      "toast": {
+        "created": "Structure de frais créée",
+        "published": "Structure de frais publiée",
+        "deleted": "Structure de frais supprimée",
+        "lineAdded": "Ligne de frais ajoutée",
+        "lineUpdated": "Ligne de frais mise à jour"
+      },
       "title": "Fee Structures",
       "subtitle": "Build and publish fee structures scoped to an academic year and class; each fee line carries its own term and due date.",
       "newStructure": "New fee structure",
@@ -1100,6 +1146,15 @@
       "resultSkippedEntry": "{student} : déjà facturé pour {categories} ce trimestre — ignoré.",
       "resultPartialSkipTitle": "Généré pour les catégories restantes",
       "resultPartialSkipEntry": "{student} : généré pour les catégories restantes ; déjà facturé pour {categories} ce trimestre.",
+      "openingInvoices": "Ouverture des factures…",
+      "toast": {
+        "generated": "{invoices} facture(s) générée(s) pour {students} élève(s).",
+        "partialFailure": "{invoices} facture(s) générée(s) pour {students} élève(s), mais {failed} élève(s) ont échoué. Voir les détails ci-dessous.",
+        "collectionAttention": "{invoices} facture(s) générée(s) pour {students} élève(s), mais certains encaissements (portefeuille ou solde créditeur) nécessitent votre attention. Voir les détails ci-dessous.",
+        "noneGenerated": "Aucune facture générée — {failed} élève(s) ont échoué. Voir les détails ci-dessous.",
+        "nothingToGenerate": "Rien à générer — tous les élèves sélectionnés ont déjà été facturés pour ces catégories.",
+        "skippedNote": "{count} élève(s) ont eu des catégories ignorées car déjà facturées."
+      },
       "walletResultTitle": "Wallet collection",
       "walletSettled": "Settled: {count}",
       "walletPartialShortfall": "Solde restant dû : {count}",

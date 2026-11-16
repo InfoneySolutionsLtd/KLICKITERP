@@ -16,6 +16,7 @@ export function useWebhookDeliveries(params: ListWebhookDeliveriesParams) {
 export function useRetryWebhookDelivery() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (id: string) => retryWebhookDelivery(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: WEBHOOK_DELIVERIES_QUERY_KEY }),
   });
@@ -25,6 +26,7 @@ export function useRetryWebhookDelivery() {
 export function useProcessDueWebhookDeliveries() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: () => processDueWebhookDeliveries(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: WEBHOOK_DELIVERIES_QUERY_KEY }),
   });

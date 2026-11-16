@@ -66,6 +66,7 @@ function invalidateLoanQueries(queryClient: ReturnType<typeof useQueryClient>, l
 export function useCreateLoan() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePyrlLoanDto) => createLoan(dto),
     onSuccess: (created) => invalidateLoanQueries(queryClient, created),
   });
@@ -80,6 +81,7 @@ export function useCreateLoan() {
 export function useDecideLoan() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecidePyrlLoanDto }) => decideLoan(id, dto),
     onSuccess: (updated) => invalidateLoanQueries(queryClient, updated),
   });
@@ -88,6 +90,7 @@ export function useDecideLoan() {
 export function useRecordLoanRecovery() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "recorded" },
     mutationFn: ({ id, dto }: { id: string; dto: RecordLoanRecoveryDto }) => recordLoanRecovery(id, dto),
     onSuccess: (updated) => invalidateLoanQueries(queryClient, updated),
   });
@@ -96,6 +99,7 @@ export function useRecordLoanRecovery() {
 export function useSettleLoanEarly() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: SettleLoanEarlyDto }) => settleLoanEarly(id, dto),
     onSuccess: (updated) => invalidateLoanQueries(queryClient, updated),
   });

@@ -47,6 +47,7 @@ function invalidateDisposalQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateDisposal() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFaDisposalDto) => createDisposal(dto),
     onSuccess: (created) => invalidateDisposalQueries(queryClient, created),
   });
@@ -55,6 +56,7 @@ export function useCreateDisposal() {
 export function useSubmitDisposal() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitDisposal(id),
     onSuccess: (updated) => invalidateDisposalQueries(queryClient, updated),
   });
@@ -63,6 +65,7 @@ export function useSubmitDisposal() {
 export function useDecideDisposal() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideFaDisposalDto }) => decideDisposal(id, dto),
     onSuccess: (updated) => invalidateDisposalQueries(queryClient, updated),
   });
@@ -81,6 +84,7 @@ export function useDecideDisposal() {
 export function usePostDisposal() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postDisposal(id),
     onSuccess: (updated) => {
       invalidateDisposalQueries(queryClient, updated);

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/toaster";
 import { ApiError } from "@/lib/api-error";
 import { formatMoney } from "@/lib/money";
 import { useActiveClasses } from "@/features/students/hooks/use-classes";
@@ -19,6 +21,8 @@ import { applyStudentCredit } from "../api/student-credit.api";
 import { AcademicYearTermSelect } from "./academic-year-term-select";
 import { FeeCategoryChipPicker } from "./fee-category-chip-picker";
 import { StudentSelectionGrid } from "./student-selection-grid";
+import { getInvoice } from "../api/invoices.api";
+import { chooseOpenInvoiceBucket, mapWithConcurrency, summarizeGeneration, type OpenInvoiceBucket } from "../lib/invoice-generation-outcome";
 import { orderInvoicesByDueDate } from "../lib/order-invoices-by-due-date";
 import { useBulkGenerateAdhocInvoices, useCategoriesForScope } from "../hooks/use-bulk-adhoc-invoices";
 
@@ -147,6 +151,8 @@ export function BulkGenerateInvoiceForm() {
   const t = useTranslations("billing.bulkGenerate");
   const tCommon = useTranslations("common");
   const classesQuery = useActiveClasses();
+  const router = useRouter();
+  const toast = useToast();
 
   const [academicYearId, setAcademicYearId] = React.useState<string | null>(null);
   const [termId, setTermId] = React.useState<string | null>(null);
@@ -162,6 +168,10 @@ export function BulkGenerateInvoiceForm() {
   const [walletProcessing, setWalletProcessing] = React.useState(false);
   const [creditBalanceOutcomes, setCreditBalanceOutcomes] = React.useState<CreditBalanceOutcome[] | null>(null);
   const [creditBalanceProcessing, setCreditBalanceProcessing] = React.useState(false);
+  // True from the moment a clean run finishes until we have navigated away (or found nowhere to go) —
+  // while the Pending/Upcoming page is being worked out the form must stay locked, or a second click
+  // would generate the same invoices twice.
+  const [leaving, setLeaving] = React.useState(false);
 
   const categoriesQuery = useCategoriesForScope(academicYearId ?? undefined, classId ?? undefined);
   const bulkGenerateMutation = useBulkGenerateAdhocInvoices();
@@ -199,7 +209,27 @@ export function BulkGenerateInvoiceForm() {
     [categoriesQuery.data],
   );
 
-  const submitting = bulkGenerateMutation.isPending || walletProcessing || creditBalanceProcessing;
+  const submitting = bulkGenerateMutation.isPending || walletProcessing || creditBalanceProcessing || leaving;
+
+  /** Shows a problem both inline (top of the form) and as a toast at the top of the screen, where it can't be missed. */
+  function fail(message: string) {
+    setError(message);
+    toast.error(message);
+  }
+
+  /**
+   * Which open-invoice list the freshly generated invoices are on: reads each one back (due date + the
+   * balance AFTER any wallet / credit-balance collection) and applies the lists' own split. Any failure
+   * to read them means "don't redirect" — the user simply stays on this screen with the result.
+   */
+  async function findOpenInvoiceBucket(invoiceIds: string[]): Promise<OpenInvoiceBucket | null> {
+    try {
+      const invoices = await mapWithConcurrency([...new Set(invoiceIds)], 8, (id) => getInvoice(id));
+      return chooseOpenInvoiceBucket(invoices);
+    } catch {
+      return null;
+    }
+  }
 
   async function handleSubmit() {
     setError(null);
@@ -208,19 +238,19 @@ export function BulkGenerateInvoiceForm() {
     setCreditBalanceOutcomes(null);
 
     if (!termId) {
-      setError(t("termRequired"));
+      fail(t("termRequired"));
       return;
     }
     if (!classId) {
-      setError(t("classRequired"));
+      fail(t("classRequired"));
       return;
     }
     if (feeCategoryIds.length === 0) {
-      setError(t("categoriesRequired"));
+      fail(t("categoriesRequired"));
       return;
     }
     if (studentIds.length === 0) {
-      setError(t("studentsRequired"));
+      fail(t("studentsRequired"));
       return;
     }
 
@@ -232,7 +262,7 @@ export function BulkGenerateInvoiceForm() {
     try {
       result = await bulkGenerateMutation.mutateAsync({ termId, classId, feeCategoryIds, studentIds });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("genericError"));
+      fail(err instanceof ApiError ? err.message : t("genericError"));
       return;
     }
 
@@ -255,11 +285,35 @@ export function BulkGenerateInvoiceForm() {
     // fully settled by the wallet before credit balance is even consulted,
     // so credit balance is only ever applied to whatever the wallet didn't
     // already cover.
-    if (collectFromWallet && result.succeeded.length > 0) {
-      await runWalletCollection(result.succeeded);
-    }
-    if (applyCreditBalance && result.succeeded.length > 0) {
-      await runCreditBalanceCollection(result.succeeded);
+    const walletResult = collectFromWallet && result.succeeded.length > 0 ? await runWalletCollection(result.succeeded) : [];
+    const creditResult = applyCreditBalance && result.succeeded.length > 0 ? await runCreditBalanceCollection(result.succeeded) : [];
+
+    // Tell the user how it went — at the top of the screen — and, if (and only if) the run was clean,
+    // take them to the invoice list the new invoices are on. The detailed result card below stays for
+    // anything that needs reading (failures, skips, wallet outcomes).
+    const invoices = result.succeeded.reduce((sum, s) => sum + s.invoiceIds.length, 0);
+    const collectionProblems =
+      walletResult.filter((o) => o.outcome === "failed" || o.outcome === "needsApproval" || o.outcome === "insufficientBalance").length +
+      creditResult.filter((o) => o.outcome === "failed").length;
+    const outcome = summarizeGeneration({ invoices, students: result.succeeded.length, failed: result.failed.length, collectionProblems });
+
+    const skippedAffected = result.skipped.length + result.succeeded.filter((s) => (s.alreadyBilledCategoryIds?.length ?? 0) > 0).length;
+    const message = [
+      t(`toast.${outcome.messageKey}`, { invoices, students: result.succeeded.length, failed: result.failed.length }),
+      outcome.kind === "success" && skippedAffected > 0 ? t("toast.skippedNote", { count: skippedAffected }) : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    toast[outcome.kind](message);
+
+    if (!outcome.leaveScreen) return;
+
+    setLeaving(true);
+    const bucket = await findOpenInvoiceBucket(result.succeeded.flatMap((s) => s.invoiceIds));
+    if (bucket) {
+      router.push(bucket === "PENDING" ? "/billing/pending" : "/billing/upcoming");
+    } else {
+      setLeaving(false);
     }
   }
 
@@ -293,7 +347,7 @@ export function BulkGenerateInvoiceForm() {
    * that student's invoices gets the SAME outcome kind, not a per-invoice
    * breakdown, since the backend never got far enough to produce one.
    */
-  async function runWalletCollection(succeeded: { studentId: string; invoiceIds: string[] }[]): Promise<void> {
+  async function runWalletCollection(succeeded: { studentId: string; invoiceIds: string[] }[]): Promise<WalletOutcome[]> {
     setWalletProcessing(true);
     const outcomes: WalletOutcome[] = [];
     // One wallet lookup per student, reused across every one of that student's own invoices this run.
@@ -362,6 +416,7 @@ export function BulkGenerateInvoiceForm() {
 
     setWalletOutcomes(outcomes);
     setWalletProcessing(false);
+    return outcomes;
   }
 
   /**
@@ -387,7 +442,7 @@ export function BulkGenerateInvoiceForm() {
    * `insufficientBalance` split to make here, since neither is a real
    * possible outcome for this endpoint.
    */
-  async function runCreditBalanceCollection(succeeded: { studentId: string; invoiceIds: string[] }[]): Promise<void> {
+  async function runCreditBalanceCollection(succeeded: { studentId: string; invoiceIds: string[] }[]): Promise<CreditBalanceOutcome[]> {
     setCreditBalanceProcessing(true);
     const outcomes: CreditBalanceOutcome[] = [];
 
@@ -429,6 +484,7 @@ export function BulkGenerateInvoiceForm() {
 
     setCreditBalanceOutcomes(outcomes);
     setCreditBalanceProcessing(false);
+    return outcomes;
   }
 
   const outcomeCount = (outcome: WalletOutcomeKind) => (walletOutcomes ?? []).filter((o) => o.outcome === outcome).length;
@@ -522,7 +578,9 @@ export function BulkGenerateInvoiceForm() {
                   ? t("collecting")
                   : creditBalanceProcessing
                     ? t("applyingCredit")
-                    : t("submit")}
+                    : leaving
+                      ? t("openingInvoices")
+                      : t("submit")}
             </Button>
           </div>
         </CardContent>

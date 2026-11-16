@@ -37,6 +37,7 @@ export function useChequeBook(id: string | undefined) {
 export function useCreateChequeBook() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateChequeBookDto) => createChequeBook(dto),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: BANKING_CHEQUE_BOOKS_QUERY_KEY });

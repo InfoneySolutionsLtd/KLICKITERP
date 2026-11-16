@@ -37,6 +37,7 @@ function invalidateOneoffQueries(queryClient: ReturnType<typeof useQueryClient>,
 export function useCreateOneoff() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePyrlOneoffDto) => createOneoff(dto),
     onSuccess: (created) => invalidateOneoffQueries(queryClient, created),
   });
@@ -45,6 +46,7 @@ export function useCreateOneoff() {
 export function useUpdateOneoff() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePyrlOneoffDto }) => updateOneoff(id, dto),
     onSuccess: (updated) => invalidateOneoffQueries(queryClient, updated),
   });
@@ -54,6 +56,7 @@ export function useUpdateOneoff() {
 export function useDeleteOneoff() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: ({ id }: { id: string; periodKey: string }) => deleteOneoff(id),
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: periodListKey(variables.periodKey) });

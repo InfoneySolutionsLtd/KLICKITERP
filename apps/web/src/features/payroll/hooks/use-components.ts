@@ -33,6 +33,7 @@ function invalidateComponentQueries(queryClient: ReturnType<typeof useQueryClien
 export function useCreateComponent() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePyrlComponentDto) => createComponent(dto),
     onSuccess: () => invalidateComponentQueries(queryClient),
   });
@@ -41,6 +42,7 @@ export function useCreateComponent() {
 export function useUpdateComponent() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePyrlComponentDto }) => updateComponent(id, dto),
     onSuccess: (updated) => invalidateComponentQueries(queryClient, updated.id),
   });

@@ -32,6 +32,7 @@ export function useLateFeePolicy(id: string) {
 export function useCreateLateFeePolicy() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateLateFeePolicyDto) => createLateFeePolicy(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: LATE_FEE_POLICIES_QUERY_KEY }),
   });
@@ -40,6 +41,7 @@ export function useCreateLateFeePolicy() {
 export function useUpdateLateFeePolicy(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateLateFeePolicyDto) => updateLateFeePolicy(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LATE_FEE_POLICIES_QUERY_KEY });
@@ -51,6 +53,7 @@ export function useUpdateLateFeePolicy(id: string) {
 export function useDeactivateLateFeePolicy() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => deactivateLateFeePolicy(id),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: LATE_FEE_POLICIES_QUERY_KEY });
@@ -62,6 +65,7 @@ export function useDeactivateLateFeePolicy() {
 export function useActivateLateFeePolicy() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => activateLateFeePolicy(id),
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: LATE_FEE_POLICIES_QUERY_KEY });

@@ -104,6 +104,7 @@ export function useGuardian(id: string | undefined) {
 export function useCreateGuardianStandalone() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateGuardianDto) => createGuardian(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: GUARDIANS_QUERY_KEY }),
   });
@@ -112,6 +113,7 @@ export function useCreateGuardianStandalone() {
 export function useUpdateGuardian(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateGuardianDto) => updateGuardian(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: GUARDIANS_QUERY_KEY });
@@ -196,6 +198,7 @@ export function useGuardianStudentLinks(guardianId: string | undefined) {
 export function useLinkStudentToGuardian(guardianId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: ({
       studentId,
       relationship,
@@ -217,6 +220,7 @@ export function useLinkStudentToGuardian(guardianId: string) {
 export function useUnlinkStudentFromGuardian(guardianId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: (studentId: string) => unlinkGuardianFromStudent(studentId, guardianId),
     onSuccess: (_data, studentId) => {
       queryClient.invalidateQueries({ queryKey: guardianStudentLinksKey(guardianId) });
@@ -233,6 +237,7 @@ function invalidateStudentGuardians(queryClient: ReturnType<typeof useQueryClien
 export function useLinkGuardian(studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: (dto: LinkGuardianDto) => linkGuardianToStudent(studentId, dto),
     onSuccess: () => invalidateStudentGuardians(queryClient, studentId),
   });
@@ -241,6 +246,7 @@ export function useLinkGuardian(studentId: string) {
 export function useUnlinkGuardian(studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: (guardianId: string) => unlinkGuardianFromStudent(studentId, guardianId),
     onSuccess: () => invalidateStudentGuardians(queryClient, studentId),
   });
@@ -294,6 +300,7 @@ export async function createAndLinkGuardian(
 export function useCreateAndLinkGuardian(studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: ({ guardianDto, linkDto }: { guardianDto: CreateGuardianDto; linkDto: Omit<LinkGuardianDto, "guardianId"> }) =>
       createAndLinkGuardian(studentId, guardianDto, linkDto),
     onSuccess: () => invalidateStudentGuardians(queryClient, studentId),

@@ -37,6 +37,7 @@ export function useTransfersByAsset(assetId: string | undefined) {
 export function useCreateTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFaTransferDto) => createTransfer(dto),
     onSuccess: (created: FaTransferResponseDto) => {
       queryClient.invalidateQueries({ queryKey: fixedAssetsTransfersQueryKey(created.assetId) });
@@ -49,6 +50,7 @@ export function useCreateTransfer() {
 export function useAcknowledgeTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => acknowledgeTransfer(id),
     onSuccess: (updated: FaTransferResponseDto) => {
       queryClient.invalidateQueries({ queryKey: fixedAssetsTransfersQueryKey(updated.assetId) });

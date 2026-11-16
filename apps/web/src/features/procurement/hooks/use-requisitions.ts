@@ -49,6 +49,7 @@ export function useRequisitionLines(requisitionId: string | undefined) {
 export function useCreateRequisition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateRequisitionDto) => createRequisition(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: REQUISITIONS_QUERY_KEY }),
   });
@@ -76,6 +77,7 @@ function invalidateRequisitionDetail(queryClient: ReturnType<typeof useQueryClie
 export function useAddRequisitionLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: ({ requisitionId, dto }: { requisitionId: string; dto: CreateRequisitionLineDto }) => addRequisitionLine(requisitionId, dto),
     onSuccess: (_line, { requisitionId }) => invalidateRequisitionDetail(queryClient, requisitionId),
   });
@@ -84,6 +86,7 @@ export function useAddRequisitionLine() {
 export function useUpdateRequisitionLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ lineId, dto }: { requisitionId: string; lineId: string; dto: UpdateRequisitionLineDto }) => updateRequisitionLine(lineId, dto),
     onSuccess: (_line, { requisitionId }) => invalidateRequisitionDetail(queryClient, requisitionId),
   });
@@ -92,6 +95,7 @@ export function useUpdateRequisitionLine() {
 export function useDeleteRequisitionLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: ({ lineId }: { requisitionId: string; lineId: string }) => deleteRequisitionLine(lineId),
     onSuccess: (_result, { requisitionId }) => invalidateRequisitionDetail(queryClient, requisitionId),
   });
@@ -101,6 +105,7 @@ export function useDeleteRequisitionLine() {
 export function useSubmitRequisition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitRequisition(id),
     onSuccess: (updated) => {
       invalidateRequisitionDetail(queryClient, updated.id);
@@ -113,6 +118,7 @@ export function useSubmitRequisition() {
 export function useApproveRequisition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveRequisition(id),
     onSuccess: (updated) => {
       invalidateRequisitionDetail(queryClient, updated.id);
@@ -125,6 +131,7 @@ export function useApproveRequisition() {
 export function useRejectRequisition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectRequisition(id),
     onSuccess: (updated) => {
       invalidateRequisitionDetail(queryClient, updated.id);
@@ -136,6 +143,7 @@ export function useRejectRequisition() {
 export function useCancelRequisition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: (id: string) => cancelRequisition(id),
     onSuccess: (updated) => {
       invalidateRequisitionDetail(queryClient, updated.id);

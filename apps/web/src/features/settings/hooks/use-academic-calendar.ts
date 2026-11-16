@@ -42,6 +42,7 @@ export function useAcademicYear(id: string | undefined) {
 export function useCreateAcademicYear() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateAcademicYearDto) => createAcademicYear(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: SETTINGS_ACADEMIC_YEARS_QUERY_KEY }),
   });
@@ -50,6 +51,7 @@ export function useCreateAcademicYear() {
 export function useUpdateAcademicYear() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateAcademicYearDto }) => updateAcademicYear(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: SETTINGS_ACADEMIC_YEARS_QUERY_KEY });
@@ -62,6 +64,7 @@ export function useUpdateAcademicYear() {
 export function useSetCurrentAcademicYear() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (id: string) => setCurrentAcademicYear(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: SETTINGS_ACADEMIC_YEARS_QUERY_KEY }),
   });
@@ -82,6 +85,7 @@ export function useTerm(id: string | undefined) {
 export function useCreateTerm() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateTermDto) => createTerm(dto),
     onSuccess: (created) => queryClient.invalidateQueries({ queryKey: termsListKey(created.academicYearId) }),
   });
@@ -90,6 +94,7 @@ export function useCreateTerm() {
 export function useUpdateTerm() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateTermDto }) => updateTerm(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: termsListKey(updated.academicYearId) });
@@ -102,6 +107,7 @@ export function useUpdateTerm() {
 export function useSetCurrentTerm() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (id: string) => setCurrentTerm(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: SETTINGS_TERMS_QUERY_KEY }),
   });
@@ -110,6 +116,7 @@ export function useSetCurrentTerm() {
 export function useSetTermBillingLock() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: SetBillingLockDto }) => setTermBillingLock(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: termsListKey(updated.academicYearId) });

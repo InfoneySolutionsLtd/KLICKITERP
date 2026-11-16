@@ -26,6 +26,7 @@ export function useCheque(id: string | undefined) {
 export function useClearCheque() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => clearCheque(id),
     onSuccess: (cheque) => {
       queryClient.invalidateQueries({ queryKey: unclearedKey() });
@@ -51,6 +52,7 @@ export function useClearCheque() {
 export function useBounceCheque() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, dto }: { id: string; dto: BounceChequeDto }) => bounceCheque(id, dto),
     onSuccess: (cheque) => {
       queryClient.invalidateQueries({ queryKey: unclearedKey() });

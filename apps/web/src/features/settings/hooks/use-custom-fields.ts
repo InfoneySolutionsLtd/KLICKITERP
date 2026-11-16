@@ -27,6 +27,7 @@ export function useCustomField(id: string | undefined) {
 export function useCreateCustomField() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateCustomFieldDto) => createCustomField(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: CUSTOM_FIELDS_QUERY_KEY }),
   });
@@ -35,6 +36,7 @@ export function useCreateCustomField() {
 export function useUpdateCustomField() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateCustomFieldDto }) => updateCustomField(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: CUSTOM_FIELDS_QUERY_KEY });

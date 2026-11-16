@@ -1,4 +1,37 @@
 {
+  "toast": {
+    "success": {
+      "generated": "Generated successfully",
+      "created": "Created successfully",
+      "updated": "Updated successfully",
+      "deleted": "Deleted successfully",
+      "removed": "Removed successfully",
+      "added": "Added successfully",
+      "submitted": "Submitted successfully",
+      "approved": "Approved successfully",
+      "rejected": "Rejected successfully",
+      "decided": "Decision recorded",
+      "posted": "Posted successfully",
+      "activated": "Activated successfully",
+      "deactivated": "Deactivated successfully",
+      "published": "Published successfully",
+      "sent": "Sent successfully",
+      "cancelled": "Cancelled successfully",
+      "voided": "Voided successfully",
+      "reversed": "Reversed successfully",
+      "requested": "Request submitted",
+      "recorded": "Recorded successfully",
+      "completed": "Completed successfully"
+    },
+    "error": {
+      "network": "Can't reach the server. Check your connection and try again.",
+      "sessionExpired": "Your session has expired. Please sign in again.",
+      "permission": "You don't have permission to do that.",
+      "server": "Something went wrong on our side. Please try again.",
+      "validation": "Please check the form: {details}",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
@@ -763,6 +796,12 @@
   },
   "billing": {
     "feeCategories": {
+      "toast": {
+        "created": "Fee category created",
+        "updated": "Fee category updated",
+        "activated": "Fee category activated",
+        "deactivated": "Fee category deactivated"
+      },
       "title": "Fee Categories",
       "subtitle": "Manage the fee categories used to build fee structures and invoices.",
       "newCategory": "New category",
@@ -793,6 +832,13 @@
       }
     },
     "feeStructures": {
+      "toast": {
+        "created": "Fee structure created",
+        "published": "Fee structure published",
+        "deleted": "Fee structure deleted",
+        "lineAdded": "Fee line added",
+        "lineUpdated": "Fee line updated"
+      },
       "title": "Fee Structures",
       "subtitle": "Build and publish fee structures scoped to an academic year and class; each fee line carries its own term and due date.",
       "newStructure": "New fee structure",
@@ -1100,6 +1146,15 @@
       "resultSkippedEntry": "{student}: already billed for {categories} this term — skipped.",
       "resultPartialSkipTitle": "Generated for remaining categories",
       "resultPartialSkipEntry": "{student}: generated for the remaining categories; already billed for {categories} this term.",
+      "openingInvoices": "Opening invoices…",
+      "toast": {
+        "generated": "Generated {invoices} invoice(s) for {students} student(s).",
+        "partialFailure": "Generated {invoices} invoice(s) for {students} student(s), but {failed} student(s) failed. See the details below.",
+        "collectionAttention": "Generated {invoices} invoice(s) for {students} student(s), but some wallet or credit-balance collections need attention. See the details below.",
+        "noneGenerated": "No invoices were generated — {failed} student(s) failed. See the details below.",
+        "nothingToGenerate": "Nothing to generate — every selected student was already billed for these categories.",
+        "skippedNote": "{count} student(s) had categories skipped because they were already billed."
+      },
       "walletResultTitle": "Wallet collection",
       "walletSettled": "Settled: {count}",
       "walletPartialShortfall": "Shortfall remains: {count}",

@@ -40,6 +40,7 @@ function invalidate(queryClient: ReturnType<typeof useQueryClient>, id?: string)
 export function useCreateTransportRoute() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateTransportRouteDto) => createTransportRoute(dto),
     onSuccess: () => invalidate(queryClient),
   });
@@ -48,6 +49,7 @@ export function useCreateTransportRoute() {
 export function useUpdateTransportRoute(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateTransportRouteDto) => updateTransportRoute(id, dto),
     onSuccess: () => invalidate(queryClient, id),
   });
@@ -56,6 +58,7 @@ export function useUpdateTransportRoute(id: string) {
 export function useDeactivateTransportRoute() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => deactivateTransportRoute(id),
     onSuccess: (_data, id) => invalidate(queryClient, id),
   });
@@ -64,6 +67,7 @@ export function useDeactivateTransportRoute() {
 export function useActivateTransportRoute() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => activateTransportRoute(id),
     onSuccess: (_data, id) => invalidate(queryClient, id),
   });

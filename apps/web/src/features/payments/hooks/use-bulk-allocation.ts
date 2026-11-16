@@ -20,7 +20,7 @@ function linesKey(id: string | undefined) {
 
 /** No `useCreateBulkAllocationBatch`-consuming list screen exists (there is no `GET /payments/bulk-allocations` list endpoint at all, confirmed by reading `BulkAllocationController` — batches are only ever reached by the id the create response returns, or a direct URL), so this mutation has nothing to invalidate beyond its own eventual detail/lines queries, which don't exist yet at create time. */
 export function useCreateBulkAllocationBatch() {
-  return useMutation({ mutationFn: (dto: CreateBulkAllocationBatchDto) => createBulkAllocationBatch(dto) });
+  return useMutation({ meta: { toast: "created" }, mutationFn: (dto: CreateBulkAllocationBatchDto) => createBulkAllocationBatch(dto) });
 }
 
 export function useBulkAllocationBatch(id: string | undefined) {
@@ -46,6 +46,7 @@ export function useBulkAllocationBatchLines(id: string | undefined) {
 export function useMatchAndPostBulkAllocationBatch(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: () => matchAndPostBulkAllocationBatch(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: detailKey(id) });

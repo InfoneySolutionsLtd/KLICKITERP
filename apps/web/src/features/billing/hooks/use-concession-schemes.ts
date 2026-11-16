@@ -40,6 +40,7 @@ function invalidate(queryClient: ReturnType<typeof useQueryClient>, id?: string)
 export function useCreateConcessionScheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateConcessionSchemeDto) => createConcessionScheme(dto),
     onSuccess: () => invalidate(queryClient),
   });
@@ -48,6 +49,7 @@ export function useCreateConcessionScheme() {
 export function useUpdateConcessionScheme(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateConcessionSchemeDto) => updateConcessionScheme(id, dto),
     onSuccess: () => invalidate(queryClient, id),
   });
@@ -57,6 +59,7 @@ export function useUpdateConcessionScheme(id: string) {
 export function useDeactivateConcessionScheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => deactivateConcessionScheme(id),
     onSuccess: (_data, id) => invalidate(queryClient, id),
   });
@@ -65,6 +68,7 @@ export function useDeactivateConcessionScheme() {
 export function useActivateConcessionScheme() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => activateConcessionScheme(id),
     onSuccess: (_data, id) => invalidate(queryClient, id),
   });

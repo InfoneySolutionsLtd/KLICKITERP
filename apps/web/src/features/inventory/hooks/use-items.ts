@@ -65,6 +65,7 @@ function invalidateItemQueries(queryClient: ReturnType<typeof useQueryClient>, i
 export function useCreateItem() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateItemDto) => createItem(dto),
     onSuccess: () => invalidateItemQueries(queryClient),
   });
@@ -74,6 +75,7 @@ export function useCreateItem() {
 export function useUpdateItem() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateItemDto }) => updateItem(id, dto),
     onSuccess: (updated) => invalidateItemQueries(queryClient, updated.id),
   });

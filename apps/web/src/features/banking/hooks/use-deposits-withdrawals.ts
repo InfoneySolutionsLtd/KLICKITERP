@@ -59,6 +59,7 @@ function invalidateDwQueries(queryClient: ReturnType<typeof useQueryClient>, kin
 export function useCreateDepositOrWithdrawal(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateDepositOrWithdrawalDto) => createDepositOrWithdrawal(kind, dto),
     onSuccess: (created) => invalidateDwQueries(queryClient, kind, created.id),
   });
@@ -67,6 +68,7 @@ export function useCreateDepositOrWithdrawal(kind: DepositWithdrawalKind) {
 export function useSubmitDepositOrWithdrawal(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitDepositOrWithdrawal(kind, id),
     onSuccess: (updated) => invalidateDwQueries(queryClient, kind, updated.id),
   });
@@ -75,6 +77,7 @@ export function useSubmitDepositOrWithdrawal(kind: DepositWithdrawalKind) {
 export function useApproveDepositOrWithdrawal(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveDepositOrWithdrawal(kind, id),
     onSuccess: (updated) => invalidateDwQueries(queryClient, kind, updated.id),
   });
@@ -83,6 +86,7 @@ export function useApproveDepositOrWithdrawal(kind: DepositWithdrawalKind) {
 export function useRejectDepositOrWithdrawal(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectDepositOrWithdrawal(kind, id),
     onSuccess: (updated) => invalidateDwQueries(queryClient, kind, updated.id),
   });
@@ -92,6 +96,7 @@ export function useRejectDepositOrWithdrawal(kind: DepositWithdrawalKind) {
 export function usePostDepositOrWithdrawal(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postDepositOrWithdrawal(kind, id),
     onSuccess: (updated) => invalidateDwQueries(queryClient, kind, updated.id),
   });
@@ -101,6 +106,7 @@ export function usePostDepositOrWithdrawal(kind: DepositWithdrawalKind) {
 export function useAcknowledgeSender(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => acknowledgeSender(kind, id),
     onSuccess: (updated) => invalidateDwQueries(queryClient, kind, updated.id),
   });
@@ -110,6 +116,7 @@ export function useAcknowledgeSender(kind: DepositWithdrawalKind) {
 export function useAcknowledgeReceiver(kind: DepositWithdrawalKind) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => acknowledgeReceiver(kind, id),
     onSuccess: (updated) => invalidateDwQueries(queryClient, kind, updated.id),
   });
