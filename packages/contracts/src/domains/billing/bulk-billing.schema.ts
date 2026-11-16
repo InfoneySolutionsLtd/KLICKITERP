@@ -27,12 +27,14 @@ export type BulkGenerateSuccessDto = z.infer<typeof BulkGenerateSuccessDtoSchema
 
 export const BulkGenerateFailureDtoSchema = z.object({
     studentId: z.string(),
+    studentLabel: z.string().optional(),
     error: z.string(),
 });
 export type BulkGenerateFailureDto = z.infer<typeof BulkGenerateFailureDtoSchema>;
 
 export const BulkGenerateSkipDtoSchema = z.object({
     studentId: z.string(),
+    studentLabel: z.string().optional(),
     reason: z.string(),
 });
 export type BulkGenerateSkipDto = z.infer<typeof BulkGenerateSkipDtoSchema>;

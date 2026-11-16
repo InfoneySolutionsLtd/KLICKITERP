@@ -16,6 +16,7 @@ import { BillInvoiceLineRepository } from "../infrastructure/bill-invoice-line.r
 import { BillInvoiceRepository } from "../infrastructure/bill-invoice.repository";
 import { FeeStructuresService } from "./fee-structures.service";
 import { InvoicingService } from "./invoicing.service";
+import { formatStudentLabel } from "./student-label";
 
 export interface BulkGenerateFilter {
   classIds?: string[];
@@ -33,6 +34,8 @@ export interface BulkGenerateSuccess {
 
 export interface BulkGenerateFailure {
   studentId: string;
+  /** "First Last (admission no.)" — see `formatStudentLabel()`. Optional so the UI can fall back to the id. */
+  studentLabel?: string;
   error: string;
 }
 
@@ -47,6 +50,8 @@ export interface BulkGenerateFailure {
  */
 export interface BulkGenerateSkip {
   studentId: string;
+  /** "First Last (admission no.)" — see `formatStudentLabel()`. Optional so the UI can fall back to the id. */
+  studentLabel?: string;
   reason: string;
 }
 
@@ -142,8 +147,9 @@ export class BulkBillingService {
       // matching this codebase's own NotFoundException/ValidationException
       // split (see generateInvoice()'s own findApplicableFor() precedent).
       throw new NotFoundException(
-        "SetTerm(preceding)",
-        `no term with seq=${targetTerm.seq - 1} exists in academic year ${targetTerm.academicYearId} — term "${targetTerm.name}" (seq ${targetTerm.seq}) has no preceding term to carry forward invoices from`,
+        // Shown verbatim to the accountant: names the term, never an academic-year id or "seq=" internals.
+        "Preceding term",
+        `${targetTerm.name} has no earlier term in its academic year, so there are no invoices to carry forward from`,
       );
     }
 
@@ -153,12 +159,22 @@ export class BulkBillingService {
     const skipped: BulkGenerateSkip[] = [];
 
     for (const student of students) {
+      // The rows are already loaded (`resolveStudents()`), so labelling failures/skips
+      // with the student's name costs no extra query.
+      const studentLabel = formatStudentLabel(student);
       try {
         const result = await runInTransaction(this.dataSource, (manager) =>
-          this.generateForStudent(manager, student.id, termId, precedingTerm.id, initiatedBy),
+          this.generateForStudent(
+            manager,
+            student.id,
+            termId,
+            precedingTerm.id,
+            { target: targetTerm.name, preceding: precedingTerm.name },
+            initiatedBy,
+          ),
         );
         if (result.kind === "skipped") {
-          skipped.push({ studentId: student.id, reason: result.reason });
+          skipped.push({ studentId: student.id, studentLabel, reason: result.reason });
         } else {
           succeeded.push({
             studentId: student.id,
@@ -170,7 +186,7 @@ export class BulkBillingService {
           });
         }
       } catch (error) {
-        failed.push({ studentId: student.id, error: error instanceof Error ? error.message : String(error) });
+        failed.push({ studentId: student.id, studentLabel, error: error instanceof Error ? error.message : String(error) });
       }
     }
 
@@ -182,6 +198,9 @@ export class BulkBillingService {
     studentId: string,
     targetTermId: string,
     precedingTermId: string,
+    // Display names for the failure messages below — they are shown verbatim to the
+    // accountant, next to the student's name, so they must name terms, never ids.
+    termNames: { target: string; preceding: string },
     initiatedBy: string,
   ): Promise<GenerateForStudentResult> {
     const priorInvoice = await this.invoiceRepository.findMostRecentNonVoidByStudentAndTerm(
@@ -198,9 +217,8 @@ export class BulkBillingService {
 
     const structure = await this.feeStructuresService.findApplicableFor(studentId, targetTermId, manager);
     if (!structure) {
-      throw new NotFoundException(
-        "BillFeeStructure(applicable)",
-        `no PUBLISHED fee structure matches student=${studentId} term=${targetTermId} (BR-BILL-02)`,
+      throw new ValidationException(
+        `No published fee structure applies to this student for ${termNames.target} (BR-BILL-02) — publish one for their class and academic year first`,
       );
     }
 
@@ -217,7 +235,7 @@ export class BulkBillingService {
         missingCategoryIds.map(async (id) => (await this.feeCategoryRepository.findByIdOrFail(id, manager)).name),
       );
       throw new ValidationException(
-        `Student ${studentId}'s most recent invoice (${priorInvoice.number}) from the preceding term billed categories no longer on the current fee structure for term ${targetTermId}: ${missingNames.join(", ")}`,
+        `This student's most recent invoice (${priorInvoice.number}) from ${termNames.preceding} billed categories that are no longer on the ${termNames.target} fee structure: ${missingNames.join(", ")}`,
       );
     }
 
@@ -293,7 +311,9 @@ export class BulkBillingService {
    * method only ever wanted the rows. Kept byte-for-byte from the old
    * algorithm — population resolution is unchanged by this redesign.
    */
-  private async resolveStudents(filter: BulkGenerateFilter): Promise<{ id: string; streamId: string | null }[]> {
+  private async resolveStudents(
+    filter: BulkGenerateFilter,
+  ): Promise<{ id: string; streamId: string | null; firstName: string; lastName: string; admissionNo: string }[]> {
     const classIds = filter.classIds ?? [];
     const streamIds = filter.streamIds ?? [];
 

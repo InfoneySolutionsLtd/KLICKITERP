@@ -11094,11 +11094,15 @@ export interface components {
         BillTransportSuccessDto: {
             /** Format: uuid */
             studentId: string;
+            /** @description Display label "First Last (admission no.)" — show this instead of the id */
+            studentLabel?: string;
             invoiceIds: string[];
         };
         BillTransportFailureDto: {
             /** Format: uuid */
             studentId: string;
+            /** @description Display label "First Last (admission no.)" — show this instead of the id */
+            studentLabel?: string;
             error: string;
         };
         BillTransportResultDto: {
@@ -11127,6 +11131,8 @@ export interface components {
         TransportRegenerateSkipDto: {
             /** Format: uuid */
             studentId: string;
+            /** @description Display label "First Last (admission no.)" — show this instead of the id */
+            studentLabel?: string;
             /** @description Why nothing was generated for this student (not an error) */
             reason: string;
         };
@@ -11519,11 +11525,15 @@ export interface components {
         BulkGenerateFailureDto: {
             /** Format: uuid */
             studentId: string;
+            /** @description Display label "First Last (admission no.)" — show this instead of the id */
+            studentLabel?: string;
             error: string;
         };
         BulkGenerateSkipDto: {
             /** Format: uuid */
             studentId: string;
+            /** @description Display label "First Last (admission no.)" — show this instead of the id */
+            studentLabel?: string;
             /** @description Why nothing was generated for this student (not an error) */
             reason: string;
         };

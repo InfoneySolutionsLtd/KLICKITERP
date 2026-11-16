@@ -15,7 +15,7 @@ import { useActiveClasses } from "@/features/students/hooks/use-classes";
 import { findWalletByStudent, sweepToInvoices } from "@/features/wallet/api/wallets.api";
 import { isInsufficientBalanceError, isTransferNeedsApprovalError } from "@/features/wallet/lib/errors";
 import { applyStudentCredit } from "../api/student-credit.api";
-import { getInvoice } from "../api/invoices.api";
+import { orderInvoicesByDueDate } from "../lib/order-invoices-by-due-date";
 import { AcademicYearTermSelect } from "./academic-year-term-select";
 import { TransportStudentSelectionGrid } from "./transport-student-selection-grid";
 import { useTransportRoutes } from "../hooks/use-transport-routes";
@@ -33,6 +33,8 @@ type WalletOutcomeKind = "settled" | "partialShortfall" | "needsApproval" | "ins
 interface WalletOutcome {
   studentId: string;
   invoiceId: string;
+  /** The invoice's own number (e.g. "INV-000123") — what result lines show; `invoiceId` is only the fallback if it couldn't be loaded. */
+  invoiceNumber?: string;
   amount: string;
   outcome: WalletOutcomeKind;
   message?: string;
@@ -44,22 +46,19 @@ type CreditBalanceOutcomeKind = "settled" | "partialShortfall" | "failed";
 interface CreditBalanceOutcome {
   studentId: string;
   invoiceId: string;
+  /** The invoice's own number (e.g. "INV-000123") — what result lines show; `invoiceId` is only the fallback if it couldn't be loaded. */
+  invoiceNumber?: string;
   amount: string;
   outcome: CreditBalanceOutcomeKind;
   message?: string;
   receiptId?: string;
 }
 
-/** Same `sortInvoiceIdsByDueDate()` `sweepToInvoices()`/`applyStudentCredit()` requires — see `bulk-generate-invoice-form.tsx`'s own doc comment. */
-async function sortInvoiceIdsByDueDate(invoiceIds: string[]): Promise<string[]> {
-  const withDueDate = await Promise.all(invoiceIds.map(async (invoiceId) => ({ invoiceId, dueDate: (await getInvoice(invoiceId)).dueDate })));
-  return withDueDate.sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0)).map((i) => i.invoiceId);
-}
-
 interface BillSummary {
   succeededStudents: number;
   succeededInvoices: number;
-  failed: { studentId: string; error: string }[];
+  /** `studentLabel` is "First Last (admission no.)" from the server; the id is only the fallback. */
+  failed: { studentId: string; studentLabel?: string; error: string }[];
 }
 
 /**
@@ -92,6 +91,11 @@ export function BillTransportForm() {
   const [walletProcessing, setWalletProcessing] = React.useState(false);
   const [creditBalanceOutcomes, setCreditBalanceOutcomes] = React.useState<CreditBalanceOutcome[] | null>(null);
   const [creditBalanceProcessing, setCreditBalanceProcessing] = React.useState(false);
+  // Student names for the wallet/credit result lines, taken from the bill response
+  // (its `succeeded[].studentLabel`) when the form is submitted.
+  const [resultStudentLabels, setResultStudentLabels] = React.useState<Map<string, string>>(() => new Map());
+  /** "First Last (admission no.)" — the raw id only if the server couldn't supply a name. */
+  const studentLabel = (id: string) => resultStudentLabels.get(id) ?? id;
 
   const billMutation = useBillTransportRoute();
 
@@ -136,6 +140,11 @@ export function BillTransportForm() {
       return;
     }
 
+    setResultStudentLabels(
+      new Map(
+        result.succeeded.flatMap((s): [string, string][] => (s.studentLabel ? [[s.studentId, s.studentLabel]] : [])),
+      ),
+    );
     setSummary({
       succeededStudents: result.succeeded.length,
       succeededInvoices: result.succeeded.reduce((sum, s) => sum + s.invoiceIds.length, 0),
@@ -159,6 +168,11 @@ export function BillTransportForm() {
     const walletIdByStudent = new Map<string, string | null>();
 
     for (const student of succeeded) {
+      // One load per student: gives the due-date order the sweep needs AND the
+      // invoice numbers every result line below shows (see `orderInvoicesByDueDate()`).
+      const ordering = await orderInvoicesByDueDate(student.invoiceIds);
+      const invoiceNumber = (invoiceId: string) => ordering.numberById.get(invoiceId);
+
       let walletId = walletIdByStudent.get(student.studentId);
       if (walletId === undefined) {
         const wallet = await findWalletByStudent(student.studentId).catch(() => null);
@@ -168,19 +182,20 @@ export function BillTransportForm() {
 
       if (!walletId) {
         for (const invoiceId of student.invoiceIds) {
-          outcomes.push({ studentId: student.studentId, invoiceId, amount: "0.0000", outcome: "noWallet" });
+          outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "0.0000", outcome: "noWallet" });
         }
         continue;
       }
 
       try {
-        const orderedInvoiceIds = await sortInvoiceIdsByDueDate(student.invoiceIds);
-        const result = await sweepToInvoices(walletId, { invoiceIds: orderedInvoiceIds });
+        if (!ordering.ok) throw ordering.error;
+        const result = await sweepToInvoices(walletId, { invoiceIds: ordering.orderedIds });
 
         for (const alloc of result.allocations) {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: alloc.invoiceId,
+            invoiceNumber: invoiceNumber(alloc.invoiceId),
             amount: alloc.amount,
             outcome: "settled",
             receiptId: result.receiptId ?? undefined,
@@ -190,6 +205,7 @@ export function BillTransportForm() {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: shortfall.invoiceId,
+            invoiceNumber: invoiceNumber(shortfall.invoiceId),
             amount: shortfall.remainingBalance,
             outcome: "partialShortfall",
           });
@@ -197,16 +213,16 @@ export function BillTransportForm() {
       } catch (err) {
         if (isTransferNeedsApprovalError(err)) {
           for (const invoiceId of student.invoiceIds) {
-            outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "needsApproval" });
+            outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "needsApproval" });
           }
         } else if (isInsufficientBalanceError(err)) {
           for (const invoiceId of student.invoiceIds) {
-            outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "insufficientBalance" });
+            outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "insufficientBalance" });
           }
         } else {
           const message = err instanceof ApiError ? err.message : t("genericError");
           for (const invoiceId of student.invoiceIds) {
-            outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "failed", message });
+            outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "failed", message });
           }
         }
       }
@@ -221,14 +237,19 @@ export function BillTransportForm() {
     const outcomes: CreditBalanceOutcome[] = [];
 
     for (const student of succeeded) {
+      // One load per student — see the same line in `runWalletCollection()`.
+      const ordering = await orderInvoicesByDueDate(student.invoiceIds);
+      const invoiceNumber = (invoiceId: string) => ordering.numberById.get(invoiceId);
+
       try {
-        const orderedInvoiceIds = await sortInvoiceIdsByDueDate(student.invoiceIds);
-        const result = await applyStudentCredit({ studentId: student.studentId, invoiceIds: orderedInvoiceIds });
+        if (!ordering.ok) throw ordering.error;
+        const result = await applyStudentCredit({ studentId: student.studentId, invoiceIds: ordering.orderedIds });
 
         for (const alloc of result.allocations) {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: alloc.invoiceId,
+            invoiceNumber: invoiceNumber(alloc.invoiceId),
             amount: alloc.amount,
             outcome: "settled",
             receiptId: result.receiptId ?? undefined,
@@ -238,6 +259,7 @@ export function BillTransportForm() {
           outcomes.push({
             studentId: student.studentId,
             invoiceId: shortfall.invoiceId,
+            invoiceNumber: invoiceNumber(shortfall.invoiceId),
             amount: shortfall.remainingBalance,
             outcome: "partialShortfall",
           });
@@ -245,7 +267,7 @@ export function BillTransportForm() {
       } catch (err) {
         const message = err instanceof ApiError ? err.message : t("genericError");
         for (const invoiceId of student.invoiceIds) {
-          outcomes.push({ studentId: student.studentId, invoiceId, amount: "", outcome: "failed", message });
+          outcomes.push({ studentId: student.studentId, invoiceId, invoiceNumber: invoiceNumber(invoiceId), amount: "", outcome: "failed", message });
         }
       }
     }
@@ -369,7 +391,7 @@ export function BillTransportForm() {
                 <ul className="list-inside list-disc text-sm text-muted-foreground">
                   {summary.failed.map((f) => (
                     <li key={f.studentId}>
-                      {f.studentId}: {f.error}
+                      {f.studentLabel ?? f.studentId}: {f.error}
                     </li>
                   ))}
                 </ul>
@@ -390,7 +412,7 @@ export function BillTransportForm() {
                 <ul className="list-inside list-disc text-xs text-muted-foreground">
                   {walletOutcomes.map((o) => (
                     <li key={`${o.invoiceId}-${o.outcome}`}>
-                      {o.studentId.slice(0, 8)}… / {o.invoiceId.slice(0, 8)}…: {t(`walletOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
+                      {studentLabel(o.studentId)} / {o.invoiceNumber ?? `${o.invoiceId.slice(0, 8)}…`}: {t(`walletOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
                       {o.message ? ` — ${o.message}` : ""}
                       {o.outcome === "settled" && o.receiptId && (
                         <>
@@ -417,7 +439,7 @@ export function BillTransportForm() {
                 <ul className="list-inside list-disc text-xs text-muted-foreground">
                   {creditBalanceOutcomes.map((o) => (
                     <li key={`${o.invoiceId}-${o.outcome}`}>
-                      {o.studentId.slice(0, 8)}… / {o.invoiceId.slice(0, 8)}…: {t(`creditBalanceOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
+                      {studentLabel(o.studentId)} / {o.invoiceNumber ?? `${o.invoiceId.slice(0, 8)}…`}: {t(`creditBalanceOutcome.${o.outcome}`, { amount: formatMoney(o.amount || "0.0000") })}
                       {o.message ? ` — ${o.message}` : ""}
                       {o.outcome === "settled" && o.receiptId && (
                         <>

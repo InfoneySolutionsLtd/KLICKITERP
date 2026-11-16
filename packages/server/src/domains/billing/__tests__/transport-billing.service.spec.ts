@@ -13,8 +13,12 @@ describe("TransportBillingService", () => {
   let billInvoiceLineRepository: { listByInvoice: jest.Mock };
   let billingLineRepository: { create: jest.Mock; listByTermAndOptionalRoute: jest.Mock };
   let academicCalendarService: { findTermByIdOrFail: jest.Mock; findTermByYearAndSeq: jest.Mock };
+  let studentRepository: { findByIds: jest.Mock };
   let dataSource: DataSource;
   let service: TransportBillingService;
+
+  /** `StdStudentRepository.findByIds()` result rows — production rows are `StdStudentEntity`s, so they always carry a name. */
+  const studentRow = (id: string, firstName: string, lastName: string, admissionNo: string) => ({ id, firstName, lastName, admissionNo });
 
   beforeEach(() => {
     transportRouteRepository = {
@@ -43,6 +47,9 @@ describe("TransportBillingService", () => {
       findTermByIdOrFail: jest.fn(async () => TARGET_TERM),
       findTermByYearAndSeq: jest.fn(async () => PRECEDING_TERM),
     };
+    // Default: no student rows found, so results carry no `studentLabel` and every
+    // pre-existing exact-match assertion below stays valid; the labelling tests override this.
+    studentRepository = { findByIds: jest.fn(async () => []) };
     dataSource = {
       transaction: jest.fn(async (_isolation: string, work: (manager: EntityManager) => Promise<unknown>) =>
         work({} as EntityManager),
@@ -57,7 +64,72 @@ describe("TransportBillingService", () => {
       billInvoiceLineRepository as never,
       billingLineRepository as never,
       academicCalendarService as never,
+      studentRepository as never,
     );
+  });
+
+  describe("student labels in results", () => {
+    it("billStudents() labels succeeded AND failed entries with the student's name, from ONE lookup for the whole batch", async () => {
+      studentRepository.findByIds.mockResolvedValue([
+        studentRow("s1", "Amina", "Otieno", "ADM-001"),
+        studentRow("s2", "Brian", "Kamau", "ADM-002"),
+      ]);
+      invoicingService.generateInvoice.mockImplementation(async (_em, input) => {
+        if (input.studentId === "s2") throw new Error("no active postable AR_STUDENT account");
+        return { id: `invoice-${input.studentId}` };
+      });
+
+      const result = await service.billStudents({ routeId: "route-1", termId: "term-1", studentIds: ["s1", "s2"] }, "initiator-1");
+
+      expect(studentRepository.findByIds).toHaveBeenCalledTimes(1);
+      expect(studentRepository.findByIds).toHaveBeenCalledWith(["s1", "s2"]);
+      expect(result.succeeded).toEqual([{ studentId: "s1", studentLabel: "Amina Otieno (ADM-001)", invoiceIds: ["invoice-s1"] }]);
+      expect(result.failed).toEqual([
+        { studentId: "s2", studentLabel: "Brian Kamau (ADM-002)", error: "no active postable AR_STUDENT account" },
+      ]);
+    });
+
+    it("a failed name lookup never fails the billing run — invoices are still generated and results simply carry no label", async () => {
+      studentRepository.findByIds.mockRejectedValue(new Error("connection reset"));
+
+      const result = await service.billStudents({ routeId: "route-1", termId: "term-1", studentIds: ["s1"] }, "initiator-1");
+
+      expect(invoicingService.generateInvoice).toHaveBeenCalledTimes(1);
+      expect(result.succeeded).toEqual([{ studentId: "s1", invoiceIds: ["invoice-s1"] }]);
+      expect(result.succeeded[0].studentLabel).toBeUndefined();
+    });
+
+    it("regenerateLikePreviousTerm() labels failed and skipped entries", async () => {
+      billingLineRepository.listByTermAndOptionalRoute.mockImplementation(async (termId: string) => {
+        if (termId === "term-1") {
+          return [
+            { studentId: "s1", routeId: "route-1", createdAt: new Date("2026-01-01") },
+            { studentId: "s2", routeId: "route-1", createdAt: new Date("2026-01-01") },
+            { studentId: "s3", routeId: "route-1", createdAt: new Date("2026-01-01") },
+          ];
+        }
+        return [{ studentId: "s3", routeId: "route-1", createdAt: new Date("2026-05-01") }];
+      });
+      studentRepository.findByIds.mockResolvedValue([
+        studentRow("s1", "Amina", "Otieno", "ADM-001"),
+        studentRow("s2", "Brian", "Kamau", "ADM-002"),
+        studentRow("s3", "Chebet", "Rono", "ADM-003"),
+      ]);
+      invoicingService.generateInvoice.mockImplementation(async (_em, input) => {
+        if (input.studentId === "s2") throw new Error("no active postable AR_STUDENT account");
+        return { id: `invoice-${input.studentId}` };
+      });
+
+      const result = await service.regenerateLikePreviousTerm("term-2", {}, "initiator-1");
+
+      expect(studentRepository.findByIds).toHaveBeenCalledTimes(1);
+      expect(result.failed).toEqual([
+        { studentId: "s2", studentLabel: "Brian Kamau (ADM-002)", error: "no active postable AR_STUDENT account" },
+      ]);
+      expect(result.skipped).toEqual([
+        { studentId: "s3", studentLabel: "Chebet Rono (ADM-003)", reason: expect.stringContaining("already billed") },
+      ]);
+    });
   });
 
   it("bills each selected student one ADHOC invoice for the route's flat amount, tagged to the designated Transport Fee category", async () => {
@@ -189,6 +261,19 @@ describe("TransportBillingService", () => {
       await expect(service.regenerateLikePreviousTerm("term-2", {}, "initiator-1")).rejects.toBeInstanceOf(NotFoundException);
       expect(billingLineRepository.listByTermAndOptionalRoute).not.toHaveBeenCalled();
       expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
+    });
+
+    it("the up-front 'no preceding term' rejection names the term and carries no academic-year id or seq internals", async () => {
+      academicCalendarService.findTermByYearAndSeq.mockResolvedValue(null);
+
+      const error = await service.regenerateLikePreviousTerm("term-2", {}, "initiator-1").catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(NotFoundException);
+      expect((error as Error).message).toBe(
+        "Preceding term not found: Term 2 has no earlier term in its academic year, so there is no transport billing to carry forward from",
+      );
+      expect((error as Error).message).not.toContain("year-1");
+      expect((error as Error).message).not.toContain("seq");
     });
 
     it("an optional routeId filter narrows the preceding term's population", async () => {

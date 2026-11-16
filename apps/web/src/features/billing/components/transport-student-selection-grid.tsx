@@ -14,9 +14,9 @@ import { useStudents } from "@/features/students/hooks/use-students";
  * shared/parameterized reuse of it, matching this codebase's own established
  * convention of duplicating per-screen selection/orchestration logic rather
  * than growing one shared component with feature-specific branches (see
- * `bulk-generate-invoice-form.tsx`'s own doc comment on why
- * `sortInvoiceIdsByDueDate()`/wallet-sweep orchestration is duplicated per
- * screen, not shared) — `StudentSelectionGrid` has exactly one other
+ * `bulk-generate-invoice-form.tsx`'s own doc comment on why the
+ * wallet-sweep orchestration is duplicated per screen, not shared; only the
+ * low-level `orderInvoicesByDueDate()` helper is) — `StudentSelectionGrid` has exactly one other
  * consumer today, so this avoids adding a `routeId`-shaped branch to a
  * component another screen also depends on.
  *
