@@ -36,6 +36,7 @@ export function useSuspenseItem(id: string | undefined) {
 export function useMatchSuspenseItem(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: MatchSuspenseItemDto) => matchSuspenseItem(id, dto),
     onSuccess: (item, dto) => {
       queryClient.invalidateQueries({ queryKey: openKey() });
@@ -62,6 +63,7 @@ export function useSuspenseRefundInstance(suspenseItemId: string | undefined) {
 export function useRequestSuspenseRefund(suspenseItemId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: () => requestSuspenseRefund(suspenseItemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["approvals", "instances", "domain", PAYMENT_REVERSALS_DOMAIN_CODE] });
@@ -73,6 +75,7 @@ export function useRequestSuspenseRefund(suspenseItemId: string) {
 export function useRefundSuspenseItem(suspenseItemId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: ReverseSuspenseRefundDto) => refundSuspenseItem(suspenseItemId, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: openKey() });

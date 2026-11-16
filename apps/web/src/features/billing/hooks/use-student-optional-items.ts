@@ -48,6 +48,7 @@ export function useStudentOptionalItem(id: string) {
 export function useCreateStudentOptionalItem(studentId: string, termId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateStudentOptionalItemDto) => createStudentOptionalItem(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: studentOptionalItemsListKey(studentId, termId) }),
   });
@@ -57,6 +58,7 @@ export function useCreateStudentOptionalItem(studentId: string, termId: string) 
 export function useUpdateStudentOptionalItem(id: string, studentId: string, termId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateStudentOptionalItemDto) => updateStudentOptionalItem(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentOptionalItemsListKey(studentId, termId) });
@@ -68,6 +70,7 @@ export function useUpdateStudentOptionalItem(id: string, studentId: string, term
 export function useRemoveStudentOptionalItem(studentId: string, termId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: (id: string) => removeStudentOptionalItem(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: studentOptionalItemsListKey(studentId, termId) }),
   });

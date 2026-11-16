@@ -46,6 +46,7 @@ function invalidateRecurringQueries(queryClient: ReturnType<typeof useQueryClien
 export function useCreateRecurringTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateRecurringDto) => createRecurringTemplate(dto),
     onSuccess: () => invalidateRecurringQueries(queryClient),
   });
@@ -55,6 +56,7 @@ export function useCreateRecurringTemplate() {
 export function useUpdateRecurringTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateRecurringDto }) => updateRecurringTemplate(id, dto),
     onSuccess: (updated) => invalidateRecurringQueries(queryClient, updated.id),
   });
@@ -74,6 +76,7 @@ export function useUpdateRecurringTemplate() {
 export function useRunDueTemplates() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (dto: RunDueDto = {}) => runDueTemplates(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EXPENSE_RECURRING_QUERY_KEY });

@@ -36,6 +36,7 @@ export function useNotifications(params: ListNotificationsParams = {}) {
 export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: markNotificationRead,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
   });
@@ -44,6 +45,7 @@ export function useMarkNotificationRead() {
 export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: markAllNotificationsRead,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
   });

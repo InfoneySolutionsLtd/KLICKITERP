@@ -59,13 +59,14 @@ export function useMostRecentStatementImport(accountId: string | undefined) {
 }
 
 export function useUploadStatementFile() {
-  return useMutation({ mutationFn: (file: File) => uploadStatementFile(file) });
+  return useMutation({ meta: { toast: false }, mutationFn: (file: File) => uploadStatementFile(file) });
 }
 
 /** BR-BANK-02 dedupe-on-reimport always succeeds with a real `201` — see `statement-import.api.ts`'s own doc comment. Invalidates the list (a new `bank_statement_import` row now exists) for the imported account. */
 export function useImportStatement() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (dto: ImportStatementLinesInput) => importStatement(dto),
     onSuccess: (_result, dto) => {
       queryClient.invalidateQueries({ queryKey: BANKING_STATEMENT_IMPORTS_QUERY_KEY });
@@ -78,6 +79,7 @@ export function useImportStatement() {
 export function useFetchBankFeed() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (accountId: string) => fetchBankFeed(accountId),
     onSuccess: (_result, accountId) => {
       queryClient.invalidateQueries({ queryKey: BANKING_STATEMENT_IMPORTS_QUERY_KEY });

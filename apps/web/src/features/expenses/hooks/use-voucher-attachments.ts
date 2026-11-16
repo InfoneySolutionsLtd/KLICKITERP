@@ -25,6 +25,7 @@ export function useVoucherAttachments(voucherId: string | undefined) {
 export function useUploadVoucherAttachment(voucherId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (file: File) => uploadVoucherAttachment(voucherId, file),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: attachmentsKey(voucherId) }),
   });
@@ -38,6 +39,7 @@ export function useUploadVoucherAttachment(voucherId: string) {
  */
 export function useOpenVoucherAttachment() {
   return useMutation({
+    meta: { toast: false },
     mutationFn: (fileId: string) => getVoucherAttachmentSignedUrl(fileId),
   });
 }

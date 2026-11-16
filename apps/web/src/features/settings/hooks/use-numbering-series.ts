@@ -31,6 +31,7 @@ export function useNumberingSeries(id: string | undefined) {
  */
 export function usePreviewNumberingSeries() {
   return useMutation({
+    meta: { toast: false, errorToast: false },
     mutationFn: ({ id, count }: { id: string; count: number }) => previewNumberingSeries(id, count),
   });
 }

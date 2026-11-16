@@ -12,7 +12,7 @@ const STK_POLL_INTERVAL_MS = 3000;
 
 /** No cache to invalidate here — no read surface exists anywhere for M-Pesa transactions (see `mpesa.api.ts`'s own doc comment) beyond the receipt/ledger/invoice queries the eventual STK callback itself changes, which this frontend has no way to observe happening (it's a Daraja-inbound webhook, not something this initiate call triggers synchronously). */
 export function useInitiateStk() {
-  return useMutation({ mutationFn: (dto: InitiateStkDto) => initiateStk(dto) });
+  return useMutation({ meta: { toast: false }, mutationFn: (dto: InitiateStkDto) => initiateStk(dto) });
 }
 
 /**
@@ -37,6 +37,7 @@ export function useMpesaTransaction(id: string | undefined, options?: { initialD
 export function useQueryMpesaStatus() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (id: string) => queryMpesaStatus(id),
     onSuccess: (txn) => {
       queryClient.setQueryData([...MPESA_TRANSACTION_QUERY_KEY, txn.id], txn);
@@ -45,5 +46,5 @@ export function useQueryMpesaStatus() {
 }
 
 export function useInitiateB2c() {
-  return useMutation({ mutationFn: (dto: InitiateB2cDto) => initiateB2c(dto) });
+  return useMutation({ meta: { toast: false }, mutationFn: (dto: InitiateB2cDto) => initiateB2c(dto) });
 }

@@ -23,6 +23,7 @@ export function useDepartment(id: string | undefined) {
 export function useCreateDepartment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateDepartmentDto) => createDepartment(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: DEPARTMENTS_QUERY_KEY }),
   });
@@ -32,6 +33,7 @@ export function useCreateDepartment() {
 export function useUpdateDepartment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateDepartmentDto }) => updateDepartment(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: DEPARTMENTS_QUERY_KEY });

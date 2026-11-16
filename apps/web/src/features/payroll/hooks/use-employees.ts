@@ -81,6 +81,7 @@ function invalidateEmployeeQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateEmployee() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (input: CreateEmployeeInput) => createEmployee(input),
     onSuccess: () => invalidateEmployeeQueries(queryClient),
   });
@@ -89,6 +90,7 @@ export function useCreateEmployee() {
 export function useUpdateEmployee() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateEmployeeInput }) => updateEmployee(id, dto),
     onSuccess: (updated) => invalidateEmployeeQueries(queryClient, updated.id),
   });
@@ -98,6 +100,7 @@ export function useUpdateEmployee() {
 export function useExitEmployee() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, exitDate }: { id: string; exitDate: string }) => exitEmployee(id, exitDate),
     onSuccess: (updated) => invalidateEmployeeQueries(queryClient, updated.id),
   });

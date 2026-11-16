@@ -19,6 +19,7 @@ export function useMySession() {
 export function useOpenSession() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: OpenSessionDto) => openSession(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MY_SESSION_QUERY_KEY });
@@ -29,6 +30,7 @@ export function useOpenSession() {
 export function useCloseSession(id: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (input: CloseSessionInput) => closeSession(id as string, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MY_SESSION_QUERY_KEY });

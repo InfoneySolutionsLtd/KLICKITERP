@@ -64,6 +64,7 @@ function invalidateStatutoryTableQueries(queryClient: ReturnType<typeof useQuery
 export function useCreateStatutoryTable() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePyrlStatutoryTableDto) => createStatutoryTable(dto),
     onSuccess: (created) => invalidateStatutoryTableQueries(queryClient, created.kind as PyrlStatutoryKind, created.id),
   });
@@ -72,6 +73,7 @@ export function useCreateStatutoryTable() {
 export function useUpdateStatutoryTable() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePyrlStatutoryTableDto }) => updateStatutoryTable(id, dto),
     onSuccess: (updated) => invalidateStatutoryTableQueries(queryClient, updated.kind as PyrlStatutoryKind, updated.id),
   });

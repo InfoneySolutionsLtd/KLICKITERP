@@ -55,6 +55,7 @@ function invalidateChequeLeafQueries(queryClient: ReturnType<typeof useQueryClie
 export function useIssueChequeLeaf() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: IssueChequeLeafDto) => issueChequeLeaf(dto),
     onSuccess: (issued) => invalidateChequeLeafQueries(queryClient, issued.id),
   });
@@ -63,6 +64,7 @@ export function useIssueChequeLeaf() {
 export function useMarkChequeLeafPresented() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (id: string) => markChequeLeafPresented(id),
     onSuccess: (updated) => invalidateChequeLeafQueries(queryClient, updated.id),
   });
@@ -71,6 +73,7 @@ export function useMarkChequeLeafPresented() {
 export function useMarkChequeLeafCleared() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (id: string) => markChequeLeafCleared(id),
     onSuccess: (updated) => invalidateChequeLeafQueries(queryClient, updated.id),
   });
@@ -79,6 +82,7 @@ export function useMarkChequeLeafCleared() {
 export function useStopChequeLeaf() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: ({ id, dto }: { id: string; dto: ReasonDto }) => stopChequeLeaf(id, dto),
     onSuccess: (updated) => invalidateChequeLeafQueries(queryClient, updated.id),
   });
@@ -87,6 +91,7 @@ export function useStopChequeLeaf() {
 export function useCancelChequeLeaf() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: ({ id, dto }: { id: string; dto: ReasonDto }) => cancelChequeLeaf(id, dto),
     onSuccess: (updated) => invalidateChequeLeafQueries(queryClient, updated.id),
   });
@@ -96,6 +101,7 @@ export function useCancelChequeLeaf() {
 export function useFlagStaleChequeLeaves() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: () => flagStaleChequeLeaves(),
     onSuccess: () => invalidateChequeLeafQueries(queryClient),
   });

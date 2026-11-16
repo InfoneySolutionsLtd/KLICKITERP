@@ -48,6 +48,7 @@ export function useRoutingRules(versionId: string | undefined) {
 export function usePublishWorkflowVersion(defId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "published" },
     mutationFn: (dto: PublishWorkflowVersionDto) => publishWorkflowVersion(defId, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: listByDefKey(defId) });
@@ -58,6 +59,7 @@ export function usePublishWorkflowVersion(defId: string) {
 export function useSetCurrentWorkflowVersion(defId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (versionId: string) => setCurrentWorkflowVersion(versionId),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: listByDefKey(defId) });
@@ -69,6 +71,7 @@ export function useSetCurrentWorkflowVersion(defId: string) {
 export function useUpdateLevel(versionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ levelId, dto }: { levelId: string; dto: UpdateLevelDto }) => updateLevel(levelId, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: levelsKey(versionId) }),
   });
@@ -77,6 +80,7 @@ export function useUpdateLevel(versionId: string) {
 export function useUpdateRoutingRule(versionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ ruleId, dto }: { ruleId: string; dto: UpdateRoutingRuleDto }) => updateRoutingRule(ruleId, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: rulesKey(versionId) }),
   });

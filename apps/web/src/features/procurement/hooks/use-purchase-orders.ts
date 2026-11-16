@@ -74,6 +74,7 @@ function invalidatePurchaseOrderQueries(queryClient: ReturnType<typeof useQueryC
 export function useCreatePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePurchaseOrderDto) => createPurchaseOrder(dto),
     onSuccess: (created) => invalidatePurchaseOrderQueries(queryClient, created.id),
   });
@@ -83,6 +84,7 @@ export function useCreatePurchaseOrder() {
 export function useCreatePurchaseOrderDirect() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePurchaseOrderDto) => createPurchaseOrderDirect(dto),
     onSuccess: (created) => invalidatePurchaseOrderQueries(queryClient, created.id),
   });
@@ -91,6 +93,7 @@ export function useCreatePurchaseOrderDirect() {
 export function useSubmitPurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitPurchaseOrder(id),
     onSuccess: (updated) => invalidatePurchaseOrderQueries(queryClient, updated.id),
   });
@@ -99,6 +102,7 @@ export function useSubmitPurchaseOrder() {
 export function useApprovePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approvePurchaseOrder(id),
     onSuccess: (updated) => invalidatePurchaseOrderQueries(queryClient, updated.id),
   });
@@ -107,6 +111,7 @@ export function useApprovePurchaseOrder() {
 export function useRejectPurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectPurchaseOrder(id),
     onSuccess: (updated) => invalidatePurchaseOrderQueries(queryClient, updated.id),
   });
@@ -123,6 +128,7 @@ export function useRejectPurchaseOrder() {
 export function useIssuePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id }: { id: string; supersedesId?: string | null }) => issuePurchaseOrder(id),
     onSuccess: (updated, { supersedesId }) => {
       invalidatePurchaseOrderQueries(queryClient, updated.id);
@@ -135,6 +141,7 @@ export function useIssuePurchaseOrder() {
 export function useRevisePurchaseOrder() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: RevisePurchaseOrderDto }) => revisePurchaseOrder(id, dto),
     onSuccess: (revised, { id }) => {
       invalidatePurchaseOrderQueries(queryClient, revised.id);

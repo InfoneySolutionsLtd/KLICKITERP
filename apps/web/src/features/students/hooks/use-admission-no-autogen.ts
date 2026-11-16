@@ -22,6 +22,7 @@ export function useAdmissionNoAutogenSetting() {
 export function useSetAdmissionNoAutogenSetting() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: AdmissionNoAutogenSettingDto) => setAdmissionNoAutogenSetting(dto),
     onSuccess: (data) => {
       queryClient.setQueryData(ADMISSION_NO_AUTOGEN_QUERY_KEY, data);

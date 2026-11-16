@@ -53,6 +53,7 @@ function invalidatePaymentVoucherQueries(queryClient: ReturnType<typeof useQuery
 export function useCreatePaymentVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePaymentVoucherDto) => createPaymentVoucher(dto),
     onSuccess: (created) => invalidatePaymentVoucherQueries(queryClient, created.id),
   });
@@ -61,6 +62,7 @@ export function useCreatePaymentVoucher() {
 export function useSubmitPaymentVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitPaymentVoucher(id),
     onSuccess: (updated) => invalidatePaymentVoucherQueries(queryClient, updated.id),
   });
@@ -69,6 +71,7 @@ export function useSubmitPaymentVoucher() {
 export function useApprovePaymentVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approvePaymentVoucher(id),
     onSuccess: (updated) => invalidatePaymentVoucherQueries(queryClient, updated.id),
   });
@@ -77,6 +80,7 @@ export function useApprovePaymentVoucher() {
 export function useRejectPaymentVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectPaymentVoucher(id),
     onSuccess: (updated) => invalidatePaymentVoucherQueries(queryClient, updated.id),
   });
@@ -93,6 +97,7 @@ export function useRejectPaymentVoucher() {
 export function useExecutePaymentVoucher() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => executePaymentVoucher(id),
     onSuccess: (updated) => {
       invalidatePaymentVoucherQueries(queryClient, updated.id);

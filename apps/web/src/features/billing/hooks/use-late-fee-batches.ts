@@ -42,6 +42,7 @@ export function useLateFeeBatch(id: string | undefined) {
 export function useRunLateFeeBatch() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (dto: RunLateFeeBatchDto) => runLateFeeBatch(dto),
     onSuccess: (created) => queryClient.invalidateQueries({ queryKey: listKey(created.policyId) }),
   });
@@ -63,6 +64,7 @@ export function useRunLateFeeBatch() {
 export function useDecideLateFeeBatch() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideLateFeeBatchDto }) => decideLateFeeBatch(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: detailKey(updated.id) });
@@ -78,6 +80,7 @@ export function useDecideLateFeeBatch() {
 export function usePostLateFeeBatch() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postLateFeeBatch(id),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: detailKey(updated.id) });

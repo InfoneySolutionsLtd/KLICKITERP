@@ -63,6 +63,7 @@ function invalidateFloatQueries(queryClient: ReturnType<typeof useQueryClient>, 
 export function useCreateFloat() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFloatDto) => createFloat(dto),
     onSuccess: () => invalidateFloatQueries(queryClient),
   });
@@ -72,6 +73,7 @@ export function useCreateFloat() {
 export function useUpdateFloatCeiling() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateFloatCeilingDto }) => updateFloatCeiling(id, dto),
     onSuccess: (updated) => invalidateFloatQueries(queryClient, updated.id),
   });
@@ -86,6 +88,7 @@ export function useUpdateFloatCeiling() {
 export function useSpend() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ floatId, dto }: { floatId: string; dto: SpendDto }) => spend(floatId, dto),
     onSuccess: (voucher) => {
       invalidateFloatQueries(queryClient, voucher.floatId);
@@ -98,6 +101,7 @@ export function useSpend() {
 export function useRequestReplenishment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: (floatId: string) => requestReplenishment(floatId),
     onSuccess: (replenishment) => {
       queryClient.invalidateQueries({ queryKey: replenishmentListKey(replenishment.floatId) });
@@ -109,6 +113,7 @@ export function useRequestReplenishment() {
 export function useApproveReplenishment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveReplenishment(id),
     onSuccess: (replenishment) => {
       queryClient.invalidateQueries({ queryKey: replenishmentListKey(replenishment.floatId) });
@@ -120,6 +125,7 @@ export function useApproveReplenishment() {
 export function useRejectReplenishment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectReplenishment(id),
     onSuccess: (replenishment) => {
       queryClient.invalidateQueries({ queryKey: replenishmentListKey(replenishment.floatId) });
@@ -131,6 +137,7 @@ export function useRejectReplenishment() {
 export function useExecuteReplenishment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: (id: string) => executeReplenishment(id),
     onSuccess: (replenishment) => {
       queryClient.invalidateQueries({ queryKey: replenishmentListKey(replenishment.floatId) });

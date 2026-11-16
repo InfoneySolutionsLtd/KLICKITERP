@@ -45,6 +45,7 @@ function invalidate(queryClient: ReturnType<typeof useQueryClient>, employeeId: 
 export function useAssignEmployee() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: (dto: AssignEmployeeDto) => assignEmployee(dto),
     onSuccess: (created) => invalidate(queryClient, created.employeeId),
   });
@@ -54,6 +55,7 @@ export function useAssignEmployee() {
 export function useEndEmployeeAssignment() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ employeeId, dto }: { employeeId: string; dto: EndAssignmentDto }) => endEmployeeAssignment(employeeId, dto),
     onSuccess: (updated) => invalidate(queryClient, updated.employeeId),
   });

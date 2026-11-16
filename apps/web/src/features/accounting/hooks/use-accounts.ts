@@ -49,6 +49,7 @@ function invalidateAccountQueries(queryClient: ReturnType<typeof useQueryClient>
 export function useCreateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateAccountDto) => createAccount(dto),
     onSuccess: () => invalidateAccountQueries(queryClient),
   });
@@ -57,6 +58,7 @@ export function useCreateAccount() {
 export function useUpdateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateAccountDto }) => updateAccount(id, dto),
     onSuccess: (updated) => invalidateAccountQueries(queryClient, updated.id),
   });
@@ -65,6 +67,7 @@ export function useUpdateAccount() {
 export function useDeactivateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: (id: string) => deactivateAccount(id),
     onSuccess: (updated) => invalidateAccountQueries(queryClient, updated.id),
   });
@@ -73,6 +76,7 @@ export function useDeactivateAccount() {
 export function useActivateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => activateAccount(id),
     onSuccess: (updated) => invalidateAccountQueries(queryClient, updated.id),
   });
@@ -82,6 +86,7 @@ export function useActivateAccount() {
 export function useDeleteAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteAccount(id),
     onSuccess: (_data, id) => invalidateAccountQueries(queryClient, id),
   });

@@ -53,6 +53,7 @@ export function useFeeStructureLines(id: string | undefined) {
 export function useCreateFeeStructure() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeStructures.toast.created" },
     mutationFn: (dto: CreateFeeStructureDto) => createFeeStructure(dto),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: listKey(created.academicYearId, created.classId) });
@@ -63,6 +64,7 @@ export function useCreateFeeStructure() {
 export function useAddFeeStructureLine(structureId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeStructures.toast.lineAdded" },
     mutationFn: (dto: CreateFeeStructureLineDto) => addFeeStructureLine(structureId, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: linesKey(structureId) }),
   });
@@ -71,6 +73,7 @@ export function useAddFeeStructureLine(structureId: string) {
 export function useUpdateFeeStructureLine(structureId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeStructures.toast.lineUpdated" },
     mutationFn: ({ lineId, dto }: { lineId: string; dto: UpdateFeeStructureLineDto }) => updateFeeStructureLine(lineId, dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: linesKey(structureId) }),
   });
@@ -80,6 +83,7 @@ export function useUpdateFeeStructureLine(structureId: string) {
 export function usePublishFeeStructure(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeStructures.toast.published" },
     mutationFn: () => publishFeeStructure(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: detailKey(id) });
@@ -92,6 +96,7 @@ export function usePublishFeeStructure(id: string) {
 export function useDeleteFeeStructure() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successKey: "billing.feeStructures.toast.deleted" },
     mutationFn: (id: string) => deleteFeeStructure(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...FEE_STRUCTURES_QUERY_KEY, "list"] });

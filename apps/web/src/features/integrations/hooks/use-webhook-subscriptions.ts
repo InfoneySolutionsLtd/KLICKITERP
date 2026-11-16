@@ -32,6 +32,7 @@ export function useWebhookSubscription(id: string | undefined) {
 export function useCreateWebhookSubscription() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (input: CreateWebhookSubscriptionDto) => createWebhookSubscription(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: listKey() }),
   });
@@ -40,6 +41,7 @@ export function useCreateWebhookSubscription() {
 export function useUpdateWebhookSubscription() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, input }: { id: string; input: UpdateWebhookSubscriptionDto }) => updateWebhookSubscription(id, input),
     onSuccess: (subscription) => {
       queryClient.invalidateQueries({ queryKey: listKey() });
@@ -51,6 +53,7 @@ export function useUpdateWebhookSubscription() {
 export function useRotateWebhookSecret() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ id, secret }: { id: string; secret: string }) => rotateWebhookSecret(id, secret),
     onSuccess: (subscription) => {
       queryClient.invalidateQueries({ queryKey: listKey() });
@@ -62,6 +65,7 @@ export function useRotateWebhookSecret() {
 export function useDisableWebhookSubscription() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: ({ id, reason }: { id: string; reason: string }) => disableWebhookSubscription(id, reason),
     onSuccess: (subscription) => {
       queryClient.invalidateQueries({ queryKey: listKey() });
@@ -73,6 +77,7 @@ export function useDisableWebhookSubscription() {
 export function useEnableWebhookSubscription() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => enableWebhookSubscription(id),
     onSuccess: (subscription) => {
       queryClient.invalidateQueries({ queryKey: listKey() });

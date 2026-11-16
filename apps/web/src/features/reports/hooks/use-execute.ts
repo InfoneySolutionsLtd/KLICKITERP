@@ -13,6 +13,7 @@ import { executeReport } from "../api/execute.api";
  */
 export function useExecuteReport() {
   return useMutation({
+    meta: { toast: false },
     mutationFn: ({ code, params }: { code: string; params: Record<string, unknown> }) => executeReport(code, params),
   });
 }

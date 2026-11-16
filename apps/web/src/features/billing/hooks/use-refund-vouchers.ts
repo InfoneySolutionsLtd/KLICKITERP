@@ -41,6 +41,7 @@ export function useRefundVoucher(id: string | undefined) {
 export function useCreateRefundVoucher(studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateRefundVoucherDto) => createRefundVoucher(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentRefundVouchersKey(studentId) });
@@ -52,6 +53,7 @@ export function useCreateRefundVoucher(studentId: string) {
 export function useSubmitRefundVoucher(studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitRefundVoucher(id),
     onSuccess: (voucher) => {
       queryClient.invalidateQueries({ queryKey: detailKey(voucher.id) });
@@ -77,6 +79,7 @@ export function useSubmitRefundVoucher(studentId: string | undefined) {
 export function useDecideRefundVoucher(studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideRefundVoucherDto }) => decideRefundVoucher(id, dto),
     onSuccess: (voucher) => {
       queryClient.invalidateQueries({ queryKey: detailKey(voucher.id) });
@@ -92,6 +95,7 @@ export function useDecideRefundVoucher(studentId: string | undefined) {
 export function useMarkRefundVoucherPaid(studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: MarkRefundVoucherPaidDto }) => markRefundVoucherPaid(id, dto),
     onSuccess: (voucher) => {
       queryClient.invalidateQueries({ queryKey: detailKey(voucher.id) });
@@ -104,6 +108,7 @@ export function useMarkRefundVoucherPaid(studentId: string | undefined) {
 export function useCancelRefundVoucher(studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "cancelled" },
     mutationFn: (id: string) => cancelRefundVoucher(id),
     onSuccess: (voucher) => {
       queryClient.invalidateQueries({ queryKey: detailKey(voucher.id) });

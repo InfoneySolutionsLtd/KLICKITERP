@@ -75,6 +75,7 @@ function invalidateSupplierQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateSupplier() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateSupplierDto) => createSupplier(dto),
     onSuccess: () => invalidateSupplierQueries(queryClient),
   });
@@ -83,6 +84,7 @@ export function useCreateSupplier() {
 export function useUpdateSupplier() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateSupplierDto }) => updateSupplier(id, dto),
     onSuccess: (updated) => invalidateSupplierQueries(queryClient, updated.id),
   });
@@ -91,6 +93,7 @@ export function useUpdateSupplier() {
 export function useBlacklistSupplier() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deactivated" },
     mutationFn: ({ id, reason }: { id: string; reason: string }) => blacklistSupplier(id, reason),
     onSuccess: (updated) => invalidateSupplierQueries(queryClient, updated.id),
   });
@@ -99,6 +102,7 @@ export function useBlacklistSupplier() {
 export function useReactivateSupplier() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => reactivateSupplier(id),
     onSuccess: (updated) => invalidateSupplierQueries(queryClient, updated.id),
   });
@@ -107,6 +111,7 @@ export function useReactivateSupplier() {
 export function useComputeSupplierRating() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: (id: string) => computeSupplierRating(id),
     onSuccess: (updated) => invalidateSupplierQueries(queryClient, updated.id),
   });
@@ -115,6 +120,7 @@ export function useComputeSupplierRating() {
 export function useSetManualRating() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, score }: { id: string; score: number }) => setManualRating(id, score),
     onSuccess: (updated) => invalidateSupplierQueries(queryClient, updated.id),
   });

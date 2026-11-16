@@ -46,6 +46,7 @@ export function useBudgetLines(budgetId: string | undefined) {
 export function useCreateBudget() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateBudgetDto) => createBudget(dto),
     onSuccess: (created) => queryClient.invalidateQueries({ queryKey: listKey(created.fiscalYearId) }),
   });
@@ -74,6 +75,7 @@ function invalidateBudgetDetail(queryClient: ReturnType<typeof useQueryClient>, 
 export function useAddBudgetLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: ({ budgetId, dto }: { budgetId: string; dto: BudgetLineInputDto }) => addBudgetLine(budgetId, dto),
     onSuccess: (_line, { budgetId }) => invalidateBudgetDetail(queryClient, budgetId),
   });
@@ -82,6 +84,7 @@ export function useAddBudgetLine() {
 export function useUpdateBudgetLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ lineId, dto }: { budgetId: string; lineId: string; dto: UpdateBudgetLineDto }) => updateBudgetLine(lineId, dto),
     onSuccess: (_line, { budgetId }) => invalidateBudgetDetail(queryClient, budgetId),
   });
@@ -90,6 +93,7 @@ export function useUpdateBudgetLine() {
 export function useDeleteBudgetLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: ({ lineId }: { budgetId: string; lineId: string }) => deleteBudgetLine(lineId),
     onSuccess: (_result, { budgetId }) => invalidateBudgetDetail(queryClient, budgetId),
   });
@@ -99,6 +103,7 @@ export function useDeleteBudgetLine() {
 export function useSubmitBudget() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitBudget(id),
     onSuccess: (updated) => {
       invalidateBudgetDetail(queryClient, updated.id);
@@ -111,6 +116,7 @@ export function useSubmitBudget() {
 export function useActivateBudget() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "activated" },
     mutationFn: (id: string) => activateBudget(id),
     onSuccess: (updated) => {
       invalidateBudgetDetail(queryClient, updated.id);
@@ -122,6 +128,7 @@ export function useActivateBudget() {
 export function useRejectBudget() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectBudget(id),
     onSuccess: (updated) => {
       invalidateBudgetDetail(queryClient, updated.id);

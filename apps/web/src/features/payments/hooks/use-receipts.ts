@@ -93,6 +93,7 @@ export function useAllReceipts(params: ListAllReceiptsParams = {}) {
 export function useCaptureReceipt() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "recorded" },
     mutationFn: (dto: CaptureReceiptDto) => captureReceipt(dto),
     onSuccess: (receipt) => {
       queryClient.invalidateQueries({ queryKey: studentReceiptsKey(receipt.studentId) });
@@ -108,6 +109,7 @@ export function useCaptureReceipt() {
 export function useReprintReceipt(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: () => reprintReceipt(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: detailKey(id) });
@@ -140,6 +142,7 @@ export function useReceiptReversalInstance(receiptId: string | undefined) {
 export function useRequestReceiptReversal(receiptId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "requested" },
     mutationFn: () => requestReceiptReversal(receiptId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["approvals", "instances", "domain", PAYMENT_REVERSALS_DOMAIN_CODE] });
@@ -164,6 +167,7 @@ export function useRequestReceiptReversal(receiptId: string) {
 export function useReverseReceipt(receiptId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "reversed" },
     mutationFn: (dto: ReverseReceiptDto) => reverseReceipt(receiptId, dto),
     onSuccess: (contra) => {
       queryClient.invalidateQueries({ queryKey: detailKey(receiptId) });

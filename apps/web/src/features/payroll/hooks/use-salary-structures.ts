@@ -52,6 +52,7 @@ export function useStructureLines(structureId: string | undefined) {
 export function useCreateSalaryStructure() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreatePyrlSalaryStructureDto) => createSalaryStructure(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: listKey() }),
   });
@@ -60,6 +61,7 @@ export function useCreateSalaryStructure() {
 export function useUpdateSalaryStructure() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePyrlSalaryStructureDto }) => updateSalaryStructure(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: listKey() });
@@ -85,6 +87,7 @@ function invalidateLines(queryClient: ReturnType<typeof useQueryClient>, structu
 export function useAddStructureLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "added" },
     mutationFn: ({ structureId, dto }: { structureId: string; dto: StructureComponentLineDto }) => addStructureLine(structureId, dto),
     onSuccess: (_line, { structureId }) => invalidateLines(queryClient, structureId),
   });
@@ -93,6 +96,7 @@ export function useAddStructureLine() {
 export function useUpdateStructureLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ lineId, dto }: { structureId: string; lineId: string; dto: StructureComponentLineDto }) => updateStructureLine(lineId, dto),
     onSuccess: (_line, { structureId }) => invalidateLines(queryClient, structureId),
   });
@@ -101,6 +105,7 @@ export function useUpdateStructureLine() {
 export function useRemoveStructureLine() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "removed" },
     mutationFn: ({ lineId }: { structureId: string; lineId: string }) => removeStructureLine(lineId),
     onSuccess: (_result, { structureId }) => invalidateLines(queryClient, structureId),
   });

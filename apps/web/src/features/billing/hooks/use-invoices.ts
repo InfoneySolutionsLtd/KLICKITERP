@@ -68,6 +68,7 @@ export function useInvoiceLines(id: string | undefined) {
 export function useGenerateInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "generated" },
     mutationFn: (dto: GenerateInvoiceDto) => generateInvoice(dto),
     onSuccess: (invoice) => {
       queryClient.invalidateQueries({ queryKey: studentInvoicesKey(invoice.studentId) });
@@ -79,6 +80,7 @@ export function useGenerateInvoice() {
 export function usePostInvoice(invoiceId: string, studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: () => postInvoice(invoiceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: detailKey(invoiceId) });
@@ -91,6 +93,7 @@ export function usePostInvoice(invoiceId: string, studentId: string | undefined)
 /** No cache invalidation — a sync push never mutates the invoice row itself, only writes an `intg_sync_log` row (visible on `/settings/accounting-sync`, not this page). */
 export function usePushInvoiceToAccounting() {
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: ({ invoice, lines, kind }: { invoice: InvoiceResponseDto; lines: InvoiceLineResponseDto[]; kind: AccountingSyncKind }) =>
       pushInvoiceToAccounting(invoice, lines, kind),
   });
@@ -99,6 +102,7 @@ export function usePushInvoiceToAccounting() {
 export function useVoidInvoice(invoiceId: string, studentId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "voided" },
     mutationFn: (dto: VoidInvoiceDto) => voidInvoice(invoiceId, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: detailKey(invoiceId) });

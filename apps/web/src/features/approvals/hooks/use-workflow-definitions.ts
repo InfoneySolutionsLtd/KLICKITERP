@@ -28,6 +28,7 @@ export function useWorkflowDefinition(id: string | undefined) {
 export function useCreateWorkflowDefinition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateWorkflowDefDto) => createWorkflowDefinition(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: WORKFLOW_DEFS_QUERY_KEY }),
   });
@@ -37,6 +38,7 @@ export function useCreateWorkflowDefinition() {
 export function useUpdateWorkflowDefinition() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateWorkflowDefDto }) => updateWorkflowDefinition(id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: WORKFLOW_DEFS_QUERY_KEY });

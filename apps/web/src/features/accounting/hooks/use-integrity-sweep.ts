@@ -28,6 +28,7 @@ export function useIntegrityRuns(limit?: number) {
 export function useRunIntegritySweep() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: false },
     mutationFn: () => runIntegritySweep(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: INTEGRITY_SWEEP_QUERY_KEY }),
   });

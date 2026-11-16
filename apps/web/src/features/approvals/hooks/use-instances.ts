@@ -65,6 +65,7 @@ export function useInstancesForDomain(domainCode: string | undefined) {
 export function useDecideInstance(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: (dto: DecideInstanceDto) => decideInstance(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: APPROVALS_QUERY_KEY });

@@ -48,6 +48,7 @@ function invalidateTransferQueries(queryClient: ReturnType<typeof useQueryClient
 export function useCreateTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateBankTransferDto) => createTransfer(dto),
     onSuccess: (created) => invalidateTransferQueries(queryClient, created.id),
   });
@@ -56,6 +57,7 @@ export function useCreateTransfer() {
 export function useSubmitTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitTransfer(id),
     onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
   });
@@ -64,6 +66,7 @@ export function useSubmitTransfer() {
 export function useApproveTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "approved" },
     mutationFn: (id: string) => approveTransfer(id),
     onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
   });
@@ -72,6 +75,7 @@ export function useApproveTransfer() {
 export function useRejectTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "rejected" },
     mutationFn: (id: string) => rejectTransfer(id),
     onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
   });
@@ -81,6 +85,7 @@ export function useRejectTransfer() {
 export function usePostTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postTransfer(id),
     onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
   });
@@ -90,6 +95,7 @@ export function usePostTransfer() {
 export function useUpdateTransferReference() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, referenceNo }: { id: string; referenceNo: string }) => updateTransferReference(id, referenceNo),
     onSuccess: (updated) => invalidateTransferQueries(queryClient, updated.id),
   });

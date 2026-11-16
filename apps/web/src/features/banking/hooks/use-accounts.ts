@@ -40,6 +40,7 @@ function invalidateAccountQueries(queryClient: ReturnType<typeof useQueryClient>
 export function useCreateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateBankAccountDto) => createAccount(dto),
     onSuccess: () => invalidateAccountQueries(queryClient),
   });
@@ -48,6 +49,7 @@ export function useCreateAccount() {
 export function useUpdateAccount() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: ({ id, dto }: { id: string; dto: UpdateBankAccountDto }) => updateAccount(id, dto),
     onSuccess: (updated) => invalidateAccountQueries(queryClient, updated.id),
   });

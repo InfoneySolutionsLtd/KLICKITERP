@@ -42,6 +42,7 @@ export function useSponsorAward(id: string) {
 export function useCreateSponsorAward(studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateSponsorAwardDto) => createSponsorAward(dto),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: sponsorAwardsListKey(studentId) }),
   });
@@ -51,6 +52,7 @@ export function useCreateSponsorAward(studentId: string) {
 export function useUpdateSponsorAward(id: string, studentId: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateSponsorAwardDto) => updateSponsorAward(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sponsorAwardsListKey(studentId) });

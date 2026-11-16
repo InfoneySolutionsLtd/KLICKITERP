@@ -62,6 +62,7 @@ function invalidateVerificationQueries(queryClient: ReturnType<typeof useQueryCl
 export function useCreateVerification() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateFaVerificationDto) => createVerification(dto),
     onSuccess: (created) => invalidateVerificationQueries(queryClient, created),
   });
@@ -71,6 +72,7 @@ export function useCreateVerification() {
 export function useRecordVerificationCounts() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "recorded" },
     mutationFn: ({ id, dto }: { id: string; dto: RecordVerificationCountsDto }) => recordVerificationCounts(id, dto),
     onSuccess: (updated) => {
       invalidateVerificationQueries(queryClient, updated);
@@ -82,6 +84,7 @@ export function useRecordVerificationCounts() {
 export function useSubmitVerification() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "submitted" },
     mutationFn: (id: string) => submitVerification(id),
     onSuccess: (updated) => invalidateVerificationQueries(queryClient, updated),
   });
@@ -90,6 +93,7 @@ export function useSubmitVerification() {
 export function useDecideVerification() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "decided" },
     mutationFn: ({ id, dto }: { id: string; dto: DecideFaVerificationDto }) => decideVerification(id, dto),
     onSuccess: (updated) => invalidateVerificationQueries(queryClient, updated),
   });
@@ -110,6 +114,7 @@ export function useDecideVerification() {
 export function usePostVerification() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "posted" },
     mutationFn: (id: string) => postVerification(id),
     onSuccess: ({ verification }) => {
       invalidateVerificationQueries(queryClient, verification);

@@ -30,6 +30,7 @@ export function useOptoutsByGuardian(guardianId: string | undefined) {
 export function useCreateOptout() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateOptoutDto) => createOptout(dto),
     onSuccess: (created) => queryClient.invalidateQueries({ queryKey: guardianKey(created.guardianId) }),
   });
@@ -39,6 +40,7 @@ export function useCreateOptout() {
 export function useDeleteOptout() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: ({ id }: { id: string; guardianId: string }) => deleteOptout(id),
     onSuccess: (_data, variables) => queryClient.invalidateQueries({ queryKey: guardianKey(variables.guardianId) }),
   });

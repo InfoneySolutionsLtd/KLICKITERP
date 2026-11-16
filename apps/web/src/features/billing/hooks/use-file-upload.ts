@@ -13,6 +13,7 @@ import { getSignedUrl, uploadFile, DEFAULT_SIGNED_URL_EXPIRY_SECONDS } from "../
  */
 export function useUploadFile() {
   return useMutation({
+    meta: { toast: false },
     mutationFn: ({ file, entityType }: { file: File; entityType: string }) => uploadFile(file, entityType),
   });
 }

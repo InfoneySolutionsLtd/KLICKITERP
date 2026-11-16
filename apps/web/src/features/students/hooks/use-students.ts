@@ -73,6 +73,7 @@ export function useStudent(id: string | undefined) {
 export function useCreateStudent() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "created" },
     mutationFn: (dto: CreateStudentDto) => createStudent(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...STUDENTS_QUERY_KEY, "list"] });
@@ -83,6 +84,7 @@ export function useCreateStudent() {
 export function useUpdateStudent(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: UpdateStudentDto) => updateStudent(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...STUDENTS_QUERY_KEY, "list"] });
@@ -94,6 +96,7 @@ export function useUpdateStudent(id: string) {
 export function useChangeStudentStatus(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "updated" },
     mutationFn: (dto: ChangeStudentStatusDto) => changeStudentStatus(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...STUDENTS_QUERY_KEY, "list"] });
@@ -105,6 +108,7 @@ export function useChangeStudentStatus(id: string) {
 export function useExitClearStudent(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "completed" },
     mutationFn: () => exitClearStudent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...STUDENTS_QUERY_KEY, "list"] });
@@ -124,6 +128,7 @@ export function useExitClearStudent(id: string) {
 export function useDeleteStudent() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toast: "deleted" },
     mutationFn: (id: string) => deleteStudent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...STUDENTS_QUERY_KEY, "list"] });
