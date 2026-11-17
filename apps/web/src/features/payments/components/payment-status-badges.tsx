@@ -67,3 +67,15 @@ export function BulkAllocationStatusBadge({ status }: { status: string }) {
   const t = useTranslations("payments.bulkAllocations.statusValues");
   return <Badge variant={BULK_ALLOCATION_STATUS_VARIANT[status] ?? "outline"}>{t(status)}</Badge>;
 }
+
+const BANK_IPN_STATE_VARIANT: Record<string, NonNullable<BadgeProps["variant"]>> = {
+  RECEIVED: "soft-secondary",
+  MATCHED: "soft-success",
+  SUSPENDED: "soft-warning",
+};
+
+/** State of a payment notification from the bank: stored, receipted, or waiting in suspense. */
+export function BankIpnStateBadge({ state }: { state: string }) {
+  const t = useTranslations("payments.bankNotifications.stateValues");
+  return <Badge variant={BANK_IPN_STATE_VARIANT[state] ?? "outline"}>{t(state)}</Badge>;
+}

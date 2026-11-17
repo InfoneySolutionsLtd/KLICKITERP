@@ -15,6 +15,12 @@ import { fetchDarajaOAuthToken } from "../infrastructure/mpesa-oauth-probe";
 jest.mock("../infrastructure/mpesa-oauth-probe", () => ({ fetchDarajaOAuthToken: jest.fn() }));
 const mockFetchDarajaOAuthToken = fetchDarajaOAuthToken as jest.MockedFunction<typeof fetchDarajaOAuthToken>;
 
+// Same for KCB BUNI: the token request is the only network call, so the token provider is replaced.
+const mockKcbGetAccessToken = jest.fn();
+jest.mock("../../../shared/integrations/kcb-buni/kcb-buni-token.provider", () => ({
+  KcbBuniTokenProvider: jest.fn().mockImplementation(() => ({ getAccessToken: (...args: unknown[]) => mockKcbGetAccessToken(...args) })),
+}));
+
 describe("IntegrationConfigService", () => {
   let repository: {
     findByKindAndName: jest.Mock;
@@ -270,5 +276,74 @@ describe("IntegrationConfigService", () => {
       expect(row.lastTestedAt).toBeInstanceOf(Date);
       expect(row.updatedBy).toBe("actor-9");
     });
+  });
+});
+
+// ---- KCB BUNI flavour of BANK: a REAL sign-in check (no network in a unit test — the token provider is mocked) ----
+describe("IntegrationConfigService.testConnection — BANK / KCB_BUNI", () => {
+  let repository: { findById: jest.Mock; save: jest.Mock; create: jest.Mock; findByKindAndName: jest.Mock; list: jest.Mock };
+  let service: IntegrationConfigService;
+  const getAccessToken = mockKcbGetAccessToken;
+
+  beforeEach(() => {
+    getAccessToken.mockReset();
+    repository = {
+      findById: jest.fn(),
+      save: jest.fn(async (entity: SetIntegrationConfigEntity) => entity),
+      create: jest.fn(async (data: Partial<SetIntegrationConfigEntity>) => ({ id: "cfg-1", ...data }) as SetIntegrationConfigEntity),
+      findByKindAndName: jest.fn(async () => null),
+      list: jest.fn(),
+    };
+    service = new IntegrationConfigService(repository as never, new AppConfigService());
+  });
+
+  async function bankRow(config: Record<string, unknown>): Promise<SetIntegrationConfigEntity> {
+    const created = await service.create({ kind: "BANK", name: "kcb", config }, null);
+    repository.findById.mockResolvedValue(created);
+    return created;
+  }
+
+  it("reports success when KCB issues a token, and lists what is still missing for notifications", async () => {
+    const row = await bankRow({ provider: "KCB_BUNI", environment: "sandbox", consumerKey: "k", consumerSecret: "s" });
+    getAccessToken.mockResolvedValueOnce("the-token");
+
+    const result = await service.testConnection(row.id, "actor-1");
+
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain("KCB BUNI sign-in succeeded (sandbox)");
+    expect(result.message).toContain("public key is not set yet");
+    expect(result.message).toContain("No bank account is selected");
+    expect(result.message).not.toContain("the-token");
+    expect(row.lastTestOk).toBe(true);
+  });
+
+  it("has nothing left to say when the key, the skip flag or the bank account are all set", async () => {
+    const row = await bankRow({ provider: "KCB_BUNI", consumerKey: "k", consumerSecret: "s", ipnSkipSignatureVerification: true, bankAccountId: "acct-1" });
+    getAccessToken.mockResolvedValueOnce("t");
+    const result = await service.testConnection(row.id, "actor-1");
+    expect(result).toEqual({ ok: true, message: "KCB BUNI sign-in succeeded (sandbox)." });
+  });
+
+  it("reports KCB's refusal as a clean failure", async () => {
+    const row = await bankRow({ provider: "KCB_BUNI", consumerKey: "k", consumerSecret: "wrong" });
+    getAccessToken.mockRejectedValueOnce(new Error("KCB BUNI token request was refused (HTTP 401, invalid_client)"));
+
+    const result = await service.testConnection(row.id, "actor-1");
+
+    expect(result).toEqual({ ok: false, message: "KCB BUNI sign-in failed: KCB BUNI token request was refused (HTTP 401, invalid_client)" });
+    expect(row.lastTestOk).toBe(false);
+  });
+
+  it("explains an incomplete config instead of calling KCB", async () => {
+    const row = await bankRow({ provider: "KCB_BUNI", consumerKey: "k" });
+    const result = await service.testConnection(row.id, "actor-1");
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("'consumerSecret' is required");
+    expect(getAccessToken).not.toHaveBeenCalled();
+  });
+
+  it("leaves the generic HTTP statement feed on its old stub answer", async () => {
+    const row = await bankRow({ accountId: "a", endpoint: "https://x", dateField: "d", descriptionField: "n", amountField: "a" });
+    expect(await service.testConnection(row.id, "actor-1")).toEqual({ ok: false, message: "adapter not yet available, config saved" });
   });
 });

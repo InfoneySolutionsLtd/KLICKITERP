@@ -118,6 +118,19 @@ function resolveSuspenseSplit(item: PaySuspenseItemEntity): CaptureReceiptSplitI
     case "BANK":
     case "OTHER":
     default:
-      return { method: "BANK_TRANSFER", amount: item.amount, bankAccountId: item.externalRef, externalRef: item.externalRef };
+      return {
+        method: "BANK_TRANSFER",
+        amount: item.amount,
+        // Items created from a bank notification (KCB) carry the REAL `bank_account.id` of the account the money
+        // landed in under `raw.klickit.bankAccountId`; older/other items fall back to the placeholder above.
+        bankAccountId: bankAccountIdFromRaw(item) ?? item.externalRef,
+        externalRef: item.externalRef,
+      };
   }
+}
+
+/** The `bank_account.id` a bank-notification suspense item was stamped with when it was parked, if any. */
+function bankAccountIdFromRaw(item: PaySuspenseItemEntity): string | null {
+  const klickit = (item.raw as { klickit?: { bankAccountId?: unknown } } | null)?.klickit;
+  return typeof klickit?.bankAccountId === "string" && klickit.bankAccountId ? klickit.bankAccountId : null;
 }

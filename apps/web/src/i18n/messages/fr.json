@@ -1973,6 +1973,40 @@
     }
   },
   "payments": {
+    "bankNotifications": {
+      "title": "Notifications bancaires",
+      "subtitle": "Les paiements dont KCB a informé l'ERP, et ce qu'il en est advenu.",
+      "backToPayments": "Retour aux paiements",
+      "filtersTitle": "Filtres",
+      "search": "Recherche",
+      "searchPlaceholder": "Référence bancaire, payeur ou n° d'admission",
+      "status": "Statut",
+      "allStatuses": "Tous les statuts",
+      "kind": "Type",
+      "allKinds": "Tous les types",
+      "listTitle": "Notifications",
+      "when": "Reçu",
+      "bankRef": "Référence bancaire",
+      "amount": "Montant",
+      "payer": "Payeur",
+      "reference": "Référence",
+      "outcome": "Résultat",
+      "viewReceipt": "Voir le reçu",
+      "resolveInSuspense": "Résoudre en suspens",
+      "inProgress": "En cours de traitement…",
+      "stateValues": {
+        "RECEIVED": "Reçu",
+        "MATCHED": "Encaissé",
+        "SUSPENDED": "En suspens"
+      },
+      "kindValues": {
+        "ACCOUNT": "Dépôt sur compte",
+        "TILL": "Paybill / till"
+      },
+      "cashier": {
+        "saved": "Caissier des reçus enregistré"
+      }
+    },
     "sessionWidget": {
       "openLabel": "Till {till} open",
       "closedLabel": "No session open",
@@ -2019,6 +2053,7 @@
       "noSessionHint": "You don't have an open cashier session. Open one to capture CASH receipts.",
       "thisSessionReceipts": "This session's receipts",
       "quickLinks": {
+        "bankNotifications": "Notifications bancaires",
         "title": "More",
         "cheques": "Cheques",
         "suspense": "Suspense",
@@ -2649,6 +2684,75 @@
   },
   "settings": {
     "integrations": {
+      "kcbBuniForm": {
+        "cashier": {
+          "checking": "Vérification du caissier des reçus…",
+          "cannotCheck": "Impossible de vérifier si un caissier est défini (vous n'avez peut-être pas la permission). S'il n'y en a pas, les paiements bancaires restent en suspens.",
+          "configured": "Les paiements bancaires sont encaissés sous {name}.",
+          "change": "Changer",
+          "missingTitle": "Aucun caissier n'est défini",
+          "missingBody": "Tant qu'aucun n'est choisi, chaque paiement de la banque reste en suspens au lieu de devenir un reçu. Choisissez l'utilisateur à inscrire sur ces reçus — idéalement un compte de service.",
+          "inactiveTitle": "Le caissier des reçus est inutilisable",
+          "inactiveBody": "{name} n'est plus un utilisateur actif ; les paiements bancaires ne peuvent donc pas être encaissés. Choisissez un autre utilisateur.",
+          "loadingUsers": "Chargement des utilisateurs…",
+          "pickPlaceholder": "Choisir un utilisateur",
+          "searchUsers": "Rechercher des utilisateurs",
+          "noUsers": "Aucun utilisateur trouvé.",
+          "save": "Définir comme caissier",
+          "saving": "Enregistrement…",
+          "cancel": "Annuler",
+          "manageUsers": "Créer ou gérer les utilisateurs",
+          "pickHint": "Les reçus issus des paiements bancaires afficheront cet utilisateur comme caissier."
+        },
+        "transferTypeHint": "L'exemple de KCB est IF. Modifiable pour chaque virement.",
+        "transferType": "Type de transaction",
+        "companyCode": "Code société",
+        "transferProductionWarning": "Ceci est l'environnement de PRODUCTION : les virements envoyés déplaceront de l'argent réel.",
+        "transferEnabledHint": "Chaque virement doit tout de même être approuvé, et son envoi est une action distincte et volontaire d'un administrateur.",
+        "transferEnabled": "Autoriser l'envoi d'argent via KCB",
+        "transferHint": "Permet d'envoyer un virement bancaire externe approuvé via KCB. De l'argent réel est déplacé ; c'est donc désactivé tant que vous ne l'activez pas.",
+        "transferTitle": "Envoyer de l'argent (Funds Transfer)",
+        "callbackBaseUrlHint": "Avec /api/v1 à la fin. KCB y signale le résultat du paiement ; ce doit être une adresse sécurisée (https) accessible depuis Internet.",
+        "callbackBaseUrl": "Adresse publique de cet ERP",
+        "stkAccountNumberHint": "Le paiement du parent est crédité ici.",
+        "stkAccountNumber": "Numéro de till / compte KCB",
+        "stkHint": "Envoie au parent une demande de paiement via KCB. Laisser vide si vous ne l'utilisez pas.",
+        "stkTitle": "Encaisser les frais sur le téléphone du parent (M-Pesa Express)",
+        "cashierTitle": "Qui est enregistré comme caissier sur les reçus bancaires",
+        "validationNoneWarning": "Tant que ceci est activé, quiconque connaît l'adresse peut consulter les noms et soldes des élèves. Ne jamais l'utiliser avec de vraies données.",
+        "validationSecret": "Valeur du secret",
+        "validationHeader": "Nom de l'en-tête",
+        "validationAuthHint": "Une vérification de référence indique à KCB le nom d'un élève et ce qu'il doit ; elle n'est donc traitée que si KCB prouve son identité.",
+        "validationAuthNone": "Rien (test uniquement)",
+        "validationAuthSecret": "Un secret que KCB envoie dans un en-tête",
+        "validationAuthSignature": "Signature de KCB (recommandé)",
+        "validationAuth": "Comment KCB prouve l'authenticité de ses vérifications de référence",
+        "creditAccountNumberHint": "Tel que KCB l'écrit. Renvoyé à KCB quand elle demande de vérifier une référence de paiement.",
+        "creditAccountNumber": "Numéro de compte KCB de l'école",
+        "environment": "Environnement",
+        "environmentSandbox": "Bac à sable (test)",
+        "environmentProduction": "Production (argent réel)",
+        "consumerKey": "Clé consommateur",
+        "consumerSecret": "Secret consommateur",
+        "tokenUrl": "URL du jeton",
+        "gatewayBaseUrl": "Adresse de la passerelle API",
+        "sandboxDefault": "Laisser vide pour utiliser le bac à sable de KCB",
+        "bankAccount": "Compte bancaire KCB de l'école",
+        "bankAccountHint": "Les dépôts bancaires sont encaissés sur ce compte. Sans lui, les dépôts restent en suspens jusqu'à rapprochement manuel.",
+        "notificationsTitle": "Notifications de paiement de KCB",
+        "notificationsHint": "Donnez ces deux adresses à KCB pour qu'elle informe l'ERP des frais payés. Elles doivent être accessibles depuis Internet.",
+        "notificationAddresses": "Adresses à donner à KCB (dépôts sur compte, puis paiements Paybill/till)",
+        "ipnPublicKey": "Clé publique de KCB",
+        "ipnPublicKeyHint": "Fournie par KCB. Les notifications ne sont acceptées que si la signature de KCB correspond à cette clé.",
+        "skipSignature": "Accepter les notifications sans vérifier la signature (test uniquement)",
+        "skipSignatureHint": "À utiliser seulement en attendant la clé publique de KCB. Ignoré en production.",
+        "skipSignatureWarning": "Tant que ceci est activé, quiconque connaît l'adresse de notification peut envoyer un faux paiement. Désactivez-le dès que la clé de KCB est ajoutée."
+      },
+      "bankProviderForm": {
+        "provider": "Connexion bancaire",
+        "providerKcb": "KCB BUNI (KCB Bank)",
+        "providerFeed": "Flux HTTP générique de relevés"
+      },
       "pageTitle": "Integrations",
       "pageSubtitle": "Configure third-party integrations (M-Pesa paybills, SMTP, SMS, and more).",
       "listTitle": "Configured integrations",
@@ -6526,6 +6630,58 @@
       }
     },
     "externalTransfers": {
+      "dispatch": {
+        "title": "Envoyer via KCB",
+        "sendButton": "Envoyer via KCB",
+        "explain": "La comptabilisation ne fait qu'enregistrer ce paiement dans les livres. Pour payer réellement le bénéficiaire, envoyez-le via KCB. Chaque tentative est conservée ci-dessous avec la référence à indiquer à KCB.",
+        "unknownBanner": "KCB n'a donné aucune réponse pour {reference}. Le paiement a peut-être été effectué — ne le renvoyez pas. Interrogez KCB sur cette référence, puis résolvez-le ci-dessous.",
+        "sentBanner": "KCB a accepté ce paiement (référence {reference}).",
+        "statusValues": {
+          "PENDING": "Envoi…",
+          "SENT": "Envoyé",
+          "FAILED": "Non payé",
+          "UNKNOWN": "Résultat inconnu"
+        },
+        "bankRef": "Référence KCB",
+        "resolveButton": "Résoudre",
+        "toast": {
+          "sent": "Envoyé via KCB (référence {reference}).",
+          "failed": "KCB n'a pas accepté le virement.",
+          "unknown": "KCB n'a donné aucune réponse pour {reference}. Il a peut-être été payé — ne le renvoyez pas. Vérifiez auprès de KCB, puis résolvez-le sur cette page."
+        },
+        "sendDialog": {
+          "title": "Envoyer ce virement via KCB ?",
+          "description": "Ceci demande à KCB de déplacer l'argent maintenant.",
+          "amount": "Montant",
+          "beneficiary": "Bénéficiaire",
+          "beneficiaryAccount": "Compte",
+          "transactionType": "Type de transaction (facultatif)",
+          "transactionTypePlaceholder": "Valeur par défaut des paramètres",
+          "beneficiaryBankCode": "Code banque du bénéficiaire (facultatif)",
+          "beneficiaryBankCodePlaceholder": "Seulement s'il est dans une autre banque",
+          "optionalHint": "Laissez les deux vides pour utiliser les paramètres KCB.",
+          "realMoneyWarning": "De l'argent réel quittera le compte de l'école. Impossible d'annuler d'ici — un paiement effectué par KCB ne peut être récupéré que par KCB.",
+          "understood": "J'ai vérifié le montant et le compte du bénéficiaire, et je comprends que de l'argent réel sera envoyé.",
+          "confirm": "Envoyer maintenant",
+          "sending": "Envoi…",
+          "genericError": "Une erreur s'est produite. Vérifiez les tentatives ci-dessous avant de réessayer."
+        },
+        "resolveDialog": {
+          "title": "Résoudre un résultat inconnu",
+          "description": "Vérifiez auprès de KCB ce qu'il est advenu de la référence {reference}, puis consignez-le ici.",
+          "outcome": "Qu'a dit KCB ?",
+          "outcomeFailed": "Il n'a PAS été payé",
+          "outcomeSent": "Il a ÉTÉ payé",
+          "outcomeFailedHint": "Une nouvelle tentative sera autorisée.",
+          "outcomeSentHint": "Le virement sera marqué comme envoyé et ne pourra plus être renvoyé.",
+          "note": "Ce que vous avez appris, et comment",
+          "notePlaceholder": "p. ex. le support KCB a confirmé qu'il n'apparaît pas sur le relevé",
+          "bankRef": "Référence de KCB (si vous l'avez)",
+          "save": "Enregistrer",
+          "saving": "Enregistrement…",
+          "genericError": "Une erreur s'est produite. Veuillez réessayer."
+        }
+      },
       "list": {
         "pageTitle": "Virements externes",
         "pageSubtitle": "Payez un bénéficiaire pour lequel cette école ne possède pas de compte bancaire — un fournisseur, un destinataire de remboursement, ou toute autre partie nommée.",

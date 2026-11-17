@@ -89,6 +89,8 @@ import { PayReceiptAllocationEntity } from "../domains/payments/domain/pay-recei
 import { PayChequeEntity } from "../domains/payments/domain/pay-cheque.entity";
 import { PayMpesaTransactionEntity } from "../domains/payments/domain/pay-mpesa-transaction.entity";
 import { PaySuspenseItemEntity } from "../domains/payments/domain/pay-suspense-item.entity";
+import { PayBankIpnEntity } from "../domains/payments/domain/pay-bank-ipn.entity";
+import { BankExternalTransferDispatchEntity } from "../domains/banking/domain/bank-external-transfer-dispatch.entity";
 import { PayBulkAllocationBatchEntity } from "../domains/payments/domain/pay-bulk-allocation-batch.entity";
 import { PayBulkAllocationBatchLineEntity } from "../domains/payments/domain/pay-bulk-allocation-batch-line.entity";
 import { WallServicePointEntity } from "../domains/wallet/domain/wall-service-point.entity";
@@ -298,6 +300,8 @@ export const AppDataSource = new DataSource({
     PayChequeEntity,
     PayMpesaTransactionEntity,
     PaySuspenseItemEntity,
+    PayBankIpnEntity,
+    BankExternalTransferDispatchEntity,
     PayBulkAllocationBatchEntity,
     PayBulkAllocationBatchLineEntity,
     WallServicePointEntity,

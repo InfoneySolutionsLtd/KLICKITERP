@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Banknote, Landmark, Plus, Smartphone, Upload } from "lucide-react";
+import { Banknote, BellRing, Landmark, Plus, Smartphone, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,7 @@ function QuickLinksCard() {
   const links = [
     { href: "/payments/cheques", label: t("cheques"), icon: Landmark },
     { href: "/payments/suspense", label: t("suspense"), icon: Banknote },
+    { href: "/payments/bank-notifications", label: t("bankNotifications"), icon: BellRing },
     { href: "/payments/mpesa", label: t("mpesa"), icon: Smartphone },
     { href: "/payments/bulk-allocations/new", label: t("bulkAllocations"), icon: Upload },
   ];
