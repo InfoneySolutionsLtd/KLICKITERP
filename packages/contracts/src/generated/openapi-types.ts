@@ -9740,6 +9740,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy-sync/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Where the Academy student sync stands: connected?, first import confirmed?, last runs */
+        get: operations["AcademySyncController_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy-sync/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent preview/import runs, newest first */
+        get: operations["AcademySyncController_runs"];
+        put?: never;
+        /** Start a preview or an import. Returns immediately; poll the run for progress. */
+        post: operations["AcademySyncController_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy-sync/runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One run, with its counts and the issues it found */
+        get: operations["AcademySyncController_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy-sync/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Switch scheduled (automatic) syncing on or off. Needs the first import to be confirmed. */
+        put: operations["AcademySyncController_setAutoSync"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -14943,6 +15012,68 @@ export interface components {
             refId: string;
             /** @description OTP delivered to the school administrator by email and SMS */
             code: string;
+        };
+        AcademySyncIssueDto: {
+            /** @example NO_ADMISSION_NUMBER */
+            code: string;
+            message: string;
+            academyStudentId?: string;
+            admissionNo?: string | null;
+            studentName?: string;
+        };
+        AcademySyncRunDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            mode: "PREVIEW" | "IMPORT";
+            /** @enum {string} */
+            scope: "INCREMENTAL" | "FULL";
+            /** @enum {string} */
+            trigger: "MANUAL" | "SCHEDULED";
+            /** @enum {string} */
+            status: "RUNNING" | "SUCCEEDED" | "FAILED";
+            startedAt: string;
+            finishedAt?: string | null;
+            /** @description seen, created, linked, updated, unchanged, skipped, ... */
+            counts: {
+                [key: string]: number;
+            };
+            /** @description At most 500; issuesTotal is the true count */
+            issues: components["schemas"]["AcademySyncIssueDto"][];
+            issuesTotal: number;
+            /** @description Set when the run itself failed */
+            error?: string | null;
+        };
+        AcademySyncStatusDto: {
+            /** @description Whether this ERP has completed Academy onboarding (school code + OTP) */
+            connected: boolean;
+            academySchoolCode?: string | null;
+            firstImportConfirmedAt?: string | null;
+            autoSyncEnabled: boolean;
+            lastSuccessAt?: string | null;
+            lastFullSuccessAt?: string | null;
+            /** @description Academy students currently linked to an ERP student */
+            mappedStudents: number;
+            runningRun?: components["schemas"]["AcademySyncRunDto"] | null;
+            lastPreview?: components["schemas"]["AcademySyncRunDto"] | null;
+            lastImport?: components["schemas"]["AcademySyncRunDto"] | null;
+        };
+        StartAcademySyncRunDto: {
+            /**
+             * @description PREVIEW only reports what an import would do; IMPORT applies it
+             * @enum {string}
+             */
+            mode: "PREVIEW" | "IMPORT";
+            /**
+             * @description FULL reads every student; INCREMENTAL only those changed since the last import. The first preview/import is always FULL.
+             * @enum {string}
+             */
+            scope?: "INCREMENTAL" | "FULL";
+            /** @description Required once, for the first IMPORT: confirms the preview has been reviewed */
+            confirmFirstImport?: boolean;
+        };
+        SetAcademyAutoSyncDto: {
+            autoSyncEnabled: boolean;
         };
     };
     responses: never;
@@ -30665,6 +30796,113 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AcademySyncController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySyncStatusDto"];
+                };
+            };
+        };
+    };
+    AcademySyncController_runs: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySyncRunDto"][];
+                };
+            };
+        };
+    };
+    AcademySyncController_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartAcademySyncRunDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySyncRunDto"];
+                };
+            };
+        };
+    };
+    AcademySyncController_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySyncRunDto"];
+                };
+            };
+        };
+    };
+    AcademySyncController_setAutoSync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetAcademyAutoSyncDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySyncStatusDto"];
+                };
             };
         };
     };

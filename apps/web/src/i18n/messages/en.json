@@ -1,4 +1,85 @@
 {
+  "academySync": {
+    "title": "Student sync from Klickit Academy",
+    "description": "Brings this school's students and their parents from Klickit Academy into the ERP, so invoices and payments use the same children.",
+    "badge": {
+      "notImported": "Not imported yet",
+      "manual": "Manual",
+      "automatic": "Automatic"
+    },
+    "intro": "Nothing is created in the ERP until you have previewed the import and confirmed it. A preview only reads from Klickit Academy and shows what would happen.",
+    "linkedStudents": "Linked students",
+    "lastSuccess": "Last successful sync",
+    "firstImport": "First import",
+    "notYet": "Not yet",
+    "running": "A sync is running. This page updates by itself when it finishes.",
+    "preview": "Preview import",
+    "previewAgain": "Preview again",
+    "previewing": "Previewing…",
+    "import": "Import students",
+    "importing": "Importing…",
+    "syncNow": "Sync now",
+    "syncing": "Syncing…",
+    "fullSync": "Full sync",
+    "reviewedLabel": "I have reviewed the preview above and want to import these students into the ERP.",
+    "autoSync": {
+      "label": "Automatic sync",
+      "hint": "Checks Klickit Academy for new and changed students every few minutes, in the background."
+    },
+    "result": {
+      "previewTitle": "Preview result",
+      "importTitle": "Import result",
+      "status": {
+        "RUNNING": "Running",
+        "SUCCEEDED": "Finished",
+        "FAILED": "Failed"
+      },
+      "running": "Reading students from Klickit Academy…",
+      "failed": "The run did not finish: {error}",
+      "previewNote": "Nothing has been changed in the ERP yet."
+    },
+    "counts": {
+      "seen": "Read",
+      "created": "Created",
+      "linked": "Linked to existing",
+      "updated": "Updated",
+      "unchanged": "Unchanged",
+      "skipped": "Skipped",
+      "removed": "Removed in Academy",
+      "missing": "Missing from Academy",
+      "guardiansCreated": "Guardians created",
+      "guardiansAdopted": "Guardians matched",
+      "guardiansLinked": "Guardians linked",
+      "classesCreated": "Classes created",
+      "streamsCreated": "Streams created",
+      "errors": "Errors"
+    },
+    "issues": {
+      "title": "Needs your attention ({total})",
+      "hint": "The sync leaves these alone on purpose. Fix them in Klickit Academy or the ERP, then sync again.",
+      "what": "What",
+      "student": "Student",
+      "admissionNo": "Admission no.",
+      "details": "Details",
+      "truncated": "Showing the first {shown} of {total}."
+    },
+    "issueCodes": {
+      "NO_ADMISSION_NUMBER": "No admission number",
+      "NAME_INCOMPLETE": "Name incomplete",
+      "NO_CLASS": "No class",
+      "ADMISSION_NO_CONFLICT": "Admission number clash",
+      "ADMISSION_NO_CHANGED": "Admission number changed",
+      "CLASS_MISMATCH": "Different class",
+      "STATUS_CHANGED": "Status changed",
+      "REMOVED_IN_ACADEMY": "Removed in Academy",
+      "MISSING_FROM_ACADEMY": "Missing from Academy",
+      "PARENT_NO_CONTACT": "Parent has no contact",
+      "ERROR": "Error"
+    },
+    "toast": {
+      "autoSyncSaved": "Automatic sync setting saved."
+    }
+  },
   "toast": {
     "success": {
       "generated": "Generated successfully",

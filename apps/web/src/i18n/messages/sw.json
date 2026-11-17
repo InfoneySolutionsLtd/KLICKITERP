@@ -1,4 +1,85 @@
 {
+  "academySync": {
+    "title": "Ulandanishaji wa wanafunzi kutoka Klickit Academy",
+    "description": "Huleta wanafunzi wa shule hii na wazazi wao kutoka Klickit Academy hadi kwenye ERP, ili ankara na malipo yatumie watoto wale wale.",
+    "badge": {
+      "notImported": "Bado haujaingizwa",
+      "manual": "Kwa mkono",
+      "automatic": "Kiotomatiki"
+    },
+    "intro": "Hakuna kinachoundwa kwenye ERP hadi utakapoona hakikisho la uingizaji na kuthibitisha. Hakikisho linasoma tu kutoka Klickit Academy na kuonyesha kitakachotokea.",
+    "linkedStudents": "Wanafunzi waliounganishwa",
+    "lastSuccess": "Ulandanishaji wa mwisho uliofanikiwa",
+    "firstImport": "Uingizaji wa kwanza",
+    "notYet": "Bado",
+    "running": "Ulandanishaji unaendelea. Ukurasa huu husasishwa wenyewe unapokamilika.",
+    "preview": "Hakiki uingizaji",
+    "previewAgain": "Hakiki tena",
+    "previewing": "Inahakiki…",
+    "import": "Ingiza wanafunzi",
+    "importing": "Inaingiza…",
+    "syncNow": "Landanisha sasa",
+    "syncing": "Inalandanisha…",
+    "fullSync": "Ulandanishaji kamili",
+    "reviewedLabel": "Nimekagua hakikisho hapo juu na ninataka kuingiza wanafunzi hawa kwenye ERP.",
+    "autoSync": {
+      "label": "Ulandanishaji wa kiotomatiki",
+      "hint": "Huangalia Klickit Academy kila baada ya dakika chache, chinichini, kwa wanafunzi wapya na waliobadilishwa."
+    },
+    "result": {
+      "previewTitle": "Matokeo ya hakikisho",
+      "importTitle": "Matokeo ya uingizaji",
+      "status": {
+        "RUNNING": "Inaendelea",
+        "SUCCEEDED": "Imekamilika",
+        "FAILED": "Imeshindwa"
+      },
+      "running": "Inasoma wanafunzi kutoka Klickit Academy…",
+      "failed": "Zoezi halikukamilika: {error}",
+      "previewNote": "Hakuna kilichobadilishwa kwenye ERP bado."
+    },
+    "counts": {
+      "seen": "Waliosomwa",
+      "created": "Walioundwa",
+      "linked": "Walioungwa na waliopo",
+      "updated": "Waliosasishwa",
+      "unchanged": "Wasiobadilika",
+      "skipped": "Walioruka",
+      "removed": "Walioondolewa Academy",
+      "missing": "Hawapo Academy",
+      "guardiansCreated": "Walezi walioundwa",
+      "guardiansAdopted": "Walezi waliopatikana",
+      "guardiansLinked": "Walezi walioungwa",
+      "classesCreated": "Madarasa yaliyoundwa",
+      "streamsCreated": "Mikondo iliyoundwa",
+      "errors": "Hitilafu"
+    },
+    "issues": {
+      "title": "Yanahitaji umakini wako ({total})",
+      "hint": "Ulandanishaji huyaacha haya kwa makusudi. Yarekebishe kwenye Klickit Academy au ERP, kisha landanisha tena.",
+      "what": "Nini",
+      "student": "Mwanafunzi",
+      "admissionNo": "Na. ya usajili",
+      "details": "Maelezo",
+      "truncated": "Inaonyesha {shown} za kwanza kati ya {total}."
+    },
+    "issueCodes": {
+      "NO_ADMISSION_NUMBER": "Hakuna namba ya usajili",
+      "NAME_INCOMPLETE": "Jina halijakamilika",
+      "NO_CLASS": "Hakuna darasa",
+      "ADMISSION_NO_CONFLICT": "Namba ya usajili inagongana",
+      "ADMISSION_NO_CHANGED": "Namba ya usajili imebadilika",
+      "CLASS_MISMATCH": "Darasa tofauti",
+      "STATUS_CHANGED": "Hali imebadilika",
+      "REMOVED_IN_ACADEMY": "Ameondolewa Academy",
+      "MISSING_FROM_ACADEMY": "Hayupo Academy",
+      "PARENT_NO_CONTACT": "Mzazi hana mawasiliano",
+      "ERROR": "Hitilafu"
+    },
+    "toast": {
+      "autoSyncSaved": "Mpangilio wa ulandanishaji wa kiotomatiki umehifadhiwa."
+    }
+  },
   "toast": {
     "success": {
       "generated": "Imetengenezwa kwa mafanikio",

@@ -24,6 +24,7 @@ import { LicenseApiController } from "./api/license-api.controller";
 import { LicenseStatusController } from "./api/license-status.controller";
 import { AcademyIntegrationController } from "./api/academy-integration.controller";
 import { AcademyFirstRunController } from "./api/academy-first-run.controller";
+import { AcademyLinkPortModule } from "./academy-link-port.module";
 
 /**
  * Module 21 (Licensing) — THE structurally isolated module (module-deps.json
@@ -61,6 +62,8 @@ import { AcademyFirstRunController } from "./api/academy-first-run.controller";
 @Module({
   imports: [
     TypeOrmModule.forFeature([LicenseEntity, ApiCallLogEntity, UsageSnapshotEntity, UpdateNoticeEntity, AcademyLinkEntity]),
+    // Exposes the Academy link to other modules through the shared ACADEMY_LINK_PORT token (see that module).
+    AcademyLinkPortModule,
   ],
   controllers: [LicenseApiController, LicenseStatusController, AcademyIntegrationController, AcademyFirstRunController],
   providers: [

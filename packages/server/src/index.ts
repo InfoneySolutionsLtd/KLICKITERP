@@ -114,6 +114,11 @@ export { LicensingModule } from "./licensing/licensing.module";
 // in both `apps/api` and `apps/worker`, since both mount `LicensingModule`.
 export { AcademyEntitlementService } from "./licensing/application/academy-entitlement.service";
 
+// Academy <-> ERP student sync (domains/academy-sync) — `apps/api` mounts the module (controller + services);
+// `apps/worker` imports it too and drives `AcademySyncService.runScheduled()` from its BullMQ processor.
+export { AcademySyncModule } from "./domains/academy-sync/academy-sync.module";
+export { AcademySyncService } from "./domains/academy-sync/application/academy-sync.service";
+
 // Phase 6 Slice 16 (Part 1 — Document Security: Watermark + QR
 // Verification backend) — a new small platform module added after the
 // original 21 phase-5 modules, exported here the same way every one of them
