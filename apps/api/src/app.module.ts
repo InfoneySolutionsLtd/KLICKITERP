@@ -29,6 +29,7 @@ import {
   IntegrationsModule,
   BackupsOpsModule,
   LicensingModule,
+  AcademySyncModule,
   DocumentVerificationModule,
   NotificationsModule,
 } from "@klickit/server";
@@ -171,6 +172,8 @@ function flattenValidationErrors(errors: ValidationError[], parentPath = ""): Fi
     // imported here at the composition root like every other module — the
     // isolation rule constrains what LICENSING may import, not who may import it.
     LicensingModule,
+    // Academy <-> ERP student sync (pulls the school's students/parents from the Klickit Academy).
+    AcademySyncModule,
     // Phase 6 Slice 16 (Part 1) — a new small platform module, not one of
     // the original 21 phase-5 modules. `PaymentsModule`/`BillingModule` also
     // import it (for `DocumentVerificationService`), but it's registered

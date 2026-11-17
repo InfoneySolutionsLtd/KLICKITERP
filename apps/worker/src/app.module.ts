@@ -27,6 +27,7 @@ import {
   IntegrationsModule,
   BackupsOpsModule,
   LicensingModule,
+  AcademySyncModule,
 } from "@klickit/server";
 // Reused directly, not forked/duplicated — see this class's own doc comment
 // for the full rationale, and this file's doc comment below for why a
@@ -37,6 +38,7 @@ import { OutboxQueueModule } from "./outbox/outbox-queue.module";
 import { WebhookDispatchModule } from "./outbox/webhook-dispatch.module";
 import { WebhookRetryModule } from "./outbox/webhook-retry.module";
 import { AcademyEntitlementQueueModule } from "./academy/academy-entitlement-queue.module";
+import { AcademySyncQueueModule } from "./academy/academy-sync-queue.module";
 
 /**
  * `apps/worker`'s composition root — ADR-003's other half
@@ -134,6 +136,8 @@ import { AcademyEntitlementQueueModule } from "./academy/academy-entitlement-que
     BackupsOpsModule,
     // Module 21
     LicensingModule,
+    // Academy <-> ERP student sync (pulls the school's students/parents from the Klickit Academy).
+    AcademySyncModule,
     // This app's own: outbox dispatcher + BullMQ wiring.
     OutboxQueueModule,
     // Complete the Integrations area, Part 3.2/3.3 — real event->webhook
@@ -146,6 +150,9 @@ import { AcademyEntitlementQueueModule } from "./academy/academy-entitlement-que
     // recheck (AcademyEntitlementService.checkEntitlement(), from
     // LicensingModule), same registerQueue-only shape as WebhookRetryModule.
     AcademyEntitlementQueueModule,
+    // Academy <-> ERP student sync — periodic trigger for AcademySyncService.runScheduled() (a no-op until an admin
+    // has confirmed the first import and switched automatic sync on).
+    AcademySyncQueueModule,
   ],
   controllers: [HealthController],
   providers: [

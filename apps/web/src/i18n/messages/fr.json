@@ -1,4 +1,85 @@
 {
+  "academySync": {
+    "title": "Synchronisation des élèves depuis Klickit Academy",
+    "description": "Importe dans l'ERP les élèves de cette école et leurs parents depuis Klickit Academy, pour que les factures et les paiements concernent les mêmes enfants.",
+    "badge": {
+      "notImported": "Pas encore importé",
+      "manual": "Manuelle",
+      "automatic": "Automatique"
+    },
+    "intro": "Rien n'est créé dans l'ERP tant que vous n'avez pas prévisualisé l'importation et confirmé. Un aperçu ne fait que lire Klickit Academy et montre ce qui se passerait.",
+    "linkedStudents": "Élèves liés",
+    "lastSuccess": "Dernière synchronisation réussie",
+    "firstImport": "Première importation",
+    "notYet": "Pas encore",
+    "running": "Une synchronisation est en cours. Cette page se met à jour toute seule à la fin.",
+    "preview": "Prévisualiser l'importation",
+    "previewAgain": "Prévisualiser à nouveau",
+    "previewing": "Aperçu en cours…",
+    "import": "Importer les élèves",
+    "importing": "Importation…",
+    "syncNow": "Synchroniser maintenant",
+    "syncing": "Synchronisation…",
+    "fullSync": "Synchronisation complète",
+    "reviewedLabel": "J'ai examiné l'aperçu ci-dessus et je souhaite importer ces élèves dans l'ERP.",
+    "autoSync": {
+      "label": "Synchronisation automatique",
+      "hint": "Vérifie Klickit Academy toutes les quelques minutes, en arrière-plan, pour les élèves nouveaux ou modifiés."
+    },
+    "result": {
+      "previewTitle": "Résultat de l'aperçu",
+      "importTitle": "Résultat de l'importation",
+      "status": {
+        "RUNNING": "En cours",
+        "SUCCEEDED": "Terminée",
+        "FAILED": "Échec"
+      },
+      "running": "Lecture des élèves depuis Klickit Academy…",
+      "failed": "L'exécution ne s'est pas terminée : {error}",
+      "previewNote": "Rien n'a encore été modifié dans l'ERP."
+    },
+    "counts": {
+      "seen": "Lus",
+      "created": "Créés",
+      "linked": "Liés à un existant",
+      "updated": "Mis à jour",
+      "unchanged": "Inchangés",
+      "skipped": "Ignorés",
+      "removed": "Supprimés dans Academy",
+      "missing": "Absents d'Academy",
+      "guardiansCreated": "Tuteurs créés",
+      "guardiansAdopted": "Tuteurs retrouvés",
+      "guardiansLinked": "Tuteurs liés",
+      "classesCreated": "Classes créées",
+      "streamsCreated": "Sections créées",
+      "errors": "Erreurs"
+    },
+    "issues": {
+      "title": "À examiner ({total})",
+      "hint": "La synchronisation laisse volontairement ces cas de côté. Corrigez-les dans Klickit Academy ou dans l'ERP, puis synchronisez à nouveau.",
+      "what": "Quoi",
+      "student": "Élève",
+      "admissionNo": "N° d'admission",
+      "details": "Détails",
+      "truncated": "Affichage des {shown} premiers sur {total}."
+    },
+    "issueCodes": {
+      "NO_ADMISSION_NUMBER": "Pas de n° d'admission",
+      "NAME_INCOMPLETE": "Nom incomplet",
+      "NO_CLASS": "Pas de classe",
+      "ADMISSION_NO_CONFLICT": "N° d'admission en double",
+      "ADMISSION_NO_CHANGED": "N° d'admission modifié",
+      "CLASS_MISMATCH": "Classe différente",
+      "STATUS_CHANGED": "Statut modifié",
+      "REMOVED_IN_ACADEMY": "Supprimé dans Academy",
+      "MISSING_FROM_ACADEMY": "Absent d'Academy",
+      "PARENT_NO_CONTACT": "Parent sans contact",
+      "ERROR": "Erreur"
+    },
+    "toast": {
+      "autoSyncSaved": "Paramètre de synchronisation automatique enregistré."
+    }
+  },
   "toast": {
     "success": {
       "generated": "Généré avec succès",
