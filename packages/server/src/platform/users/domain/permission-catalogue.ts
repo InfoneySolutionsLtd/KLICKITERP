@@ -666,6 +666,20 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
     description: "Start/verify Academy Gateway onboarding (stores the returned API key) and force an immediate entitlement recheck",
     isWrite: true,
   },
+  // academy:sync:* (Academy <-> ERP integration — pulling the school's students/parents from the Klickit Academy;
+  // domains/academy-sync/api/academy-sync.controller.ts)
+  {
+    code: "academy:sync:view",
+    module: "academy",
+    description: "View the Academy student sync status, past runs and the issues they found",
+    isWrite: false,
+  },
+  {
+    code: "academy:sync:manage",
+    module: "academy",
+    description: "Preview and run the Academy student import, confirm the first import, and switch automatic sync on or off",
+    isWrite: true,
+  },
 ] as const;
 
 registerPermissions(PERMISSION_CATALOGUE);

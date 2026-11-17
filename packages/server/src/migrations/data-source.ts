@@ -174,6 +174,11 @@ import { ApiCallLogEntity } from "../licensing/domain/api-call-log.entity";
 import { UsageSnapshotEntity } from "../licensing/domain/usage-snapshot.entity";
 import { UpdateNoticeEntity } from "../licensing/domain/update-notice.entity";
 import { AcademyLinkEntity } from "../licensing/domain/academy-link.entity";
+import { AcadSyncStateEntity } from "../domains/academy-sync/domain/acad-sync-state.entity";
+import { AcadStudentMapEntity } from "../domains/academy-sync/domain/acad-student-map.entity";
+import { AcadGuardianMapEntity } from "../domains/academy-sync/domain/acad-guardian-map.entity";
+import { AcadClassMapEntity } from "../domains/academy-sync/domain/acad-class-map.entity";
+import { AcadSyncRunEntity } from "../domains/academy-sync/domain/acad-sync-run.entity";
 
 // `dotenv`'s default `config()` resolves `.env` relative to `process.cwd()`, which is
 // `packages/server` (not the repo root where `.env`/`.env.example` actually live) whenever this
@@ -392,6 +397,11 @@ export const AppDataSource = new DataSource({
     // connection to the external Academy subscription-entitlement API;
     // separate table, same schema/ownership regime.
     AcademyLinkEntity,
+    AcadSyncStateEntity,
+    AcadStudentMapEntity,
+    AcadGuardianMapEntity,
+    AcadClassMapEntity,
+    AcadSyncRunEntity,
     // NOTE: the 5 Module-18 materialized-view "entities"
     // (domains/reporting/domain/mv-*.view-entity.ts) are deliberately NOT
     // listed here. They are plain DTO classes, not TypeORM @Entity/@ViewEntity

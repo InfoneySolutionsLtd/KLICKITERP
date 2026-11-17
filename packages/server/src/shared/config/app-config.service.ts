@@ -399,6 +399,11 @@ export class AppConfigService {
     return Number(process.env.ACADEMY_ENTITLEMENT_POLL_INTERVAL_MIN ?? 15);
   }
 
+  /** Cadence for the worker's scheduled Academy student sync (it only does anything once an admin has confirmed the first import and switched automatic sync on). */
+  get academySyncPollIntervalMinutes(): number {
+    return Number(process.env.ACADEMY_SYNC_POLL_INTERVAL_MIN ?? 15);
+  }
+
   /** Max time to keep trusting the last successful entitlement result while the gateway is unreachable — spec recommends 24h. */
   get academyEntitlementGraceHours(): number {
     return Number(process.env.ACADEMY_ENTITLEMENT_GRACE_HOURS ?? 24);
