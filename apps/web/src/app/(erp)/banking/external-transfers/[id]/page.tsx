@@ -15,6 +15,7 @@ import { useAccount as useBankAccount } from "@/features/banking/hooks/use-accou
 import { isDraftPlaceholderNumber, useExternalTransfer } from "@/features/banking/hooks/use-external-transfers";
 import { ExternalTransferStatusActions } from "@/features/banking/components/external-transfer-status-actions";
 import { EditExternalTransferReferenceDialog } from "@/features/banking/components/edit-external-transfer-reference-dialog";
+import { ExternalTransferDispatchCard } from "@/features/banking/components/external-transfer-dispatch-card";
 
 const STATUS_BADGE_VARIANT: Record<string, BadgeProps["variant"]> = {
   DRAFT: "soft-secondary",
@@ -46,7 +47,14 @@ export default function ExternalTransferDetailPage() {
         </Link>
       </Button>
 
-      <QueryBoundary query={transferQuery}>{(transfer) => <ExternalTransferDetailCard transfer={transfer} />}</QueryBoundary>
+      <QueryBoundary query={transferQuery}>
+        {(transfer) => (
+          <>
+            <ExternalTransferDetailCard transfer={transfer} />
+            <ExternalTransferDispatchCard transfer={transfer} />
+          </>
+        )}
+      </QueryBoundary>
     </div>
   );
 }

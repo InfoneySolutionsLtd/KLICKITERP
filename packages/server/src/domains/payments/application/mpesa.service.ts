@@ -16,21 +16,15 @@ import { PayMpesaTransactionRepository } from "../infrastructure/pay-mpesa-trans
 import { PaySuspenseItemRepository } from "../infrastructure/pay-suspense-item.repository";
 import { MpesaAdapterResolverService } from "../infrastructure/mpesa-adapter-resolver.service";
 import { ReceiptsService } from "./receipts.service";
+import { resolveAdmissionNoFromReference } from "./admission-ref.util";
 
 /** `set_setting.key` this service reads for the informational `pay_mpesa_transaction.shortcode` column. Not used for any GL/control-account logic. */
 export const MPESA_SHORTCODE_SETTING_KEY = "payments.mpesa_shortcode";
 const DEFAULT_MPESA_SHORTCODE = "000000";
 
-/**
- * FR-PAY-009.1 — configurable regex list Settings carries for extracting an
- * admission number out of a C2B `BillRefNumber`. Each pattern is tried in
- * order; a pattern with a capture group uses group 1 as the candidate
- * admission number, otherwise the whole match is used. Sensible digits-only
- * default (a school admission number is almost always numeric, possibly with
- * a short alpha prefix like `ADM1234`).
- */
-export const C2B_BILL_REF_PATTERNS_SETTING_KEY = "payments.c2b_bill_ref_patterns";
-const DEFAULT_C2B_BILL_REF_PATTERNS: readonly string[] = ["^(\\d{3,10})$", "(\\d{3,10})"];
+// The admission-number-from-reference rules (FR-PAY-009.1) live in `admission-ref.util.ts`, shared with the bank
+// (KCB) notification handler; re-exported so existing importers of this constant keep working.
+export { C2B_BILL_REF_PATTERNS_SETTING_KEY } from "./admission-ref.util";
 
 /**
  * FR-PAY-009.1 — no real actor initiates a C2B confirmation (it is a fully
@@ -258,6 +252,9 @@ export class MpesaService {
       }
 
       const port = await this.adapterResolver.resolve();
+      if (port.supportsStatusQuery === false) {
+        throw new ValidationException("This M-Pesa provider has no status check: the customer's decision arrives automatically on its callback. Wait for it, or ask the customer to try again.");
+      }
       const status = await port.queryStkStatus(txn.checkoutRequestId);
       if (status.resultCode === "0") {
         // A CONFIRMED result should normally arrive via the callback first;
@@ -448,21 +445,8 @@ export class MpesaService {
     return actorId;
   }
 
-  private async resolveAdmissionNo(billRefNumber: string, manager: EntityManager): Promise<string | null> {
-    const exact = await this.studentRepository.findByAdmissionNo(billRefNumber, manager);
-    if (exact) return billRefNumber;
-
-    const patternsRaw = await this.settingsService.getTyped<string[]>(
-      C2B_BILL_REF_PATTERNS_SETTING_KEY,
-      DEFAULT_C2B_BILL_REF_PATTERNS as string[],
-    );
-    for (const source of patternsRaw) {
-      const match = new RegExp(source).exec(billRefNumber);
-      if (!match) continue;
-      const candidate = match[1] ?? match[0];
-      if (candidate) return candidate;
-    }
-    return null;
+  private resolveAdmissionNo(billRefNumber: string, manager: EntityManager): Promise<string | null> {
+    return resolveAdmissionNoFromReference(this.studentRepository, this.settingsService, billRefNumber, manager);
   }
 }
 
@@ -581,7 +565,7 @@ function parseDarajaTimestamp(raw: string): Date {
 }
 
 /** Masks all but the last 3 digits of an MSISDN for `pay_mpesa_transaction.msisdn_masked` — never stores a full phone number in the clear on this row. */
-function maskMsisdn(msisdn: string): string {
+export function maskMsisdn(msisdn: string): string {
   if (msisdn.length <= 3) return msisdn;
   return `${"*".repeat(msisdn.length - 3)}${msisdn.slice(-3)}`;
 }

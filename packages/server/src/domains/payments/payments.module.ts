@@ -7,6 +7,7 @@ import { PayReceiptAllocationEntity } from "./domain/pay-receipt-allocation.enti
 import { PayChequeEntity } from "./domain/pay-cheque.entity";
 import { PayMpesaTransactionEntity } from "./domain/pay-mpesa-transaction.entity";
 import { PaySuspenseItemEntity } from "./domain/pay-suspense-item.entity";
+import { PayBankIpnEntity } from "./domain/pay-bank-ipn.entity";
 import { PayBulkAllocationBatchEntity } from "./domain/pay-bulk-allocation-batch.entity";
 import { PayBulkAllocationBatchLineEntity } from "./domain/pay-bulk-allocation-batch-line.entity";
 import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
@@ -33,12 +34,14 @@ import { PayReceiptAllocationRepository } from "./infrastructure/pay-receipt-all
 import { PayChequeRepository } from "./infrastructure/pay-cheque.repository";
 import { PayMpesaTransactionRepository } from "./infrastructure/pay-mpesa-transaction.repository";
 import { PaySuspenseItemRepository } from "./infrastructure/pay-suspense-item.repository";
+import { PayBankIpnRepository } from "./infrastructure/pay-bank-ipn.repository";
 import { PayBulkAllocationBatchRepository } from "./infrastructure/pay-bulk-allocation-batch.repository";
 import { PayBulkAllocationBatchLineRepository } from "./infrastructure/pay-bulk-allocation-batch-line.repository";
 import { CashierSessionsService } from "./application/cashier-sessions.service";
 import { AllocationService } from "./application/allocation.service";
 import { ReceiptsService } from "./application/receipts.service";
 import { MpesaService } from "./application/mpesa.service";
+import { KcbIpnService } from "./application/kcb-ipn.service";
 import { SuspenseService } from "./application/suspense.service";
 import { ChequesService } from "./application/cheques.service";
 import { BulkAllocationService } from "./application/bulk-allocation.service";
@@ -47,6 +50,9 @@ import { MpesaAdapterResolverService } from "./infrastructure/mpesa-adapter-reso
 import { CashierSessionsController } from "./api/cashier-sessions.controller";
 import { ReceiptsController } from "./api/receipts.controller";
 import { MpesaController } from "./api/mpesa.controller";
+import { KcbIpnController } from "./api/kcb-ipn.controller";
+import { BankIpnController } from "./api/bank-ipn.controller";
+import { UsrUserEntity } from "../../platform/users";
 import { SuspenseController } from "./api/suspense.controller";
 import { ChequesController } from "./api/cheques.controller";
 import { BulkAllocationController } from "./api/bulk-allocation.controller";
@@ -85,6 +91,8 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
       PayChequeEntity,
       PayMpesaTransactionEntity,
       PaySuspenseItemEntity,
+      PayBankIpnEntity,
+      UsrUserEntity,
       PayBulkAllocationBatchEntity,
       PayBulkAllocationBatchLineEntity,
     ]),
@@ -99,6 +107,8 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     CashierSessionsController,
     ReceiptsController,
     MpesaController,
+    KcbIpnController,
+    BankIpnController,
     SuspenseController,
     ChequesController,
     BulkAllocationController,
@@ -111,12 +121,14 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     PayChequeRepository,
     PayMpesaTransactionRepository,
     PaySuspenseItemRepository,
+    PayBankIpnRepository,
     PayBulkAllocationBatchRepository,
     PayBulkAllocationBatchLineRepository,
     CashierSessionsService,
     AllocationService,
     ReceiptsService,
     OutboxWriterService,
+    KcbIpnService,
     MpesaService,
     SuspenseService,
     ChequesService,

@@ -28,7 +28,9 @@ async function bootstrap(): Promise<void> {
   // serve a single request.
   assertValidEncryptionKey(new AppConfigService().appEncryptionKeyBase64);
 
-  const app = await NestFactory.create(AppModule);
+  // `rawBody` keeps the exact bytes of every JSON body on `req.rawBody`: KCB signs the bytes it sends, so its
+  // payment notifications can only be verified against the raw body (see `KcbIpnController`).
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const config = app.get(AppConfigService);
 
   // `/health`/`/health/ready` stay OUTSIDE the `/api/v1` prefix — a load

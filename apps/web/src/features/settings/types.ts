@@ -182,6 +182,51 @@ export interface BankFeedConfig {
 }
 
 /**
+ * The school's KCB BUNI developer-portal application — mirrors `KcbBuniConfig`
+ * (`packages/server/src/shared/integrations/kcb-buni/kcb-buni.config.ts`). Stored as a `BANK`-kind
+ * integration whose JSON carries `provider: "KCB_BUNI"`; a `BANK` config without it is the generic HTTP
+ * statement feed (`BankFeedConfig`). `tokenUrl` / `gatewayBaseUrl` may stay blank for the sandbox (the server
+ * fills in KCB's sandbox hosts) but are required for production.
+ */
+export interface KcbBuniConfig {
+  provider: "KCB_BUNI";
+  environment: "sandbox" | "production";
+  consumerKey: string;
+  consumerSecret: string;
+  tokenUrl?: string;
+  gatewayBaseUrl?: string;
+  /** `bank_account.id` of the school's KCB account — bank deposits are receipted into it. */
+  bankAccountId?: string;
+  /** KCB's public key (PEM), for checking the signature on payment notifications. */
+  ipnPublicKeyPem?: string;
+  /** Sandbox only: accept notifications without checking the signature until KCB's key arrives. */
+  ipnSkipSignatureVerification?: boolean;
+  /** The school's KCB account number as KCB writes it — echoed back when KCB asks us to validate a payment reference. */
+  creditAccountNumber?: string;
+  /** How KCB's optional /validation calls prove who they are: its signature (default), a shared secret header, or nothing (sandbox only). */
+  ipnValidationAuth?: "SIGNATURE" | "SHARED_SECRET" | "NONE";
+  ipnValidationHeader?: string;
+  ipnValidationSecret?: string;
+  /** M-Pesa Express: the KCB till/account number the parent's payment is credited to. */
+  stkAccountNumber?: string;
+  /** M-Pesa Express: this API's public address including /api/v1 — KCB reports the payment result there. */
+  callbackBaseUrl?: string;
+  /** Funds Transfer: the company code KCB gave the school. */
+  companyCode?: string;
+  /** Funds Transfer: KCB transactionType (their example: IF). */
+  fundsTransferType?: string;
+  /** Funds Transfer master switch — off unless an administrator turns it on. */
+  fundsTransferEnabled?: boolean;
+}
+
+/** What a `BANK` integration can hold. */
+export type BankConfig = BankFeedConfig | KcbBuniConfig;
+
+export function isKcbBuniBankConfig(value: BankConfig): value is KcbBuniConfig {
+  return (value as KcbBuniConfig).provider === "KCB_BUNI";
+}
+
+/**
  * Phase 6 Slice 11 Part 1 — hand-mirrored response shapes for
  * `AcademicCalendarController`'s `/academic-years` and `/terms` endpoints
  * (`packages/server/src/platform/settings/api/academic-calendar.controller.ts`).

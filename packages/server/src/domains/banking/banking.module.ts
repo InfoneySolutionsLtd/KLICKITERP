@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { BankAccountEntity } from "./domain/bank-account.entity";
 import { BankTransferEntity } from "./domain/bank-transfer.entity";
 import { BankExternalTransferEntity } from "./domain/bank-external-transfer.entity";
+import { BankExternalTransferDispatchEntity } from "./domain/bank-external-transfer-dispatch.entity";
 import { BankDepositEntity } from "./domain/bank-deposit.entity";
 import { BankWithdrawalEntity } from "./domain/bank-withdrawal.entity";
 import { BankStatementImportEntity } from "./domain/bank-statement-import.entity";
@@ -14,6 +15,7 @@ import { BankChequeLeafEntity } from "./domain/bank-cheque-leaf.entity";
 import { BankAccountRepository } from "./infrastructure/bank-account.repository";
 import { BankTransferRepository } from "./infrastructure/bank-transfer.repository";
 import { BankExternalTransferRepository } from "./infrastructure/bank-external-transfer.repository";
+import { BankExternalTransferDispatchRepository } from "./infrastructure/bank-external-transfer-dispatch.repository";
 import { BankDepositRepository } from "./infrastructure/bank-deposit.repository";
 import { BankWithdrawalRepository } from "./infrastructure/bank-withdrawal.repository";
 import { BankStatementImportRepository } from "./infrastructure/bank-statement-import.repository";
@@ -29,6 +31,7 @@ import { FilesModule } from "../../platform/files";
 import { BankAccountsService } from "./application/bank-accounts.service";
 import { BankTransfersService } from "./application/bank-transfers.service";
 import { BankExternalTransfersService } from "./application/bank-external-transfers.service";
+import { BankTransferDispatchService } from "./application/bank-transfer-dispatch.service";
 import { DepositsService } from "./application/deposits.service";
 import { WithdrawalsService } from "./application/withdrawals.service";
 import { BankStatementImportService } from "./application/bank-statement-import.service";
@@ -40,6 +43,7 @@ import { BankFeedAdapterResolverService } from "./infrastructure/bank-feed-adapt
 import { AccountsController } from "./api/accounts.controller";
 import { TransfersController } from "./api/transfers.controller";
 import { ExternalTransfersController } from "./api/external-transfers.controller";
+import { ExternalTransferDispatchController } from "./api/external-transfer-dispatch.controller";
 import { DepositsController } from "./api/deposits.controller";
 import { WithdrawalsController } from "./api/withdrawals.controller";
 import { StatementImportController } from "./api/statement-import.controller";
@@ -85,6 +89,7 @@ import { ChequeLeavesController } from "./api/cheque-leaves.controller";
       BankAccountEntity,
       BankTransferEntity,
       BankExternalTransferEntity,
+      BankExternalTransferDispatchEntity,
       BankDepositEntity,
       BankWithdrawalEntity,
       BankStatementImportEntity,
@@ -103,6 +108,7 @@ import { ChequeLeavesController } from "./api/cheque-leaves.controller";
     AccountsController,
     TransfersController,
     ExternalTransfersController,
+    ExternalTransferDispatchController,
     DepositsController,
     WithdrawalsController,
     StatementImportController,
@@ -114,6 +120,7 @@ import { ChequeLeavesController } from "./api/cheque-leaves.controller";
     BankAccountRepository,
     BankTransferRepository,
     BankExternalTransferRepository,
+    BankExternalTransferDispatchRepository,
     BankDepositRepository,
     BankWithdrawalRepository,
     BankStatementImportRepository,
@@ -125,6 +132,7 @@ import { ChequeLeavesController } from "./api/cheque-leaves.controller";
     BankAccountsService,
     BankTransfersService,
     BankExternalTransfersService,
+    BankTransferDispatchService,
     DepositsService,
     WithdrawalsService,
     BankStatementImportService,

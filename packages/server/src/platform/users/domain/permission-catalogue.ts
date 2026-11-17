@@ -556,6 +556,7 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   { code: "banking:external-transfer:create", module: "banking", description: "Create/view a DRAFT external bank transfer and submit it for approval", isWrite: true },
   { code: "banking:external-transfer:decide", module: "banking", description: "Manually record a PENDING_APPROVAL external transfer's approve/reject decision", isWrite: true },
   { code: "banking:external-transfer:post", module: "banking", description: "Post an APPROVED external transfer (realizes P-35's 2-or-4-line journal)", isWrite: true },
+  { code: "banking:external-transfer:dispatch", module: "banking", description: "Send an approved external transfer through the bank's API (KCB Funds Transfer) and resolve one whose outcome is unknown", isWrite: true },
   // banking:deposit:* (Module 16 — bank_deposit, FR-BANK-002.1)
   { code: "banking:deposit:create", module: "banking", description: "Create/view a DRAFT bank deposit and submit it for approval", isWrite: true },
   { code: "banking:deposit:decide", module: "banking", description: "Manually record a PENDING_APPROVAL deposit's approve/reject decision", isWrite: true },

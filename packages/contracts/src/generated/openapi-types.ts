@@ -4509,6 +4509,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/callbacks/kcb/ipn/account-notification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** KCB BUNI account Instant Payment Notification (unauthenticated JWT-wise — verified by KCB's Signature header) */
+        post: operations["KcbIpnController_accountNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/callbacks/kcb/ipn/till-notification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** KCB BUNI Paybill/till Instant Payment Notification (unauthenticated JWT-wise — verified by KCB's Signature header) */
+        post: operations["KcbIpnController_tillNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/callbacks/kcb/ipn/validation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** KCB BUNI payment-reference validation (optional leg; answers a student's name, so it needs KCB to authenticate) */
+        post: operations["KcbIpnController_validation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/bank-ipn": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Payment notifications received from the bank, newest first, with what became of each */
+        get: operations["BankIpnController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/bank-ipn/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether bank payments can be receipted automatically — is a receipting cashier set? */
+        get: operations["BankIpnController_readiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/bank-ipn/cashier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Choose the user recorded as the cashier on receipts made from bank notifications */
+        put: operations["BankIpnController_setCashier"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payments/suspense": {
         parameters: {
             query?: never;
@@ -7391,6 +7493,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/banking/external-transfers/{id}/dispatches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The attempts made to send this transfer through the bank (newest first) */
+        get: operations["ExternalTransferDispatchController_list"];
+        put?: never;
+        /** Send this APPROVED transfer through KCB's Funds Transfer API — moves real money; one live attempt at a time */
+        post: operations["ExternalTransferDispatchController_dispatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banking/external-transfers/{id}/dispatches/{dispatchId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Settle an attempt whose outcome is unknown, after checking with the bank */
+        post: operations["ExternalTransferDispatchController_resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/banking/deposits": {
         parameters: {
             query?: never;
@@ -8789,7 +8926,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create and run an export job (CSV: synchronous, real; XLSX/PDF: queued placeholder — see ExportJobsService) */
+        /** Create and run an export job (CSV and branded, QR-verifiable PDF: synchronous, real; XLSX: queued placeholder — see ExportJobsService) */
         post: operations["ExportJobsController_create"];
         delete?: never;
         options?: never;
@@ -12327,6 +12464,65 @@ export interface components {
             remarks: string;
             originatingReason?: string;
         };
+        BankIpnResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example KCB */
+            provider: string;
+            /** @enum {string} */
+            kind: "ACCOUNT" | "TILL";
+            /** @description The bank's own transaction id */
+            externalRef: string;
+            /** @description Decimal string */
+            amount: string;
+            currency: string;
+            /** @description What the payer typed — normally the admission number */
+            customerReference: string | null;
+            payerName: string | null;
+            payerMsisdnMasked: string | null;
+            narration: string | null;
+            creditAccount: string | null;
+            /** Format: date-time */
+            transactionAt: string;
+            /** @enum {string} */
+            state: "RECEIVED" | "MATCHED" | "SUSPENDED";
+            /** Format: uuid */
+            receiptId: string | null;
+            /** Format: uuid */
+            suspenseItemId: string | null;
+            /** @description Why it is waiting in suspense */
+            note: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BankIpnListResponseDto: {
+            items: components["schemas"]["BankIpnResponseDto"][];
+            total: number;
+        };
+        BankIpnCashierStatusDto: {
+            /** @description True when a receipting cashier is set AND is an active user */
+            configured: boolean;
+            /**
+             * @description Which setting supplied it (the M-Pesa one is the fallback)
+             * @enum {string|null}
+             */
+            source: "BANK" | "MPESA" | null;
+            /** Format: uuid */
+            userId: string | null;
+            userName: string | null;
+            /** @description False when a user id is saved but that user is missing or not active */
+            userActive: boolean;
+        };
+        BankIpnReadinessResponseDto: {
+            cashier: components["schemas"]["BankIpnCashierStatusDto"];
+        };
+        SetBankIpnCashierDto: {
+            /**
+             * Format: uuid
+             * @description The active user recorded as the cashier on receipts made from bank notifications
+             */
+            userId: string;
+        };
         SuspenseItemResponseDto: {
             /** Format: uuid */
             id: string;
@@ -13911,6 +14107,43 @@ export interface components {
         UpdateBankExternalTransferReferenceDto: {
             /** @description The bank's own transaction reference for this transfer */
             referenceNo: string;
+        };
+        BankExternalTransferDispatchResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            transferId: string;
+            /** @example KCB */
+            provider: string;
+            /** @description The 12-character reference given to the bank — quote it when asking the bank about this payment */
+            reference: string;
+            /** @enum {string} */
+            status: "PENDING" | "SENT" | "FAILED" | "UNKNOWN";
+            /** @description Decimal string */
+            amount: string;
+            /** @description The bank's own transaction id */
+            bankRef: string | null;
+            /** @description Why it failed, what is unknown, or how it was resolved */
+            note: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        DispatchExternalTransferDto: {
+            /** @description KCB transactionType (2 characters). Defaults to the KCB integration's setting (KCB's own example: IF). */
+            transactionType?: string;
+            /** @description KCB beneficiaryBankCode — only when the beneficiary banks elsewhere */
+            beneficiaryBankCode?: string;
+        };
+        ResolveDispatchDto: {
+            /**
+             * @description SENT = the bank did pay; FAILED = it did not (a new attempt is then allowed)
+             * @enum {string}
+             */
+            outcome: "SENT" | "FAILED";
+            /** @description What you found out and how — required */
+            note: string;
+            /** @description The bank's own transaction id, if you have it */
+            bankRef?: string;
         };
         CreateDepositOrWithdrawalDto: {
             /** Format: uuid */
@@ -22412,6 +22645,135 @@ export interface operations {
             };
         };
     };
+    KcbIpnController_accountNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KcbIpnController_tillNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    KcbIpnController_validation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BankIpnController_list: {
+        parameters: {
+            query?: {
+                state?: "RECEIVED" | "MATCHED" | "SUSPENDED";
+                kind?: "ACCOUNT" | "TILL";
+                /** @description Matches the bank reference, the payer's reference, or the payer's name */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankIpnListResponseDto"];
+                };
+            };
+        };
+    };
+    BankIpnController_readiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankIpnReadinessResponseDto"];
+                };
+            };
+        };
+    };
+    BankIpnController_setCashier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetBankIpnCashierDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankIpnReadinessResponseDto"];
+                };
+            };
+        };
+    };
     SuspenseController_listOpen: {
         parameters: {
             query?: never;
@@ -27083,6 +27445,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BankExternalTransferResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransferDispatchController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferDispatchResponseDto"][];
+                };
+            };
+        };
+    };
+    ExternalTransferDispatchController_dispatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DispatchExternalTransferDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferDispatchResponseDto"];
+                };
+            };
+        };
+    };
+    ExternalTransferDispatchController_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dispatchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveDispatchDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankExternalTransferDispatchResponseDto"];
                 };
             };
         };

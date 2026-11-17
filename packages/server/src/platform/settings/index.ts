@@ -9,6 +9,8 @@ export { SettingsService } from "./application/settings.service";
 export { AcademicCalendarService } from "./application/academic-calendar.service";
 export { NumberingService } from "./application/numbering.service";
 export { IntegrationConfigService } from "./application/integration-config.service";
+export { KcbBuniConfigResolverService } from "./application/kcb-buni-config-resolver.service";
+export type { ResolvedKcbBuni } from "./application/kcb-buni-config-resolver.service";
 export { CustomFieldService } from "./application/custom-field.service";
 
 export { SetSettingEntity } from "./domain/set-setting.entity";
