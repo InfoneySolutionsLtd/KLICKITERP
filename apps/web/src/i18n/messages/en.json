@@ -1973,6 +1973,40 @@
     }
   },
   "payments": {
+    "bankNotifications": {
+      "title": "Bank notifications",
+      "subtitle": "Payments KCB has told the ERP about, and what became of each.",
+      "backToPayments": "Back to payments",
+      "filtersTitle": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Bank reference, payer or admission no.",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "kind": "Type",
+      "allKinds": "All types",
+      "listTitle": "Notifications",
+      "when": "Received",
+      "bankRef": "Bank reference",
+      "amount": "Amount",
+      "payer": "Payer",
+      "reference": "Reference",
+      "outcome": "What happened",
+      "viewReceipt": "View receipt",
+      "resolveInSuspense": "Resolve in Suspense",
+      "inProgress": "Being processed…",
+      "stateValues": {
+        "RECEIVED": "Received",
+        "MATCHED": "Receipted",
+        "SUSPENDED": "In suspense"
+      },
+      "kindValues": {
+        "ACCOUNT": "Account deposit",
+        "TILL": "Paybill / till"
+      },
+      "cashier": {
+        "saved": "Receipting cashier saved"
+      }
+    },
     "sessionWidget": {
       "openLabel": "Till {till} open",
       "closedLabel": "No session open",
@@ -2019,6 +2053,7 @@
       "noSessionHint": "You don't have an open cashier session. Open one to capture CASH receipts.",
       "thisSessionReceipts": "This session's receipts",
       "quickLinks": {
+        "bankNotifications": "Bank notifications",
         "title": "More",
         "cheques": "Cheques",
         "suspense": "Suspense",
@@ -2649,6 +2684,75 @@
   },
   "settings": {
     "integrations": {
+      "kcbBuniForm": {
+        "cashier": {
+          "checking": "Checking the receipting cashier…",
+          "cannotCheck": "Couldn't check whether a receipting cashier is set (you may not have permission). If none is set, bank payments wait in Suspense.",
+          "configured": "Bank payments are receipted under {name}.",
+          "change": "Change",
+          "missingTitle": "No receipting cashier is set",
+          "missingBody": "Until one is chosen, every payment from the bank waits in Suspense instead of becoming a receipt. Pick the user to record on those receipts — ideally a service account.",
+          "inactiveTitle": "The receipting cashier can't be used",
+          "inactiveBody": "{name} is no longer an active user, so bank payments can't be receipted. Pick another user.",
+          "loadingUsers": "Loading users…",
+          "pickPlaceholder": "Choose a user",
+          "searchUsers": "Search users",
+          "noUsers": "No users found.",
+          "save": "Set as cashier",
+          "saving": "Saving…",
+          "cancel": "Cancel",
+          "manageUsers": "Create or manage users",
+          "pickHint": "Receipts made from bank payments will show this user as the cashier."
+        },
+        "transferTypeHint": "KCB's own example is IF. It can be changed for each transfer.",
+        "transferType": "Transaction type",
+        "companyCode": "Company code",
+        "transferProductionWarning": "This is the PRODUCTION environment: transfers that are sent will move real money.",
+        "transferEnabledHint": "Each transfer must still be approved, and sending it is a separate, deliberate action by an administrator.",
+        "transferEnabled": "Allow sending money through KCB",
+        "transferHint": "Lets an approved external bank transfer be sent through KCB. Real money moves, so it is off until you turn it on.",
+        "transferTitle": "Send money (Funds Transfer)",
+        "callbackBaseUrlHint": "With /api/v1 at the end. KCB reports the payment result here, so it must be a secure (https) address reachable from the internet.",
+        "callbackBaseUrl": "This ERP's public address",
+        "stkAccountNumberHint": "The parent's payment is credited here.",
+        "stkAccountNumber": "KCB till / account number",
+        "stkHint": "Sends the parent a payment prompt through KCB. Leave blank if you don't use it.",
+        "stkTitle": "Collect fees on the parent's phone (M-Pesa Express)",
+        "cashierTitle": "Who is recorded as the cashier on bank receipts",
+        "validationNoneWarning": "While this is on, anyone who knows the address can look up student names and balances. Never use it with real data.",
+        "validationSecret": "Secret value",
+        "validationHeader": "Header name",
+        "validationAuthHint": "A reference check tells KCB a student's name and what they owe, so it is only answered when KCB proves who it is.",
+        "validationAuthNone": "Nothing (testing only)",
+        "validationAuthSecret": "A secret that KCB sends in a header",
+        "validationAuthSignature": "KCB's signature (recommended)",
+        "validationAuth": "How KCB proves its reference checks are genuine",
+        "creditAccountNumberHint": "As KCB writes it. Sent back to KCB when it asks us to check a payment reference.",
+        "creditAccountNumber": "School's KCB account number",
+        "environment": "Environment",
+        "environmentSandbox": "Sandbox (testing)",
+        "environmentProduction": "Production (real money)",
+        "consumerKey": "Consumer key",
+        "consumerSecret": "Consumer secret",
+        "tokenUrl": "Token URL",
+        "gatewayBaseUrl": "API gateway address",
+        "sandboxDefault": "Leave blank to use KCB's sandbox",
+        "bankAccount": "School's KCB bank account",
+        "bankAccountHint": "Bank deposits are receipted into this account. Without it, deposits wait in Suspense for you to match.",
+        "notificationsTitle": "Payment notifications from KCB",
+        "notificationsHint": "Give KCB these two addresses so it can tell the ERP when fees are paid. They must be reachable from the internet.",
+        "notificationAddresses": "Addresses to give KCB (account deposits first, then Paybill/till payments)",
+        "ipnPublicKey": "KCB's public key",
+        "ipnPublicKeyHint": "Supplied by KCB. Notifications are only accepted when KCB's signature checks out against this key.",
+        "skipSignature": "Accept notifications without checking the signature (testing only)",
+        "skipSignatureHint": "Use only until KCB's public key arrives. Ignored in production.",
+        "skipSignatureWarning": "While this is on, anyone who knows the notification address could send a fake payment. Turn it off as soon as KCB's key is added."
+      },
+      "bankProviderForm": {
+        "provider": "Bank connection",
+        "providerKcb": "KCB BUNI (KCB Bank)",
+        "providerFeed": "Generic HTTP statement feed"
+      },
       "pageTitle": "Integrations",
       "pageSubtitle": "Configure third-party integrations (M-Pesa paybills, SMTP, SMS, and more).",
       "listTitle": "Configured integrations",
@@ -6526,6 +6630,58 @@
       }
     },
     "externalTransfers": {
+      "dispatch": {
+        "title": "Send through KCB",
+        "sendButton": "Send through KCB",
+        "explain": "Posting only records this payment in the books. To actually pay the beneficiary, send it through KCB. Every attempt is kept below with the reference to quote to KCB.",
+        "unknownBanner": "KCB gave no answer for {reference}. The payment may or may not have gone through — don't send it again. Ask KCB about this reference, then resolve it below.",
+        "sentBanner": "KCB accepted this payment (reference {reference}).",
+        "statusValues": {
+          "PENDING": "Sending…",
+          "SENT": "Sent",
+          "FAILED": "Not paid",
+          "UNKNOWN": "Outcome unknown"
+        },
+        "bankRef": "KCB reference",
+        "resolveButton": "Resolve",
+        "toast": {
+          "sent": "Sent through KCB (reference {reference}).",
+          "failed": "KCB did not accept the transfer.",
+          "unknown": "KCB gave no answer for {reference}. It may have been paid — do not send it again. Check with KCB, then resolve it on this page."
+        },
+        "sendDialog": {
+          "title": "Send this transfer through KCB?",
+          "description": "This asks KCB to move the money now.",
+          "amount": "Amount",
+          "beneficiary": "Beneficiary",
+          "beneficiaryAccount": "Account",
+          "transactionType": "Transaction type (optional)",
+          "transactionTypePlaceholder": "Default from settings",
+          "beneficiaryBankCode": "Beneficiary bank code (optional)",
+          "beneficiaryBankCodePlaceholder": "Only if they bank elsewhere",
+          "optionalHint": "Leave both blank to use the KCB settings.",
+          "realMoneyWarning": "Real money will leave the school's account. It can't be undone from here — a payment KCB has made can only be recovered through KCB.",
+          "understood": "I have checked the amount and the beneficiary's account, and I understand real money will be sent.",
+          "confirm": "Send now",
+          "sending": "Sending…",
+          "genericError": "Something went wrong. Check the attempts below before trying again."
+        },
+        "resolveDialog": {
+          "title": "Resolve an unknown outcome",
+          "description": "Check with KCB what happened to reference {reference}, then record it here.",
+          "outcome": "What did KCB say?",
+          "outcomeFailed": "It was NOT paid",
+          "outcomeSent": "It WAS paid",
+          "outcomeFailedHint": "A new attempt will be allowed.",
+          "outcomeSentHint": "The transfer will be marked as sent and can't be sent again.",
+          "note": "What you found out, and how",
+          "notePlaceholder": "e.g. KCB support confirmed it is not on the statement",
+          "bankRef": "KCB's reference (if you have it)",
+          "save": "Save",
+          "saving": "Saving…",
+          "genericError": "Something went wrong. Please try again."
+        }
+      },
       "list": {
         "pageTitle": "External Transfers",
         "pageSubtitle": "Pay a beneficiary this school does not own a bank account for — a vendor, a refund recipient, or any other named party.",

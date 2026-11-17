@@ -369,6 +369,24 @@ describe("MpesaService", () => {
     });
   });
 
+  describe("queryPendingStatus", () => {
+    it("explains — instead of calling the provider — when it has no status check (KCB M-Pesa Express)", async () => {
+      (port as { supportsStatusQuery?: boolean }).supportsStatusQuery = false;
+
+      await expect(service.queryPendingStatus("txn-1")).rejects.toThrow(/no status check/);
+      expect(port.queryStkStatus).not.toHaveBeenCalled();
+      expect(mpesaTransactionRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("still asks a provider that does support it (Daraja), as before", async () => {
+      mpesaTransactionRepository.findByIdOrFail.mockResolvedValueOnce(makeTxn({ state: "PENDING" }));
+
+      await service.queryPendingStatus("txn-1");
+
+      expect(port.queryStkStatus).toHaveBeenCalledWith("checkout-1");
+    });
+  });
+
   describe("handleB2cResult", () => {
     it("throws NotFoundException when no transaction matches conversationId", async () => {
       mpesaTransactionRepository.findByConversationId.mockResolvedValueOnce(null);

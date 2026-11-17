@@ -1973,6 +1973,40 @@
     }
   },
   "payments": {
+    "bankNotifications": {
+      "title": "Arifa za benki",
+      "subtitle": "Malipo ambayo KCB imeiarifu ERP, na kilichotokea kwa kila moja.",
+      "backToPayments": "Rudi kwenye malipo",
+      "filtersTitle": "Vichujio",
+      "search": "Tafuta",
+      "searchPlaceholder": "Rejeleo la benki, mlipaji au nambari ya usajili",
+      "status": "Hali",
+      "allStatuses": "Hali zote",
+      "kind": "Aina",
+      "allKinds": "Aina zote",
+      "listTitle": "Arifa",
+      "when": "Imepokelewa",
+      "bankRef": "Rejeleo la benki",
+      "amount": "Kiasi",
+      "payer": "Mlipaji",
+      "reference": "Rejeleo",
+      "outcome": "Kilichotokea",
+      "viewReceipt": "Tazama risiti",
+      "resolveInSuspense": "Tatua kwenye Suspense",
+      "inProgress": "Inashughulikiwa…",
+      "stateValues": {
+        "RECEIVED": "Imepokelewa",
+        "MATCHED": "Imerekodiwa risiti",
+        "SUSPENDED": "Kwenye suspense"
+      },
+      "kindValues": {
+        "ACCOUNT": "Amana ya akaunti",
+        "TILL": "Paybill / till"
+      },
+      "cashier": {
+        "saved": "Mtunza fedha wa risiti amehifadhiwa"
+      }
+    },
     "sessionWidget": {
       "openLabel": "Till {till} open",
       "closedLabel": "No session open",
@@ -2019,6 +2053,7 @@
       "noSessionHint": "You don't have an open cashier session. Open one to capture CASH receipts.",
       "thisSessionReceipts": "This session's receipts",
       "quickLinks": {
+        "bankNotifications": "Arifa za benki",
         "title": "More",
         "cheques": "Cheques",
         "suspense": "Suspense",
@@ -2649,6 +2684,75 @@
   },
   "settings": {
     "integrations": {
+      "kcbBuniForm": {
+        "cashier": {
+          "checking": "Inakagua mtunza fedha wa risiti…",
+          "cannotCheck": "Imeshindikana kukagua kama mtunza fedha wa risiti amewekwa (huenda huna ruhusa). Kama hakuna, malipo ya benki husubiri kwenye Suspense.",
+          "configured": "Malipo ya benki hurekodiwa kwa {name}.",
+          "change": "Badilisha",
+          "missingTitle": "Hakuna mtunza fedha wa risiti aliyewekwa",
+          "missingBody": "Hadi mmoja achaguliwe, kila malipo kutoka benki husubiri kwenye Suspense badala ya kuwa risiti. Chagua mtumiaji wa kurekodiwa kwenye risiti hizo — ikiwezekana akaunti ya huduma.",
+          "inactiveTitle": "Mtunza fedha wa risiti hawezi kutumika",
+          "inactiveBody": "{name} si mtumiaji hai tena, kwa hivyo malipo ya benki hayawezi kurekodiwa kama risiti. Chagua mtumiaji mwingine.",
+          "loadingUsers": "Inapakia watumiaji…",
+          "pickPlaceholder": "Chagua mtumiaji",
+          "searchUsers": "Tafuta watumiaji",
+          "noUsers": "Hakuna watumiaji waliopatikana.",
+          "save": "Weka kama mtunza fedha",
+          "saving": "Inahifadhi…",
+          "cancel": "Ghairi",
+          "manageUsers": "Unda au simamia watumiaji",
+          "pickHint": "Risiti zitokanazo na malipo ya benki zitaonyesha mtumiaji huyu kama mtunza fedha."
+        },
+        "transferTypeHint": "Mfano wa KCB ni IF. Inaweza kubadilishwa kwa kila uhamisho.",
+        "transferType": "Aina ya muamala",
+        "companyCode": "Msimbo wa kampuni",
+        "transferProductionWarning": "Haya ni mazingira ya UZALISHAJI: uhamisho utakaotumwa utahamisha pesa halisi.",
+        "transferEnabledHint": "Kila uhamisho bado lazima uidhinishwe, na kuutuma ni kitendo tofauti na cha makusudi cha msimamizi.",
+        "transferEnabled": "Ruhusu kutuma pesa kupitia KCB",
+        "transferHint": "Huruhusu uhamisho wa benki wa nje ulioidhinishwa kutumwa kupitia KCB. Pesa halisi huhamishwa, kwa hivyo umezimwa hadi uuwashe.",
+        "transferTitle": "Tuma pesa (Funds Transfer)",
+        "callbackBaseUrlHint": "Na /api/v1 mwishoni. KCB huripoti matokeo ya malipo hapa, kwa hivyo lazima iwe anwani salama (https) inayopatikana kutoka mtandaoni.",
+        "callbackBaseUrl": "Anwani ya umma ya ERP hii",
+        "stkAccountNumberHint": "Malipo ya mzazi huingizwa hapa.",
+        "stkAccountNumber": "Nambari ya till / akaunti ya KCB",
+        "stkHint": "Humtumia mzazi ombi la malipo kupitia KCB. Acha wazi usipoitumia.",
+        "stkTitle": "Kusanya ada kwenye simu ya mzazi (M-Pesa Express)",
+        "cashierTitle": "Nani anarekodiwa kama mtunza fedha kwenye risiti za benki",
+        "validationNoneWarning": "Hili likiwa limewashwa, yeyote anayejua anwani anaweza kuangalia majina na salio za wanafunzi. Usilitumie kamwe na data halisi.",
+        "validationSecret": "Thamani ya siri",
+        "validationHeader": "Jina la kichwa (header)",
+        "validationAuthHint": "Ukaguzi wa rejeleo humwambia KCB jina la mwanafunzi na anachodaiwa, kwa hivyo hujibiwa tu KCB inapothibitisha utambulisho wake.",
+        "validationAuthNone": "Hakuna (kwa majaribio tu)",
+        "validationAuthSecret": "Siri ambayo KCB hutuma kwenye kichwa (header)",
+        "validationAuthSignature": "Saini ya KCB (inapendekezwa)",
+        "validationAuth": "Jinsi KCB inavyothibitisha ukaguzi wake wa rejeleo ni halali",
+        "creditAccountNumberHint": "Kama KCB inavyoiandika. Hurudishwa kwa KCB inapoomba kuthibitisha rejeleo la malipo.",
+        "creditAccountNumber": "Nambari ya akaunti ya KCB ya shule",
+        "environment": "Mazingira",
+        "environmentSandbox": "Majaribio (sandbox)",
+        "environmentProduction": "Uzalishaji (pesa halisi)",
+        "consumerKey": "Ufunguo wa mtumiaji",
+        "consumerSecret": "Siri ya mtumiaji",
+        "tokenUrl": "Anwani ya tokeni",
+        "gatewayBaseUrl": "Anwani ya lango la API",
+        "sandboxDefault": "Acha wazi kutumia sandbox ya KCB",
+        "bankAccount": "Akaunti ya KCB ya shule",
+        "bankAccountHint": "Amana za benki hurekodiwa kwenye akaunti hii. Bila hiyo, amana husubiri kwenye Suspense ili uzilinganishe.",
+        "notificationsTitle": "Arifa za malipo kutoka KCB",
+        "notificationsHint": "Mpe KCB anwani hizi mbili ili iarifu ERP ada zinapolipwa. Lazima zipatikane kutoka mtandaoni.",
+        "notificationAddresses": "Anwani za kumpa KCB (amana za akaunti kwanza, kisha malipo ya Paybill/till)",
+        "ipnPublicKey": "Ufunguo wa umma wa KCB",
+        "ipnPublicKeyHint": "Hutolewa na KCB. Arifa hukubaliwa tu saini ya KCB ikilingana na ufunguo huu.",
+        "skipSignature": "Kubali arifa bila kuthibitisha saini (kwa majaribio tu)",
+        "skipSignatureHint": "Tumia hadi ufunguo wa umma wa KCB ufike. Hupuuzwa kwenye uzalishaji.",
+        "skipSignatureWarning": "Wakati hii imewashwa, yeyote anayejua anwani ya arifa anaweza kutuma malipo ya uongo. Izime mara tu ufunguo wa KCB utakapoongezwa."
+      },
+      "bankProviderForm": {
+        "provider": "Muunganisho wa benki",
+        "providerKcb": "KCB BUNI (KCB Bank)",
+        "providerFeed": "Mkondo wa jumla wa HTTP wa taarifa"
+      },
       "pageTitle": "Integrations",
       "pageSubtitle": "Configure third-party integrations (M-Pesa paybills, SMTP, SMS, and more).",
       "listTitle": "Configured integrations",
@@ -6526,6 +6630,58 @@
       }
     },
     "externalTransfers": {
+      "dispatch": {
+        "title": "Tuma kupitia KCB",
+        "sendButton": "Tuma kupitia KCB",
+        "explain": "Kuchapisha (post) hurekodi malipo haya kwenye vitabu tu. Ili kumlipa mnufaika kwa kweli, yatume kupitia KCB. Kila jaribio huhifadhiwa hapa chini pamoja na rejeleo la kumtajia KCB.",
+        "unknownBanner": "KCB haikutoa jibu kwa {reference}. Malipo huenda yalifanyika au hayakufanyika — usiyatume tena. Muulize KCB kuhusu rejeleo hili, kisha litatue hapa chini.",
+        "sentBanner": "KCB imekubali malipo haya (rejeleo {reference}).",
+        "statusValues": {
+          "PENDING": "Inatuma…",
+          "SENT": "Imetumwa",
+          "FAILED": "Haijalipwa",
+          "UNKNOWN": "Matokeo hayajulikani"
+        },
+        "bankRef": "Rejeleo la KCB",
+        "resolveButton": "Tatua",
+        "toast": {
+          "sent": "Imetumwa kupitia KCB (rejeleo {reference}).",
+          "failed": "KCB haikukubali uhamisho.",
+          "unknown": "KCB haikutoa jibu kwa {reference}. Huenda ililipwa — usiitume tena. Thibitisha na KCB, kisha itatue kwenye ukurasa huu."
+        },
+        "sendDialog": {
+          "title": "Tuma uhamisho huu kupitia KCB?",
+          "description": "Hii inaiomba KCB ihamishe pesa sasa.",
+          "amount": "Kiasi",
+          "beneficiary": "Mnufaika",
+          "beneficiaryAccount": "Akaunti",
+          "transactionType": "Aina ya muamala (si lazima)",
+          "transactionTypePlaceholder": "Chaguo-msingi kutoka mipangilioni",
+          "beneficiaryBankCode": "Msimbo wa benki ya mnufaika (si lazima)",
+          "beneficiaryBankCodePlaceholder": "Ikiwa ana akaunti benki nyingine tu",
+          "optionalHint": "Acha zote mbili wazi kutumia mipangilio ya KCB.",
+          "realMoneyWarning": "Pesa halisi zitaondoka kwenye akaunti ya shule. Haiwezi kutenguliwa kutoka hapa — malipo ambayo KCB imefanya yanaweza kurejeshwa kupitia KCB pekee.",
+          "understood": "Nimekagua kiasi na akaunti ya mnufaika, na ninaelewa kuwa pesa halisi zitatumwa.",
+          "confirm": "Tuma sasa",
+          "sending": "Inatuma…",
+          "genericError": "Hitilafu imetokea. Kagua majaribio hapa chini kabla ya kujaribu tena."
+        },
+        "resolveDialog": {
+          "title": "Tatua matokeo yasiyojulikana",
+          "description": "Thibitisha na KCB kilichotokea kwa rejeleo {reference}, kisha kirekodi hapa.",
+          "outcome": "KCB ilisema nini?",
+          "outcomeFailed": "HAIKULIPWA",
+          "outcomeSent": "ILILIPWA",
+          "outcomeFailedHint": "Jaribio jipya litaruhusiwa.",
+          "outcomeSentHint": "Uhamisho utawekwa alama kuwa umetumwa na hauwezi kutumwa tena.",
+          "note": "Ulichogundua, na jinsi",
+          "notePlaceholder": "mf. msaada wa KCB ulithibitisha haipo kwenye taarifa ya akaunti",
+          "bankRef": "Rejeleo la KCB (ukilo nalo)",
+          "save": "Hifadhi",
+          "saving": "Inahifadhi…",
+          "genericError": "Hitilafu imetokea. Tafadhali jaribu tena."
+        }
+      },
       "list": {
         "pageTitle": "Uhamisho wa Nje",
         "pageSubtitle": "Lipa mpokeaji ambaye shule hii haina akaunti ya benki kwa ajili yake — muuzaji, mpokeaji wa marejesho, au mhusika mwingine yeyote aliyetajwa.",

@@ -7,6 +7,8 @@ import { ValidationException } from "../../../shared/exceptions/validation.excep
 import { SetIntegrationConfigEntity, SetIntegrationKind } from "../domain/set-integration-config.entity";
 import { SetIntegrationConfigRepository } from "../infrastructure/set-integration-config.repository";
 import { fetchDarajaOAuthToken } from "../infrastructure/mpesa-oauth-probe";
+import { isKcbBuniConfig, parseKcbBuniConfig } from "../../../shared/integrations/kcb-buni/kcb-buni.config";
+import { KcbBuniTokenProvider } from "../../../shared/integrations/kcb-buni/kcb-buni-token.provider";
 
 export interface CreateIntegrationConfigInput {
   kind: SetIntegrationKind;
@@ -132,7 +134,12 @@ export class IntegrationConfigService {
    */
   async testConnection(id: string, actorId: string | null): Promise<TestConnectionResult> {
     const row = await this.findByIdOrFail(id);
-    const result = row.kind === "MPESA" ? await this.testMpesaConnection(row) : this.stubTestFor(row.kind);
+    const result =
+      row.kind === "MPESA"
+        ? await this.testMpesaConnection(row)
+        : row.kind === "BANK"
+          ? await this.testBankConnection(row)
+          : this.stubTestFor(row.kind);
 
     row.lastTestedAt = new Date();
     row.lastTestOk = result.ok;
@@ -191,6 +198,35 @@ export class IntegrationConfigService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       return { ok: false, message: `Daraja OAuth token fetch failed: ${message}` };
+    }
+  }
+
+  /**
+   * A REAL check for the KCB BUNI flavour of `BANK` (config JSON with `provider: "KCB_BUNI"`): asks KCB for an
+   * OAuth token with the saved consumer key/secret — proving the credentials and the token address are right —
+   * and says so plainly, plus what is still missing before payment notifications will work. Never throws, and
+   * never reports a token. Any other `BANK` config (the generic HTTP statement feed) keeps the stub answer.
+   */
+  private async testBankConnection(row: SetIntegrationConfigEntity): Promise<TestConnectionResult> {
+    let config: Record<string, unknown>;
+    try {
+      config = this.decode(row.configEnc);
+    } catch {
+      return this.stubTestFor("BANK");
+    }
+    if (!isKcbBuniConfig(config)) return this.stubTestFor("BANK");
+
+    try {
+      const parsed = parseKcbBuniConfig(config);
+      await new KcbBuniTokenProvider(parsed).getAccessToken();
+      const todo: string[] = [];
+      if (!parsed.ipnPublicKeyPem && !parsed.ipnSkipSignatureVerification) {
+        todo.push("KCB's public key is not set yet, so payment notifications cannot be verified.");
+      }
+      if (!parsed.bankAccountId) todo.push("No bank account is selected, so bank deposits will wait in Suspense.");
+      return { ok: true, message: `KCB BUNI sign-in succeeded (${parsed.environment}).${todo.length ? ` ${todo.join(" ")}` : ""}` };
+    } catch (error) {
+      return { ok: false, message: `KCB BUNI sign-in failed: ${error instanceof Error ? error.message : String(error)}` };
     }
   }
 

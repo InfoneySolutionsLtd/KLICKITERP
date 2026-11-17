@@ -7,7 +7,10 @@ const alertVariants = cva("relative w-full rounded-xl border p-4 [&>svg]:absolut
     variant: {
       default: "bg-background text-foreground border-border",
       destructive: "border-destructive/50 text-destructive [&>svg]:text-destructive bg-destructive/5",
-      warning: "border-warning/50 text-warning-foreground bg-warning/10",
+      // `border-warning/50` / `bg-warning/10` silently do nothing on this app's raw-hex colour tokens (a Tailwind
+      // `/NN` opacity modifier needs an rgb-channel colour), which left dark-on-dark text with no background at all in
+      // the dark theme. The opaque `tint-warning` token (as the toast uses) with normal foreground text reads in both themes.
+      warning: "border-warning bg-tint-warning text-foreground",
       // Phase 6 Slice 2c — new variant, same shape as `destructive`/`warning`
       // above, for the "linked to an existing (sibling) guardian" /
       // "new guardian created" confirmation notes (guardian-link-dialog.tsx,

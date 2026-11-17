@@ -77,6 +77,23 @@ describe("SuspenseService", () => {
         expect.objectContaining({ method: "BANK_TRANSFER", bankAccountId: "STMT-REF-1", externalRef: "STMT-REF-1" }),
       ]);
     });
+
+    it("a bank-notification item (KCB) posts to the REAL bank account it was stamped with, not its external reference", async () => {
+      suspenseRepository.findByIdOrFail.mockResolvedValueOnce(
+        makeSuspenseItem({
+          source: "BANK",
+          externalRef: "FT000262556",
+          raw: { transactionReference: "FT000262556", klickit: { provider: "KCB", bankAccountId: "0194c1de-0000-7000-8000-000000000001" } },
+        }),
+      );
+
+      await service.matchToStudent(EM, "suspense-1", "student-1", "matcher-1");
+
+      const input = receiptsService.captureReceipt.mock.calls[0][1];
+      expect(input.splits).toEqual([
+        expect.objectContaining({ method: "BANK_TRANSFER", bankAccountId: "0194c1de-0000-7000-8000-000000000001", externalRef: "FT000262556" }),
+      ]);
+    });
   });
 
   describe("refundSuspenseItem", () => {

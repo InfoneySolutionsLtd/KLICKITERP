@@ -47,6 +47,8 @@ export interface MpesaB2cPaymentResult {
 }
 
 export interface MpesaPort {
+  /** `false` for a provider with no status-query call (KCB M-Pesa Express): the result only ever arrives on the callback. Absent/`true` = `queryStkStatus` works. */
+  readonly supportsStatusQuery?: boolean;
   stkPush(input: MpesaStkPushInput): Promise<MpesaStkPushResult>;
   queryStkStatus(checkoutRequestId: string): Promise<MpesaStkStatusResult>;
   b2cPayment(input: MpesaB2cPaymentInput): Promise<MpesaB2cPaymentResult>;

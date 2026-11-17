@@ -17,6 +17,7 @@ import { SettingsService } from "./application/settings.service";
 import { AcademicCalendarService } from "./application/academic-calendar.service";
 import { NumberingService } from "./application/numbering.service";
 import { IntegrationConfigService } from "./application/integration-config.service";
+import { KcbBuniConfigResolverService } from "./application/kcb-buni-config-resolver.service";
 import { CustomFieldService } from "./application/custom-field.service";
 import { SettingsController } from "./api/settings.controller";
 import { AcademicCalendarController } from "./api/academic-calendar.controller";
@@ -67,9 +68,10 @@ import { CustomFieldsController } from "./api/custom-fields.controller";
     AcademicCalendarService,
     NumberingService,
     IntegrationConfigService,
+    KcbBuniConfigResolverService,
     CustomFieldService,
     OutboxWriterService,
   ],
-  exports: [SettingsService, AcademicCalendarService, NumberingService, IntegrationConfigService, CustomFieldService],
+  exports: [SettingsService, AcademicCalendarService, NumberingService, IntegrationConfigService, KcbBuniConfigResolverService, CustomFieldService],
 })
 export class SettingsModule {}
