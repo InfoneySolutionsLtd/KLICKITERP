@@ -22,6 +22,8 @@ import { OutboxWriterService } from "../../shared/events/outbox-writer.service";
 // (which eagerly load `students.module.ts`/`billing.module.ts` and their
 // controllers/services) are pulled in below.
 import { AccountingModule } from "../../accounting";
+import { BrandingModule } from "../../platform/branding";
+import { FilesModule } from "../../platform/files";
 import { SettingsModule } from "../../platform/settings";
 import { ApprovalsModule } from "../../platform/approvals";
 import { DocumentVerificationModule } from "../../platform/document-verification";
@@ -47,6 +49,7 @@ import { ChequesService } from "./application/cheques.service";
 import { BulkAllocationService } from "./application/bulk-allocation.service";
 import { MpesaLogOnlyAdapter } from "./infrastructure/adapters/mpesa-log-only.adapter";
 import { MpesaAdapterResolverService } from "./infrastructure/mpesa-adapter-resolver.service";
+import { ReceiptPdfService } from "./application/receipt-pdf/receipt-pdf.service";
 import { CashierSessionsController } from "./api/cashier-sessions.controller";
 import { ReceiptsController } from "./api/receipts.controller";
 import { MpesaController } from "./api/mpesa.controller";
@@ -102,6 +105,9 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     DocumentVerificationModule,
     StudentsModule,
     BillingModule,
+    // For the receipt PDF only: the school's letterhead (theme + logo file).
+    BrandingModule,
+    FilesModule,
   ],
   controllers: [
     CashierSessionsController,
@@ -135,6 +141,7 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     BulkAllocationService,
     MpesaLogOnlyAdapter,
     MpesaAdapterResolverService,
+    ReceiptPdfService,
   ],
   exports: [
     PayCashierSessionRepository,
@@ -153,6 +160,8 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     // Exported so the Academy payment-request entry point can refuse to promise a prompt when only the log-only fallback is
     // configured (`resolve()` returns `MpesaLogOnlyAdapter` then) — read-only use, it never sends through it directly.
     MpesaAdapterResolverService,
+    // Prints a receipt as a PDF (letterhead, books, verification QR). Read-only; used by the Academy parent portal.
+    ReceiptPdfService,
     SuspenseService,
     ChequesService,
     BulkAllocationService,

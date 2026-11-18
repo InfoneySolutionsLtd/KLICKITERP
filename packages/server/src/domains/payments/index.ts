@@ -62,6 +62,9 @@ export { DarajaAdapter } from "./infrastructure/adapters/daraja.adapter";
 export type { DarajaConfig } from "./infrastructure/adapters/daraja.adapter";
 export { MpesaLogOnlyAdapter } from "./infrastructure/adapters/mpesa-log-only.adapter";
 export { MpesaAdapterResolverService } from "./infrastructure/mpesa-adapter-resolver.service";
+export { ReceiptPdfService } from "./application/receipt-pdf/receipt-pdf.service";
+export { describeReceiptAllocation, describeReceiptMethod, RECEIPT_METHOD_LABELS } from "./application/receipt-pdf/receipt-labels";
+export type { ReceiptMethodView } from "./application/receipt-pdf/receipt-labels";
 
 export {
   PayCashierSessionEntity,
