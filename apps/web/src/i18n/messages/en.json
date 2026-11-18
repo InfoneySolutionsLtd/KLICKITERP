@@ -1,6 +1,16 @@
 {
   "academySync": {
     "publish": {
+      "receipts": {
+        "incompleteTitle": "Receipts are missing some of this school's details:",
+        "blockedTitle": "Receipts cannot be issued as PDFs yet:",
+        "issue": {
+          "NO_LOGO": "No school logo is set. Add it under Branding → Documents.",
+          "NO_LETTERHEAD": "No letterhead text is set. Add it under Branding → Documents.",
+          "QR_ADDRESS_NOT_PUBLIC": "The QR code on receipts points at an address a parent cannot open. Set WEB_APP_URL to this school's public web address."
+        },
+        "hint": "Every receipt carries the school's logo, its letterhead and a QR code that checks it is genuine, so it can always be tied back to this school. Receipt PDFs are not issued at all until at least a logo or letterhead is set up."
+      },
       "title": "Invoices in the parent portal",
       "description": "Shows this school's invoices to parents in the Klickit Academy parent portal, so they can see what each of their children owes.",
       "badge": {

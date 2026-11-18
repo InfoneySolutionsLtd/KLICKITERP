@@ -1,6 +1,16 @@
 {
   "academySync": {
     "publish": {
+      "receipts": {
+        "incompleteTitle": "Il manque des informations de l'école sur les reçus :",
+        "blockedTitle": "Les reçus ne peuvent pas encore être émis en PDF :",
+        "issue": {
+          "NO_LOGO": "Aucun logo d'école n'est défini. Ajoutez-le dans Image de marque → Documents.",
+          "NO_LETTERHEAD": "Aucun texte d'en-tête n'est défini. Ajoutez-le dans Image de marque → Documents.",
+          "QR_ADDRESS_NOT_PUBLIC": "Le code QR des reçus pointe vers une adresse qu'un parent ne peut pas ouvrir. Définissez WEB_APP_URL avec l'adresse web publique de l'école."
+        },
+        "hint": "Chaque reçu porte le logo de l'école, son en-tête et un code QR qui permet de vérifier son authenticité, afin de toujours pouvoir le rattacher à cette école. Les reçus en PDF ne sont pas émis tant qu'au moins un logo ou un en-tête n'est pas configuré."
+      },
       "title": "Factures dans le portail parents",
       "description": "Affiche les factures de cette école aux parents dans le portail parents de Klickit Academy, afin qu'ils voient ce que doit chacun de leurs enfants.",
       "badge": {

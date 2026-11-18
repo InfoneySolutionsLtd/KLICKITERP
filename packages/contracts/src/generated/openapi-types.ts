@@ -9930,6 +9930,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy/inbound/students/{academyStudentId}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy -> ERP: a learner's receipts, newest first (read from the books on every call). 404 for a learner this ERP has not linked. The Academy only ever asks about a learner it has verified is the signed-in parent's own child. */
+        get: operations["AcademyInboundController_listReceipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy/inbound/students/{academyStudentId}/receipts/{receiptId}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy -> ERP: one receipt as a PDF (school letterhead, the receipt as the books hold it, verification QR). 404 unless the receipt belongs to THIS learner: a receipt is only ever found through its learner. */
+        get: operations["AcademyInboundController_receiptPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -15226,6 +15260,14 @@ export interface components {
             reason: string;
             at?: string | null;
         };
+        AcademyReceiptSetupDto: {
+            /** @description Receipts can be issued as PDFs: the school has set up at least a logo or letterhead text, so every receipt names its school */
+            canIssue: boolean;
+            /** @description Everything is in place: logo, letterhead text and a public address for the QR code */
+            complete: boolean;
+            /** @description What is still to set up: the logo and letterhead text (Branding -> Documents), a public WEB_APP_URL for the QR code */
+            issues: ("NO_LOGO" | "NO_LETTERHEAD" | "QR_ADDRESS_NOT_PUBLIC")[];
+        };
         AcademyPublishStatusDto: {
             /** @description Whether this ERP is connected to its Academy school */
             connected: boolean;
@@ -15241,6 +15283,8 @@ export interface components {
             lastPublishOk?: boolean | null;
             lastPublishMessage?: string | null;
             recentRejections: components["schemas"]["AcademyPublishRejectionDto"][];
+            /** @description Whether this school's receipts carry its logo, letterhead and a QR code; null when it could not be checked */
+            receiptSetup?: components["schemas"]["AcademyReceiptSetupDto"] | null;
         };
         SetAcademyPublishDto: {
             /** @description Whether invoices are published to the Academy parent portal */
@@ -15279,6 +15323,43 @@ export interface components {
             code?: string | null;
             /** @description Plain wording that is safe to show a parent */
             message?: string | null;
+        };
+        AcademyReceiptMethodDto: {
+            /** @description How the money was paid, in words a parent reads: Cash, M-Pesa, Bank transfer, ... */
+            label: string;
+            /** @description The M-Pesa code / bank reference, only where it belongs to the payer */
+            reference?: string | null;
+        };
+        AcademyReceiptAppliedDto: {
+            /** @description Where the money went: an invoice number, or advance payment */
+            label: string;
+            /** @description Decimal string, 4 places */
+            amount: string;
+        };
+        AcademyReceiptViewDto: {
+            /**
+             * Format: uuid
+             * @description Hand it back, with the learner it came with, to download the PDF
+             */
+            id: string;
+            number: string;
+            /** @description YYYY-MM-DD */
+            date: string;
+            /** @description Decimal string, 4 places */
+            amount: string;
+            /** @enum {string} */
+            currency: "KES";
+            /**
+             * @description REVERSED: the school has reversed it and it no longer counts as a payment
+             * @enum {string}
+             */
+            status: "VALID" | "REVERSED";
+            methods: components["schemas"]["AcademyReceiptMethodDto"][];
+            appliedTo: components["schemas"]["AcademyReceiptAppliedDto"][];
+        };
+        AcademyReceiptListDto: {
+            /** @description The learner's receipts, newest first */
+            receipts: components["schemas"]["AcademyReceiptViewDto"][];
         };
     };
     responses: never;
@@ -31300,6 +31381,55 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AcademyPaymentRequestViewDto"];
                 };
+            };
+        };
+    };
+    AcademyInboundController_listReceipts: {
+        parameters: {
+            query: {
+                limit: number;
+            };
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path: {
+                academyStudentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyReceiptListDto"];
+                };
+            };
+        };
+    };
+    AcademyInboundController_receiptPdf: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path: {
+                academyStudentId: string;
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -1,6 +1,16 @@
 {
   "academySync": {
     "publish": {
+      "receipts": {
+        "incompleteTitle": "Risiti hazina baadhi ya taarifa za shule hii:",
+        "blockedTitle": "Risiti bado haziwezi kutolewa kama PDF:",
+        "issue": {
+          "NO_LOGO": "Hakuna nembo ya shule iliyowekwa. Iweke kwenye Chapa → Hati.",
+          "NO_LETTERHEAD": "Hakuna maandishi ya kichwa cha barua yaliyowekwa. Yaweke kwenye Chapa → Hati.",
+          "QR_ADDRESS_NOT_PUBLIC": "Msimbo wa QR kwenye risiti unaelekeza kwenye anwani ambayo mzazi hawezi kuifungua. Weka WEB_APP_URL kuwa anwani ya wavuti ya umma ya shule hii."
+        },
+        "hint": "Kila risiti ina nembo ya shule, kichwa chake cha barua na msimbo wa QR unaothibitisha kuwa ni halali, ili iweze kuunganishwa na shule hii kila wakati. Risiti za PDF hazitolewi kabisa hadi angalau nembo au kichwa cha barua kiwe kimewekwa."
+      },
       "title": "Ankara kwenye lango la wazazi",
       "description": "Huonyesha ankara za shule hii kwa wazazi kwenye lango la wazazi la Klickit Academy, ili waone kila mtoto wao anadaiwa nini.",
       "badge": {
