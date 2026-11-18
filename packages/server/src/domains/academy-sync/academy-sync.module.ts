@@ -4,12 +4,15 @@ import { StudentsModule } from "../students";
 import { AcademyInboundController } from "./api/academy-inbound.controller";
 import { AcademyInboundGuard } from "./api/academy-inbound.guard";
 import { AcademyLinkController } from "./api/academy-link.controller";
+import { AcademyPublishController } from "./api/academy-publish.controller";
 import { AcademySyncController } from "./api/academy-sync.controller";
 import { AcademyLinkService } from "./application/academy-link.service";
+import { AcademyPublishService } from "./application/academy-publish.service";
 import { AcademySyncService } from "./application/academy-sync.service";
 import { AcadClassMapEntity } from "./domain/acad-class-map.entity";
 import { AcadGuardianMapEntity } from "./domain/acad-guardian-map.entity";
 import { AcadInboundLinkEntity } from "./domain/acad-inbound-link.entity";
+import { AcadInvoicePublicationEntity } from "./domain/acad-invoice-publication.entity";
 import { AcadStudentMapEntity } from "./domain/acad-student-map.entity";
 import { AcadSyncRunEntity } from "./domain/acad-sync-run.entity";
 import { AcadSyncStateEntity } from "./domain/acad-sync-state.entity";
@@ -20,6 +23,8 @@ import { AcadStudentMapRepository } from "./infrastructure/acad-student-map.repo
 import { AcadSyncRunRepository } from "./infrastructure/acad-sync-run.repository";
 import { AcadSyncStateRepository } from "./infrastructure/acad-sync-state.repository";
 import { AcademyHttpClient } from "./infrastructure/academy-http.client";
+import { AcademyInvoiceSnapshotRepository } from "./infrastructure/academy-invoice-snapshot.repository";
+import { AcademyPublishClient } from "./infrastructure/academy-publish.client";
 import { AcademySyncClient } from "./infrastructure/academy-sync.client";
 
 /**
@@ -44,9 +49,10 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
       AcadClassMapEntity,
       AcadSyncRunEntity,
       AcadInboundLinkEntity,
+      AcadInvoicePublicationEntity,
     ]),
   ],
-  controllers: [AcademySyncController, AcademyLinkController, AcademyInboundController],
+  controllers: [AcademySyncController, AcademyLinkController, AcademyPublishController, AcademyInboundController],
   providers: [
     AcadSyncStateRepository,
     AcadStudentMapRepository,
@@ -59,7 +65,10 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
     AcademySyncService,
     AcademyLinkService,
     AcademyInboundGuard,
+    AcademyInvoiceSnapshotRepository,
+    AcademyPublishClient,
+    AcademyPublishService,
   ],
-  exports: [AcademySyncService],
+  exports: [AcademySyncService, AcademyPublishService],
 })
 export class AcademySyncModule {}

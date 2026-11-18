@@ -118,6 +118,9 @@ export { AcademyEntitlementService } from "./licensing/application/academy-entit
 // `apps/worker` imports it too and drives `AcademySyncService.runScheduled()` from its BullMQ processor.
 export { AcademySyncModule } from "./domains/academy-sync/academy-sync.module";
 export { AcademySyncService } from "./domains/academy-sync/application/academy-sync.service";
+// Publishing invoices to the Academy parent portal — `apps/worker` drives the periodic sweep and builds the outbox handlers.
+export { AcademyPublishService } from "./domains/academy-sync/application/academy-publish.service";
+export { AcademyPublishOutboxHandler, ACADEMY_PUBLISH_EVENT_TYPES } from "./domains/academy-sync/application/academy-publish-outbox.handler";
 
 // Phase 6 Slice 16 (Part 1 — Document Security: Watermark + QR
 // Verification backend) — a new small platform module added after the

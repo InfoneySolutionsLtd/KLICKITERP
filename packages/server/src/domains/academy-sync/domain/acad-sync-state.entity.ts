@@ -35,4 +35,17 @@ export class AcadSyncStateEntity extends MutableBaseEntity {
 
   @Column({ type: "varchar", length: 40, name: "last_updated_since", nullable: true })
   lastUpdatedSince!: string | null;
+
+  /** Publishing the ERP's invoices to the Academy parent portal. OFF until an admin switches it on. */
+  @Column({ type: "boolean", name: "publish_invoices_enabled", default: false })
+  publishInvoicesEnabled!: boolean;
+
+  @Column({ type: "timestamptz", name: "last_publish_at", nullable: true })
+  lastPublishAt!: Date | null;
+
+  @Column({ type: "boolean", name: "last_publish_ok", nullable: true })
+  lastPublishOk!: boolean | null;
+
+  @Column({ type: "varchar", length: 300, name: "last_publish_message", nullable: true })
+  lastPublishMessage!: string | null;
 }
