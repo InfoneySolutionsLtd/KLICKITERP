@@ -1,5 +1,30 @@
 {
   "academySync": {
+    "publish": {
+      "title": "Factures dans le portail parents",
+      "description": "Affiche les factures de cette école aux parents dans le portail parents de Klickit Academy, afin qu'ils voient ce que doit chacun de leurs enfants.",
+      "badge": {
+        "off": "Désactivé",
+        "on": "Activé",
+        "problem": "À vérifier"
+      },
+      "privacy": "Un parent ne voit jamais que les factures de ses propres enfants. C'est Klickit Academy, et jamais cet ERP, qui décide qui est le parent d'un enfant. Seuls les élèves déjà liés par la synchronisation des élèves sont inclus, et seulement les factures comptabilisées — les brouillons ne sont jamais affichés.",
+      "switchLabel": "Afficher les factures dans le portail parents",
+      "switchHint": "Les factures nouvelles ou modifiées sont envoyées automatiquement : une nouvelle facture ou un paiement en quelques instants, le reste en quelques minutes. Désactiver arrête les nouvelles mises à jour ; cela ne retire pas les factures déjà vues par les parents.",
+      "published": "Dans le portail",
+      "waiting": "En attente d'envoi",
+      "notAccepted": "Non acceptées",
+      "lastRun": "Dernier envoi",
+      "rejectedTitle": "L'Academy n'a pas accepté certaines factures :",
+      "rejectedHint": "La cause la plus fréquente est un élève non lié à cette école dans Klickit Academy. Corrigez-le là-bas ou relancez la synchronisation des élèves ; la facture est renvoyée automatiquement.",
+      "notConnected": "Connectez d'abord cet ERP à son école Klickit Academy sur cette page.",
+      "publishNow": "Envoyer maintenant",
+      "publishing": "Envoi…",
+      "toast": {
+        "saved": "Paramètre du portail parents enregistré.",
+        "ran": "Factures envoyées au portail parents."
+      }
+    },
     "link": {
       "title": "Permettre au portail parents de joindre cet ERP",
       "description": "Lorsqu'un parent appuie sur Payer dans le portail parents de Klickit Academy, l'Academy doit demander à cet ERP de lancer le paiement. Indiquez-lui l'adresse publique de cet ERP ; elle répond par un secret qui signe ses requêtes. Le secret est stocké chiffré et n'est jamais affiché.",

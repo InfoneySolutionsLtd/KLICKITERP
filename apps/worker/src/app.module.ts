@@ -38,6 +38,7 @@ import { OutboxQueueModule } from "./outbox/outbox-queue.module";
 import { WebhookDispatchModule } from "./outbox/webhook-dispatch.module";
 import { WebhookRetryModule } from "./outbox/webhook-retry.module";
 import { AcademyEntitlementQueueModule } from "./academy/academy-entitlement-queue.module";
+import { AcademyPublishQueueModule } from "./academy/academy-publish-queue.module";
 import { AcademySyncQueueModule } from "./academy/academy-sync-queue.module";
 
 /**
@@ -153,6 +154,8 @@ import { AcademySyncQueueModule } from "./academy/academy-sync-queue.module";
     // Academy <-> ERP student sync — periodic trigger for AcademySyncService.runScheduled() (a no-op until an admin
     // has confirmed the first import and switched automatic sync on).
     AcademySyncQueueModule,
+    // Academy parent portal — periodic sweep that publishes invoices (a no-op until an admin switches publishing on).
+    AcademyPublishQueueModule,
   ],
   controllers: [HealthController],
   providers: [

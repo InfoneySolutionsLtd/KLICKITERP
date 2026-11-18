@@ -1,6 +1,15 @@
 import { Global, Module } from "@nestjs/common";
 import { DataSource } from "typeorm";
-import { IntegrationsModule, OUTBOX_HANDLERS, WebhookDeliveryService, WebhookDispatchOutboxHandler } from "@klickit/server";
+import {
+  ACADEMY_PUBLISH_EVENT_TYPES,
+  AcademyPublishOutboxHandler,
+  AcademyPublishService,
+  AcademySyncModule,
+  IntegrationsModule,
+  OUTBOX_HANDLERS,
+  WebhookDeliveryService,
+  WebhookDispatchOutboxHandler,
+} from "@klickit/server";
 
 /**
  * Complete the Integrations area, Part 3.2 — closes the "webhooks exist but
@@ -56,13 +65,17 @@ const WEBHOOK_EVENT_TYPES = [
 
 @Global()
 @Module({
-  imports: [IntegrationsModule],
+  imports: [IntegrationsModule, AcademySyncModule],
   providers: [
     {
       provide: OUTBOX_HANDLERS,
-      useFactory: (webhookDeliveryService: WebhookDeliveryService, dataSource: DataSource) =>
-        WEBHOOK_EVENT_TYPES.map((eventType) => new WebhookDispatchOutboxHandler(eventType, webhookDeliveryService, dataSource)),
-      inject: [WebhookDeliveryService, DataSource],
+      // ONE array for every consumer: a second `provide: OUTBOX_HANDLERS` anywhere would clobber this one (see above).
+      useFactory: (webhookDeliveryService: WebhookDeliveryService, dataSource: DataSource, academyPublishService: AcademyPublishService) => [
+        ...WEBHOOK_EVENT_TYPES.map((eventType) => new WebhookDispatchOutboxHandler(eventType, webhookDeliveryService, dataSource)),
+        // Academy parent portal: catch up straight after a posted invoice / a payment (the periodic sweep is the safety net).
+        ...ACADEMY_PUBLISH_EVENT_TYPES.map((eventType) => new AcademyPublishOutboxHandler(eventType, academyPublishService)),
+      ],
+      inject: [WebhookDeliveryService, DataSource, AcademyPublishService],
     },
   ],
   exports: [OUTBOX_HANDLERS],
