@@ -19,6 +19,36 @@ export interface ReceiptPdfData {
   methods: Array<{ label: string; amount: string; reference: string | null }>;
   /** Which invoices the money went to (or "advance payment"), already readable — never raw ids. */
   appliedTo: Array<{ label: string; amount: string }>;
+  /** The learner's whole account now (see `ReceiptPdfAccount`). */
+  account: ReceiptPdfAccount;
+}
+
+/** One invoice on the learner's account, as it stands now. */
+export interface ReceiptPdfInvoice {
+  number: string;
+  /** e.g. `2026 Term 1`. */
+  termName: string | null;
+  /** The invoice amount, what has been paid on it so far, and what is still owing. Exact decimal strings (4 places). */
+  total: string;
+  paid: string;
+  balance: string;
+  /** How much of THIS receipt went to this invoice; null when none did (it is listed only because something is still owing). */
+  paidByThisReceipt: string | null;
+  /** The fee categories on the invoice, so a parent can see what the money is for. `amount` is after any discount. */
+  categories: Array<{ name: string; amount: string; discount: string | null }>;
+}
+
+/**
+ * Where the learner stands across ALL their invoices, worked out from the invoices themselves (the same figures the parent
+ * portal shows) at the moment the PDF is made — not a figure frozen onto the receipt when it was captured.
+ */
+export interface ReceiptPdfAccount {
+  /** The invoices to list: those this receipt paid toward first, then the rest that still owe something. */
+  invoices: ReceiptPdfInvoice[];
+  /** Open invoices that did not fit in the list; they ARE counted in `totalBalance`. */
+  moreInvoices: number;
+  /** What the learner owes across every open invoice. */
+  totalBalance: string;
 }
 
 /** What the Branding page configures for printed documents; every part is optional (an unbranded school still gets a receipt). */
@@ -117,6 +147,69 @@ function formatGenerated(at: Date, timeZone?: string): string {
 const labelCell = (text: string): TableCell => ({ text, color: GRAY, fontSize: 9, margin: [0, 3, 0, 3] });
 const valueCell = (text: string | Content[], bold = false): TableCell => ({ text: text as string, bold, fontSize: 10, margin: [0, 3, 0, 3] });
 
+const NUMBER_COL = 86;
+
+/**
+ * "Account balance": the learner's total balance across all their open invoices, then each invoice with its amount, what has
+ * been paid on it and what is left, and the fee categories it is made of — so a parent can see what they have paid for and
+ * what is still owing. The figures are as at the moment the PDF is made, and the heading says so.
+ */
+function accountSection(receipt: ReceiptPdfData, generatedAt: Date, timeZone?: string): Content[] {
+  const { account } = receipt;
+  const owing = !/^-?0+(.0+)?$/.test(account.totalBalance);
+  const widths: Array<number | string> = ["*", NUMBER_COL, NUMBER_COL, NUMBER_COL];
+  const right = (text: string, extra: Record<string, unknown> = {}): TableCell => ({ text, alignment: "right", fontSize: 10, ...extra }) as TableCell;
+  const cols = (...cells: TableCell[]): TableCell[] => cells;
+
+  const out: Content[] = [
+    { text: "Account balance", bold: true, fontSize: 11, margin: [0, 18, 0, 0] },
+    { text: `As at ${formatGenerated(generatedAt, timeZone)}, across all of ${receipt.learnerName}'s open invoices.`, fontSize: 8.5, color: GRAY, margin: [0, 2, 0, 6] },
+    {
+      margin: [0, 0, 0, 6],
+      table: { widths: ["*", "auto"], body: [[{ text: `Total balance for ${receipt.learnerName}`, bold: true, fontSize: 11 }, { text: formatKes(account.totalBalance), bold: true, fontSize: 15, alignment: "right", color: owing ? "#111827" : "#166534" }]] },
+      layout: { hLineColor: () => RULE, vLineColor: () => RULE, hLineWidth: () => 0.8, vLineWidth: () => 0, paddingTop: () => 7, paddingBottom: () => 7 },
+    },
+  ];
+
+  if (account.invoices.length === 0) {
+    out.push({ text: owing ? "" : "Nothing is owing on the account.", fontSize: 9, color: GRAY });
+    return out;
+  }
+
+  out.push({
+    table: {
+      widths,
+      body: [cols({ text: "Invoice and fee categories", color: GRAY, fontSize: 8.5 }, right("Invoice amount", { color: GRAY, fontSize: 8.5 }), right("Paid", { color: GRAY, fontSize: 8.5 }), right("Balance", { color: GRAY, fontSize: 8.5 }))],
+    },
+    layout: { hLineColor: () => RULE, hLineWidth: (i: number) => (i === 1 ? 0.8 : 0), vLineWidth: () => 0 },
+  });
+
+  for (const invoice of account.invoices) {
+    const heading: Content[] = [{ text: `Invoice ${invoice.number}${invoice.termName ? `  (${invoice.termName})` : ""}`, bold: true, fontSize: 10 }];
+    if (invoice.paidByThisReceipt !== null) {
+      heading.push({ text: `This receipt paid ${formatKes(invoice.paidByThisReceipt)} toward this invoice`, fontSize: 8, color: GRAY, margin: [0, 1, 0, 0] });
+    }
+    const rows: TableCell[][] = [
+      cols({ stack: heading, margin: [0, 3, 0, 2] }, right(formatKes(invoice.total), { margin: [0, 3, 0, 2] }), right(formatKes(invoice.paid), { margin: [0, 3, 0, 2] }), right(formatKes(invoice.balance), { bold: true, margin: [0, 3, 0, 2] })),
+      ...invoice.categories.map((category) =>
+        cols(
+          { text: `${category.name}${category.discount ? `  (after ${formatKes(category.discount)} discount)` : ""}`, fontSize: 8.5, color: GRAY, margin: [12, 0, 0, 1] },
+          right(formatKes(category.amount), { fontSize: 8.5, color: GRAY, margin: [0, 0, 0, 1] }),
+          { text: "" },
+          { text: "" },
+        ),
+      ),
+    ];
+    // One invoice never splits across two pages.
+    out.push({ unbreakable: true, table: { widths, body: rows }, layout: { hLineColor: () => RULE, hLineWidth: (i: number) => (i === rows.length ? 0.4 : 0), vLineWidth: () => 0, paddingTop: () => 0, paddingBottom: () => 0 } });
+  }
+
+  if (account.moreInvoices > 0) {
+    out.push({ text: `…and ${account.moreInvoices} more open invoice${account.moreInvoices === 1 ? "" : "s"}, included in the total balance above.`, fontSize: 8.5, color: GRAY, margin: [0, 4, 0, 0] });
+  }
+  return out;
+}
+
 export function buildReceiptDocDefinition(input: ReceiptPdfInput): TDocumentDefinitions {
   const { receipt, branding, verification } = input;
   const reversed = receipt.status === "REVERSED";
@@ -192,6 +285,8 @@ export function buildReceiptDocDefinition(input: ReceiptPdfInput): TDocumentDefi
       },
     );
   }
+
+  body.push(...accountSection(receipt, input.generatedAt, input.timeZone));
 
   if (verification) {
     body.push({

@@ -23,6 +23,7 @@ const receipt = (over: Partial<ReceiptPdfData> = {}): ReceiptPdfData => ({
   className: "Grade 4",
   methods: [{ label: "M-Pesa", amount: "2500.0000", reference: "QWE123XYZ9" }],
   appliedTo: [{ label: "Invoice INV-000101", amount: "2500.0000" }],
+  account: { invoices: [], moreInvoices: 0, totalBalance: "0.0000" },
   ...over,
 });
 
@@ -92,10 +93,6 @@ describe("what the receipt says", () => {
     expect(text).toContain("M-Pesa  -  ref. QWE123XYZ9");
     expect(text).toContain("KES 2,500.00");
     expect(text).toContain("Invoice INV-000101");
-  });
-
-  it("does NOT print a running balance (a ledger snapshot that can contradict what the learner currently owes)", () => {
-    expect(printed()).not.toMatch(/balance/i);
   });
 
   it("shows each part of a split payment with its own amount", () => {
