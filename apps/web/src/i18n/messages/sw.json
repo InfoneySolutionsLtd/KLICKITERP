@@ -1,5 +1,30 @@
 {
   "academySync": {
+    "publish": {
+      "title": "Ankara kwenye lango la wazazi",
+      "description": "Huonyesha ankara za shule hii kwa wazazi kwenye lango la wazazi la Klickit Academy, ili waone kila mtoto wao anadaiwa nini.",
+      "badge": {
+        "off": "Imezimwa",
+        "on": "Imewashwa",
+        "problem": "Inahitaji umakini"
+      },
+      "privacy": "Mzazi huona ankara za watoto wake pekee. Nani ni mzazi wa mtoto huamuliwa na Klickit Academy, kamwe si ERP hii. Wanafunzi walioungwa tayari na ulandanishaji wa wanafunzi pekee ndio hujumuishwa, na ankara zilizochapishwa pekee — rasimu hazionyeshwi kamwe.",
+      "switchLabel": "Onyesha ankara kwenye lango la wazazi",
+      "switchHint": "Ankara mpya na zilizobadilishwa hutumwa kiotomatiki: ankara mpya au malipo ndani ya muda mfupi, mengine ndani ya dakika chache. Kuzima huzuia masasisho mapya; hakuondoi ankara ambazo wazazi wameshaona.",
+      "published": "Kwenye lango",
+      "waiting": "Zinasubiri kutumwa",
+      "notAccepted": "Hazikukubaliwa",
+      "lastRun": "Ilitumwa mwisho",
+      "rejectedTitle": "Academy haikukubali baadhi ya ankara:",
+      "rejectedHint": "Sababu ya kawaida ni mwanafunzi ambaye hajaungwa na shule hii kwenye Klickit Academy. Rekebisha huko au endesha tena ulandanishaji wa wanafunzi; ankara hujaribiwa tena kiotomatiki.",
+      "notConnected": "Unganisha ERP hii na shule yake ya Klickit Academy kwenye ukurasa huu kwanza.",
+      "publishNow": "Tuma sasa",
+      "publishing": "Inatuma…",
+      "toast": {
+        "saved": "Mpangilio wa lango la wazazi umehifadhiwa.",
+        "ran": "Ankara zimetumwa kwenye lango la wazazi."
+      }
+    },
     "link": {
       "title": "Ruhusu lango la wazazi kufikia ERP hii",
       "description": "Mzazi anapobofya Lipa kwenye lango la wazazi la Klickit Academy, Academy inapaswa kuiomba ERP hii ianzishe malipo. Iambie anwani ya umma ya ERP hii; inajibu kwa siri inayotia saini maombi yake. Siri huhifadhiwa ikiwa imesimbwa na haionyeshwi kamwe.",

@@ -9844,6 +9844,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy-sync/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Is publishing on, and how many invoices are in sync, waiting or refused? */
+        get: operations["AcademyPublishController_status"];
+        /** Switch publishing of invoices to the parent portal on or off (off by default) */
+        put: operations["AcademyPublishController_setEnabled"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy-sync/publish/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish what is waiting now (up to 300 invoices; the scheduled sweep carries on with any backlog) */
+        post: operations["AcademyPublishController_run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/academy/inbound/ping": {
         parameters: {
             query?: never;
@@ -15150,6 +15185,32 @@ export interface components {
              * @example https://erp.yourschool.ac.ke/api/v1
              */
             erpBaseUrl: string;
+        };
+        AcademyPublishRejectionDto: {
+            invoiceNumber: string;
+            /** @description Why the Academy did not accept this invoice */
+            reason: string;
+            at?: string | null;
+        };
+        AcademyPublishStatusDto: {
+            /** @description Whether this ERP is connected to its Academy school */
+            connected: boolean;
+            /** @description Whether invoices are being published to the parent portal (off until an admin switches it on) */
+            enabled: boolean;
+            /** @description Invoices of linked students that the portal does not have in their current state yet */
+            pending: number;
+            /** @description Invoices the portal holds in their current state */
+            published: number;
+            /** @description Invoices the Academy refused (see recentRejections) */
+            rejected: number;
+            lastPublishAt?: string | null;
+            lastPublishOk?: boolean | null;
+            lastPublishMessage?: string | null;
+            recentRejections: components["schemas"]["AcademyPublishRejectionDto"][];
+        };
+        SetAcademyPublishDto: {
+            /** @description Whether invoices are published to the Academy parent portal */
+            enabled: boolean;
         };
     };
     responses: never;
@@ -31039,6 +31100,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AcademyLinkStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyPublishController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyPublishStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyPublishController_setEnabled: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetAcademyPublishDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyPublishStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyPublishController_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyPublishStatusDto"];
                 };
             };
         };

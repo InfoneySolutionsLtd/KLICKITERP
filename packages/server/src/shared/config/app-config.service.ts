@@ -404,6 +404,11 @@ export class AppConfigService {
     return Number(process.env.ACADEMY_SYNC_POLL_INTERVAL_MIN ?? 15);
   }
 
+  /** Cadence for the worker's sweep that publishes invoices to the Academy parent portal (only does anything while an admin has publishing switched on). */
+  get academyPublishPollIntervalMinutes(): number {
+    return Number(process.env.ACADEMY_PUBLISH_POLL_INTERVAL_MIN ?? 2);
+  }
+
   /** Max time to keep trusting the last successful entitlement result while the gateway is unreachable — spec recommends 24h. */
   get academyEntitlementGraceHours(): number {
     return Number(process.env.ACADEMY_ENTITLEMENT_GRACE_HOURS ?? 24);

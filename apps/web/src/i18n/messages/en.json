@@ -1,5 +1,30 @@
 {
   "academySync": {
+    "publish": {
+      "title": "Invoices in the parent portal",
+      "description": "Shows this school's invoices to parents in the Klickit Academy parent portal, so they can see what each of their children owes.",
+      "badge": {
+        "off": "Off",
+        "on": "On",
+        "problem": "Needs attention"
+      },
+      "privacy": "A parent only ever sees the invoices of their own children. Who is a child's parent is decided by Klickit Academy, never by this ERP. Only learners already linked by the student sync are included, and only invoices that have been posted — drafts are never shown.",
+      "switchLabel": "Show invoices in the parent portal",
+      "switchHint": "New and changed invoices are sent automatically: a new invoice or a payment within moments, anything else within a few minutes. Switching this off stops new updates; it does not remove invoices parents have already seen.",
+      "published": "In the portal",
+      "waiting": "Waiting to be sent",
+      "notAccepted": "Not accepted",
+      "lastRun": "Last sent",
+      "rejectedTitle": "The Academy did not accept some invoices:",
+      "rejectedHint": "The most common cause is a learner that is not linked to this school in Klickit Academy. Fix it there or run the student sync again; the invoice is retried automatically.",
+      "notConnected": "Connect this ERP to its Klickit Academy school on this page first.",
+      "publishNow": "Send now",
+      "publishing": "Sending…",
+      "toast": {
+        "saved": "Parent portal setting saved.",
+        "ran": "Invoices sent to the parent portal."
+      }
+    },
     "link": {
       "title": "Let the parent portal reach this ERP",
       "description": "When a parent taps Pay in the Klickit Academy parent portal, the Academy has to ask this ERP to start the payment. Tell it this ERP's public address; it answers with a secret that signs its requests. The secret is stored encrypted and is never shown.",
