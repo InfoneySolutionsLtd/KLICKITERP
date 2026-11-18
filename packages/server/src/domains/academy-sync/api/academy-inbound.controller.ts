@@ -1,9 +1,11 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, UseGuards } from "@nestjs/common";
-import { ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, DefaultValuePipe, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Post, Query, Res, StreamableFile, UseGuards } from "@nestjs/common";
+import { ApiHeader, ApiOkResponse, ApiOperation, ApiProduces, ApiTags } from "@nestjs/swagger";
 import { Public } from "../../../shared/rbac/public.decorator";
 import { AcademyPaymentRequestService } from "../application/academy-payment-request.service";
+import { AcademyReceiptService, DEFAULT_RECEIPTS_PER_ANSWER } from "../application/academy-receipt.service";
 import { AcademyInboundGuard } from "./academy-inbound.guard";
 import { AcademyPaymentRequestViewDto, CreateAcademyPaymentRequestDto } from "./dto/academy-payment-request.dto";
+import { AcademyReceiptListDto } from "./dto/academy-receipt.dto";
 
 /**
  * Where the Klickit Academy calls this ERP. Every route here is `@Public()` (no user token) and protected instead by
@@ -11,13 +13,17 @@ import { AcademyPaymentRequestViewDto, CreateAcademyPaymentRequestDto } from "./
  *
  * `ping` lets the Academy (and the admin's "Test connection") prove the whole path works — the address is reachable, the
  * secret matches, the clocks agree. `payment-requests` is how a parent pays from the Academy portal: the Academy asks for
- * an M-Pesa prompt for a learner it already verified belongs to the signed-in parent, and later asks how it went. Receipt
- * downloads arrive here in a later step.
+ * an M-Pesa prompt for a learner it already verified belongs to the signed-in parent, and later asks how it went.
+ * `students/:id/receipts` lists a learner's receipts and `.../:receiptId/pdf` prints one; both are read from the books on every call
+ * and a receipt is only ever found THROUGH its learner (the Academy names a learner it has verified is the parent's own child).
  */
 @ApiTags("academy-inbound")
 @Controller("academy/inbound")
 export class AcademyInboundController {
-  constructor(private readonly paymentRequests: AcademyPaymentRequestService) {}
+  constructor(
+    private readonly paymentRequests: AcademyPaymentRequestService,
+    private readonly receipts: AcademyReceiptService,
+  ) {}
 
   @Get("ping")
   @Public()
@@ -51,5 +57,42 @@ export class AcademyInboundController {
   @ApiOkResponse({ type: AcademyPaymentRequestViewDto })
   getPaymentRequest(@Param("requestId", ParseUUIDPipe) requestId: string): Promise<AcademyPaymentRequestViewDto> {
     return this.paymentRequests.getStatus(requestId);
+  }
+
+  @Get("students/:academyStudentId/receipts")
+  @Public()
+  @UseGuards(AcademyInboundGuard)
+  @ApiHeader({ name: "X-Klickit-Signature", required: true, description: "v1=<hex HMAC-SHA256>, see academy-signature.ts" })
+  @ApiOperation({
+    summary:
+      "Academy -> ERP: a learner's receipts, newest first (read from the books on every call). 404 for a learner this ERP has not linked. " +
+      "The Academy only ever asks about a learner it has verified is the signed-in parent's own child.",
+  })
+  @ApiOkResponse({ type: AcademyReceiptListDto })
+  listReceipts(
+    @Param("academyStudentId") academyStudentId: string,
+    @Query("limit", new DefaultValuePipe(DEFAULT_RECEIPTS_PER_ANSWER), ParseIntPipe) limit: number,
+  ): Promise<AcademyReceiptListDto> {
+    return this.receipts.list(academyStudentId, limit);
+  }
+
+  @Get("students/:academyStudentId/receipts/:receiptId/pdf")
+  @Public()
+  @UseGuards(AcademyInboundGuard)
+  @ApiHeader({ name: "X-Klickit-Signature", required: true, description: "v1=<hex HMAC-SHA256>, see academy-signature.ts" })
+  @ApiOperation({
+    summary:
+      "Academy -> ERP: one receipt as a PDF (school letterhead, the receipt as the books hold it, verification QR). 404 unless the receipt belongs " +
+      "to THIS learner: a receipt is only ever found through its learner.",
+  })
+  @ApiProduces("application/pdf")
+  async receiptPdf(
+    @Param("academyStudentId") academyStudentId: string,
+    @Param("receiptId", ParseUUIDPipe) receiptId: string,
+    @Res({ passthrough: true }) res: { set(headers: Record<string, string>): unknown },
+  ): Promise<StreamableFile> {
+    const { filename, buffer } = await this.receipts.pdf(academyStudentId, receiptId);
+    res.set({ "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${filename}"`, "Cache-Control": "private, no-store" });
+    return new StreamableFile(buffer);
   }
 }

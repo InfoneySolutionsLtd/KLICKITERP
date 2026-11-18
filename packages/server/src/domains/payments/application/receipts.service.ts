@@ -171,6 +171,31 @@ export const PAYMENT_REVERSALS_APPROVAL_DOMAIN_CODE = "PAYMENT_REVERSALS";
 export const PAYMENT_RECEIPT_DOCUMENT_TYPE = "PAYMENT_RECEIPT";
 
 /**
+ * What a receipt's verification token records — ONE definition, so every path that issues a receipt (a cashier's, an M-Pesa
+ * STK, a wallet- or credit-funded one) and the on-demand backfill for older receipts all mint exactly the same thing, and the
+ * public verify page reads the same shape whichever way the receipt came about. `total` accepts a `Money` or a decimal string.
+ */
+export function receiptVerificationInput(receipt: {
+  id: string;
+  number: string;
+  payerName: string;
+  total: { toDecimalString(): string } | string;
+  receiptDate: string;
+}): { documentType: string; documentId: string; documentRef: string; summary: Record<string, unknown> } {
+  return {
+    documentType: PAYMENT_RECEIPT_DOCUMENT_TYPE,
+    documentId: receipt.id,
+    documentRef: receipt.number,
+    summary: {
+      payerName: receipt.payerName,
+      total: typeof receipt.total === "string" ? receipt.total : receipt.total.toDecimalString(),
+      receiptDate: receipt.receiptDate,
+      receiptNumber: receipt.number,
+    },
+  };
+}
+
+/**
  * THE core receipt capture/posting/reversal engine (docs/phase-5 Module 10
  * PASS A). Mirrors `InvoicingService`'s design discipline: every write path
  * takes the caller's own `EntityManager` (composable — Pass B's M-Pesa
@@ -507,22 +532,14 @@ export class ReceiptsService {
     // Phase 6 Slice 16 (Part 1) — mint an opaque verification token for this
     // receipt, inside this same transaction, immediately after the
     // `pay_receipt` row itself is inserted (its FK-less `document_id` target
-    // must already exist). Only `captureReceipt()` mints — deliberately NOT
-    // called from `recordSubledgerFundedReceipt()` (wallet/credit-balance
-    // funded receipts) or `reverseReceipt()`'s contra receipt, so those stay
-    // without a token of their own; `findByDocument()` correctly returns
-    // `null` for them via `ReceiptsController`'s "get by id" path.
-    await this.documentVerificationService.mint(em, {
-      documentType: PAYMENT_RECEIPT_DOCUMENT_TYPE,
-      documentId: receipt.id,
-      documentRef: receipt.number,
-      summary: {
-        payerName: receipt.payerName,
-        total: receipt.total.toDecimalString(),
-        receiptDate: receipt.receiptDate,
-        receiptNumber: receipt.number,
-      },
-    });
+    // must already exist). Every receipt a person can be handed carries one —
+    // this path AND `recordSubledgerFundedReceipt()` (wallet / credit-balance
+    // funded receipts), which used to be left without so a receipt could not be
+    // verified or tied to the school by its QR code. Only `reverseReceipt()`'s
+    // contra receipt (an accounting entry, never handed to anyone) has none.
+    // Receipts that predate this are covered by migration 0269 and, as a
+    // backstop, `ReceiptVerificationService.ensureToken()`.
+    await this.documentVerificationService.mint(em, receiptVerificationInput(receipt));
 
     for (let i = 0; i < input.splits.length; i++) {
       const split = input.splits[i];
@@ -751,6 +768,10 @@ export class ReceiptsService {
       },
       em,
     );
+
+    // Same as `captureReceipt()`: a wallet / credit-funded receipt gets its verification token too, so its printed copy carries a
+    // QR code that ties it to the school like any other receipt.
+    await this.documentVerificationService.mint(em, receiptVerificationInput(receipt));
 
     await this.splitRepository.create(
       {

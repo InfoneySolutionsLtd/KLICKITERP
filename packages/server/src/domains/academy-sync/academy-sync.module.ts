@@ -10,6 +10,7 @@ import { AcademyPublishController } from "./api/academy-publish.controller";
 import { AcademySyncController } from "./api/academy-sync.controller";
 import { AcademyLinkService } from "./application/academy-link.service";
 import { AcademyPaymentRequestService } from "./application/academy-payment-request.service";
+import { AcademyReceiptService } from "./application/academy-receipt.service";
 import { AcademyPublishService } from "./application/academy-publish.service";
 import { AcademySyncService } from "./application/academy-sync.service";
 import { AcadClassMapEntity } from "./domain/acad-class-map.entity";
@@ -24,6 +25,7 @@ import { AcadClassMapRepository } from "./infrastructure/acad-class-map.reposito
 import { AcadGuardianMapRepository } from "./infrastructure/acad-guardian-map.repository";
 import { AcadInboundLinkRepository } from "./infrastructure/acad-inbound-link.repository";
 import { AcadPaymentRequestRepository } from "./infrastructure/acad-payment-request.repository";
+import { AcademyReceiptRepository } from "./infrastructure/academy-receipt.repository";
 import { AcadStudentMapRepository } from "./infrastructure/acad-student-map.repository";
 import { AcadSyncRunRepository } from "./infrastructure/acad-sync-run.repository";
 import { AcadSyncStateRepository } from "./infrastructure/acad-sync-state.repository";
@@ -78,6 +80,8 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
     AcademyPublishService,
     AcadPaymentRequestRepository,
     AcademyPaymentRequestService,
+    AcademyReceiptRepository,
+    AcademyReceiptService,
   ],
   exports: [AcademySyncService, AcademyPublishService],
 })

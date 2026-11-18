@@ -519,6 +519,14 @@ describe("ReceiptsService", () => {
       expect(receipt.status).toBe("POSTED");
       expect(receipt.total.equals(Money.fromInt(5000))).toBe(true);
       expect(receipt.number).toBe("PAY-000001");
+      // A wallet-funded receipt carries a verification token too, so its printed copy has a QR code that ties it to the school.
+      expect(documentVerificationService.mint).toHaveBeenCalledTimes(1);
+      expect(documentVerificationService.mint).toHaveBeenCalledWith(EM, {
+        documentType: "PAYMENT_RECEIPT",
+        documentId: receipt.id,
+        documentRef: "PAY-000001",
+        summary: { payerName: "Jane Doe", total: receipt.total.toDecimalString(), receiptDate: "2026-08-05", receiptNumber: "PAY-000001" },
+      });
       // No second GL posting — the caller already posted the wallet's own journal.
       expect(postingService.post).not.toHaveBeenCalled();
 
@@ -799,6 +807,9 @@ describe("ReceiptsService", () => {
       // "4000 - 1000 already-decremented-in-place" style bug Part A's own sweepToInvoices() caught.
       expect(result.shortfall).toEqual([{ invoiceId: "invoice-2", remainingBalance: Money.fromInt(3000) }]);
       expect(result.receiptId).not.toBeNull();
+      // The credit-applied receipt carries a verification token too (QR code on its printed copy), like every other receipt.
+      expect(documentVerificationService.mint).toHaveBeenCalledTimes(1);
+      expect(documentVerificationService.mint).toHaveBeenCalledWith(EM, expect.objectContaining({ documentType: "PAYMENT_RECEIPT", documentId: result.receiptId }));
 
       // ONE real new P-10 GL journal — debit PREPAYMENT, credit AR_STUDENT, for the TOTAL applied.
       expect(postingService.post).toHaveBeenCalledTimes(1);

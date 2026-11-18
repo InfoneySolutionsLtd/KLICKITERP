@@ -39,6 +39,20 @@ function AcademyPublishCard({ status }: { status: AcademyPublishStatusDto }) {
           <AlertDescription>{t("privacy")}</AlertDescription>
         </Alert>
 
+        {status.receiptSetup && !status.receiptSetup.complete && status.receiptSetup.issues.length > 0 && (
+          <Alert variant={status.receiptSetup.canIssue ? undefined : "destructive"}>
+            <AlertDescription>
+              <span className="font-medium">{status.receiptSetup.canIssue ? t("receipts.incompleteTitle") : t("receipts.blockedTitle")}</span>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
+                {status.receiptSetup.issues.map((issue) => (
+                  <li key={issue}>{t(`receipts.issue.${issue}`)}</li>
+                ))}
+              </ul>
+              <span className="mt-1 block text-xs">{t("receipts.hint")}</span>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="flex items-start gap-2">
           <Checkbox
             id="academy-publish-enabled"
