@@ -1,5 +1,33 @@
 {
   "academySync": {
+    "link": {
+      "title": "Permettre au portail parents de joindre cet ERP",
+      "description": "Lorsqu'un parent appuie sur Payer dans le portail parents de Klickit Academy, l'Academy doit demander à cet ERP de lancer le paiement. Indiquez-lui l'adresse publique de cet ERP ; elle répond par un secret qui signe ses requêtes. Le secret est stocké chiffré et n'est jamais affiché.",
+      "badge": {
+        "notSetUp": "Non configuré",
+        "untested": "Non testé",
+        "passed": "Fonctionne",
+        "failed": "Test échoué"
+      },
+      "addressLabel": "Adresse publique de l'API de cet ERP",
+      "addressHint": "L'adresse par laquelle Internet atteint l'API de cet ERP, se terminant par /api/v1 — par exemple https://erp.votreecole.ac.ke/api/v1. Elle doit commencer par https://.",
+      "register": "Enregistrer l'adresse",
+      "registerAgain": "Enregistrer à nouveau",
+      "registering": "Enregistrement…",
+      "test": "Tester la connexion",
+      "testing": "Test en cours…",
+      "registeredAt": "Enregistrée",
+      "secretVersion": "Version du secret",
+      "lastCall": "Dernier appel de l'Academy",
+      "testPassed": "Test réussi le {when}.",
+      "testFailed": "Test échoué le {when}.",
+      "testFailedHint": "Vérifiez l'adresse, que cet ERP est joignable depuis Internet et que l'horloge du serveur est exacte. Enregistrer à nouveau crée un nouveau secret.",
+      "testPending": "Enregistrée. Lancez « Tester la connexion » pour vérifier que l'Academy peut joindre cet ERP.",
+      "rotateNote": "Enregistrer à nouveau remplace le secret immédiatement. L'ancien cesse de fonctionner aussitôt.",
+      "toast": {
+        "registered": "Adresse enregistrée auprès de l'Academy."
+      }
+    },
     "title": "Synchronisation des élèves depuis Klickit Academy",
     "description": "Importe dans l'ERP les élèves de cette école et leurs parents depuis Klickit Academy, pour que les factures et les paiements concernent les mêmes enfants.",
     "badge": {
