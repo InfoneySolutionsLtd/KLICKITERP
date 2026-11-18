@@ -22,6 +22,13 @@ export const AcademyPublishRejectionDtoSchema = z.object({
 });
 export type AcademyPublishRejectionDto = z.infer<typeof AcademyPublishRejectionDtoSchema>;
 
+export const AcademyReceiptSetupDtoSchema = z.object({
+    canIssue: z.boolean(),
+    complete: z.boolean(),
+    issues: z.array(z.literal("NO_LOGO\" | \"NO_LETTERHEAD\" | \"QR_ADDRESS_NOT_PUBLIC")),
+});
+export type AcademyReceiptSetupDto = z.infer<typeof AcademyReceiptSetupDtoSchema>;
+
 export const AcademyPublishStatusDtoSchema = z.object({
     connected: z.boolean(),
     enabled: z.boolean(),
@@ -32,5 +39,6 @@ export const AcademyPublishStatusDtoSchema = z.object({
     lastPublishOk: z.boolean().nullable(),
     lastPublishMessage: z.string().nullable(),
     recentRejections: z.array(AcademyPublishRejectionDtoSchema),
+    receiptSetup: AcademyReceiptSetupDtoSchema.nullable(),
 });
 export type AcademyPublishStatusDto = z.infer<typeof AcademyPublishStatusDtoSchema>;

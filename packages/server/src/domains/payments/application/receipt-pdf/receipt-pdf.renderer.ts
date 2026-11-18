@@ -229,6 +229,14 @@ export function buildReceiptDocDefinition(input: ReceiptPdfInput): TDocumentDefi
         stack: [
           { text: `Receipt ${receipt.number}`, bold: true, fontSize: 12, alignment: "right" },
           { text: formatReceiptDate(receipt.date), fontSize: 10, color: GRAY, alignment: "right" },
+          // The QR code ties the receipt to the school that issued it, so it sits in the header: on the FIRST page of every
+          // receipt, however long the account below it runs.
+          ...(verification
+            ? [
+                { qr: verification.url, fit: 62, alignment: "right", margin: [0, 6, 0, 0] } as Content,
+                { text: "Scan to verify", fontSize: 7, color: GRAY, alignment: "right", margin: [0, 1, 0, 0] } as Content,
+              ]
+            : []),
         ],
         width: "auto",
       },
@@ -289,19 +297,14 @@ export function buildReceiptDocDefinition(input: ReceiptPdfInput): TDocumentDefi
   body.push(...accountSection(receipt, input.generatedAt, input.timeZone));
 
   if (verification) {
+    // The QR code itself is in the header; this is how to use it (and the address, for anyone who cannot scan).
     body.push({
-      margin: [0, 26, 0, 0],
-      columns: [
-        { qr: verification.url, fit: 70, width: 70 },
-        {
-          stack: [
-            { text: "Verify this receipt", bold: true, fontSize: 9 },
-            { text: "Scan the code, or open the address below, to check that this receipt is genuine.", fontSize: 8, color: GRAY, margin: [0, 2, 0, 2] },
-            { text: verification.url, fontSize: 8, color: GRAY },
-            { text: `Reference ${verification.reference}`, fontSize: 8, color: GRAY, margin: [0, 2, 0, 0] },
-          ],
-          margin: [8, 4, 0, 0],
-        },
+      margin: [0, 22, 0, 0],
+      stack: [
+        { text: "Verify this receipt", bold: true, fontSize: 9 },
+        { text: "Scan the code at the top of this receipt, or open the address below, to check that it is genuine.", fontSize: 8, color: GRAY, margin: [0, 2, 0, 2] },
+        { text: verification.url, fontSize: 8, color: GRAY },
+        { text: `Reference ${verification.reference}`, fontSize: 8, color: GRAY, margin: [0, 2, 0, 0] },
       ],
     });
   }

@@ -15260,6 +15260,14 @@ export interface components {
             reason: string;
             at?: string | null;
         };
+        AcademyReceiptSetupDto: {
+            /** @description Receipts can be issued as PDFs: the school has set up at least a logo or letterhead text, so every receipt names its school */
+            canIssue: boolean;
+            /** @description Everything is in place: logo, letterhead text and a public address for the QR code */
+            complete: boolean;
+            /** @description What is still to set up: the logo and letterhead text (Branding -> Documents), a public WEB_APP_URL for the QR code */
+            issues: ("NO_LOGO" | "NO_LETTERHEAD" | "QR_ADDRESS_NOT_PUBLIC")[];
+        };
         AcademyPublishStatusDto: {
             /** @description Whether this ERP is connected to its Academy school */
             connected: boolean;
@@ -15275,6 +15283,8 @@ export interface components {
             lastPublishOk?: boolean | null;
             lastPublishMessage?: string | null;
             recentRejections: components["schemas"]["AcademyPublishRejectionDto"][];
+            /** @description Whether this school's receipts carry its logo, letterhead and a QR code; null when it could not be checked */
+            receiptSetup?: components["schemas"]["AcademyReceiptSetupDto"] | null;
         };
         SetAcademyPublishDto: {
             /** @description Whether invoices are published to the Academy parent portal */

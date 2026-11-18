@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
-import { AcademyReceiptService } from "../application/academy-receipt.service";
+import { AcademyReceiptService, webOriginOf } from "../application/academy-receipt.service";
 
 /**
  * A receipt is only ever found THROUGH its learner: the Academy names a learner it has verified is the signed-in parent's own
@@ -11,6 +11,7 @@ const OTHER = "ac-learner-2";
 
 interface Options {
   linked?: string[];
+  registeredBaseUrl?: string | null;
   /** learner -> receipt ids that really belong to them */
   owns?: Record<string, string[]>;
 }
@@ -27,6 +28,7 @@ function harness(opts: Options = {}) {
   };
   const repository = {
     isLinked: jest.fn(async (id: string) => linked.has(id)),
+    registeredBaseUrl: jest.fn(async () => (opts.registeredBaseUrl === undefined ? "https://erp.school.example/api/v1" : opts.registeredBaseUrl)),
     findForStudent: jest.fn(async (id: string) => heads[id] ?? []),
     belongsTo: jest.fn(async (learner: string, receipt: string) => (owns[learner] ?? []).includes(receipt)),
     findSplits: jest.fn(async (ids: string[]) =>
@@ -43,7 +45,10 @@ function harness(opts: Options = {}) {
       ].filter((a) => ids.includes(a.receiptId)),
     ),
   };
-  const receiptPdf = { render: jest.fn(async (id: string) => ({ filename: `receipt-${id}.pdf`, buffer: Buffer.from("%PDF-1.7 fake") })) };
+  const receiptPdf = {
+    render: jest.fn(async (id: string) => ({ filename: `receipt-${id}.pdf`, buffer: Buffer.from("%PDF-1.7 fake") })),
+    readiness: jest.fn(async () => ({ canIssue: true, complete: true, issues: [] })),
+  };
   const service = new AcademyReceiptService(repository as any, receiptPdf as any);
   return { service, repository, receiptPdf };
 }
@@ -106,7 +111,7 @@ describe("AcademyReceiptService.pdf — a receipt is only printed for its own le
     const h = harness();
     const result = await h.service.pdf(LEARNER, "r-1");
     expect(result.buffer.subarray(0, 5).toString()).toBe("%PDF-");
-    expect(h.receiptPdf.render).toHaveBeenCalledWith("r-1");
+    expect(h.receiptPdf.render).toHaveBeenCalledWith("r-1", { fallbackWebUrl: "https://erp.school.example" });
   });
 
   it("another learner's receipt id, asked for under THIS learner, is a not-found and is never rendered", async () => {
@@ -129,5 +134,36 @@ describe("AcademyReceiptService.pdf — a receipt is only printed for its own le
     const h = harness({ owns: {} });
     await expect(h.service.pdf("ac-unlinked", "r-1")).rejects.toBeInstanceOf(NotFoundException);
     expect(h.receiptPdf.render).not.toHaveBeenCalled();
+  });
+});
+
+describe("the QR address fallback", () => {
+  it.each([
+    ["https://erp.school.example/api/v1", "https://erp.school.example"],
+    ["https://erp.school.example:8443/api/v1/", "https://erp.school.example:8443"],
+    ["http://10.0.0.5:3000/api/v1", "http://10.0.0.5:3000"],
+    ["not a url", null],
+    ["", null],
+    [null, null],
+  ])("%s -> %s", (registered, expected) => {
+    expect(webOriginOf(registered as string | null)).toBe(expected);
+  });
+
+  it("the PDF is made with the ERP's registered public origin as the fallback for the QR code", async () => {
+    const h = harness({ registeredBaseUrl: "https://erp.klickiteducation.com/api/v1" });
+    await h.service.pdf(LEARNER, "r-1");
+    expect(h.receiptPdf.render).toHaveBeenCalledWith("r-1", { fallbackWebUrl: "https://erp.klickiteducation.com" });
+  });
+
+  it("with no registered address there is no fallback (and the PDF is still made)", async () => {
+    const h = harness({ registeredBaseUrl: null });
+    await h.service.pdf(LEARNER, "r-1");
+    expect(h.receiptPdf.render).toHaveBeenCalledWith("r-1", { fallbackWebUrl: null });
+  });
+
+  it("readiness is asked with the same fallback", async () => {
+    const h = harness();
+    expect(await h.service.readiness()).toEqual({ canIssue: true, complete: true, issues: [] });
+    expect(h.receiptPdf.readiness).toHaveBeenCalledWith({ fallbackWebUrl: "https://erp.school.example" });
   });
 });

@@ -2,16 +2,52 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { ThemesService } from "../../../../platform/branding";
-import { DocumentVerificationService } from "../../../../platform/document-verification";
 import { FilesService } from "../../../../platform/files";
 import { AppConfigService } from "../../../../shared/config/app-config.service";
 import { NotFoundException } from "../../../../shared/exceptions/not-found.exception";
-import { PAYMENT_RECEIPT_DOCUMENT_TYPE } from "../receipts.service";
+import { ReceiptVerificationService } from "../receipt-verification.service";
+import { ReceiptBrandingMissingException } from "./receipt-branding-missing.exception";
 import { describeReceiptAllocation, describeReceiptMethod } from "./receipt-labels";
 import { renderReceiptPdf, type ReceiptPdfAccount, type ReceiptPdfBranding, type ReceiptPdfData, type ReceiptPdfVerification } from "./receipt-pdf.renderer";
 
 /** The most invoices listed on one receipt; any further open invoices are still counted in the total balance. */
 export const MAX_INVOICES_ON_RECEIPT = 25;
+
+const LOCAL_ADDRESS = /^(?:https?:\/\/)?(?:localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)(?::\d+)?(?:[/?#]|$)/i;
+
+/** Is this an address a parent's phone could actually open? (Unset, or the localhost development default, is not.) */
+export function isPublicWebUrl(url: string | null | undefined): boolean {
+  const trimmed = url?.trim();
+  return Boolean(trimmed) && !LOCAL_ADDRESS.test(trimmed as string);
+}
+
+/**
+ * The address a receipt's QR code points at (`<address>/verify/<token>`). The configured `WEB_APP_URL` when it is a real public
+ * address; otherwise, when the ERP knows its own public address from registering with the Academy (the web app and the API
+ * share an origin in the standard deployment), that — so a school that has not set `WEB_APP_URL` still prints a QR code a parent
+ * can open, rather than one pointing at localhost; otherwise the configured value, as the best that can be done.
+ */
+export function chooseVerificationBase(configured: string, fallback: string | null | undefined): { base: string; source: "configured" | "registered_address" | "not_public" } {
+  if (isPublicWebUrl(configured)) return { base: configured.replace(/\/+$/, ""), source: "configured" };
+  if (isPublicWebUrl(fallback)) return { base: (fallback as string).replace(/\/+$/, ""), source: "registered_address" };
+  return { base: configured.replace(/\/+$/, ""), source: "not_public" };
+}
+
+/** What the school still has to set up for its receipts to be fully branded and verifiable. */
+export type ReceiptSetupIssue = "NO_LOGO" | "NO_LETTERHEAD" | "QR_ADDRESS_NOT_PUBLIC";
+
+export interface ReceiptSetupReadiness {
+  /** Receipts can be issued: the school has at least a logo or letterhead text, so every receipt names its school. */
+  canIssue: boolean;
+  /** Nothing left to set up: logo, letterhead text and a public QR address are all in place. */
+  complete: boolean;
+  issues: ReceiptSetupIssue[];
+}
+
+export interface RenderReceiptOptions {
+  /** A public web address to use for the QR code when `WEB_APP_URL` is not one (see `chooseVerificationBase`). */
+  fallbackWebUrl?: string | null;
+}
 
 interface ReceiptRow {
   id: string;
@@ -36,8 +72,13 @@ function clean(text: string | null | undefined): string | null {
 
 /**
  * Prints a payment receipt as a PDF: the school's letterhead (the Branding page's logo and header/footer text), the receipt
- * as the books hold it, and the QR code of its public verification address (the token every captured receipt already has —
- * this service only READS it; it never mints one and never writes anything).
+ * as the books hold it, and the QR code of its public verification address.
+ *
+ * EVERY receipt carries the school's identity and a QR code, so any receipt can be tied back to the school that issued it:
+ *  - the QR code is always printed: a receipt without a verification token gets one first (`ReceiptVerificationService`);
+ *  - a receipt is never issued ANONYMOUSLY: if the school has set up neither a logo nor letterhead text, it is refused with
+ *    `ReceiptBrandingMissingException` (the parent is told the school has not finished setting up receipts) rather than printed
+ *    with nothing to say whose it is. A logo that cannot be read, while letterhead text exists, still prints (logged).
  *
  * It shows the learner's CURRENT total balance across all their open invoices, and each invoice with its amount, paid and
  * balance and its fee categories (see `loadAccount`). It does NOT print the receipt's own `balance_after`: that is a running-ledger
@@ -47,8 +88,8 @@ function clean(text: string | null | undefined): string | null {
  * A reversal's contra-receipt is not a document anyone is meant to be handed, so it is a not-found here, exactly as if it did
  * not exist; the ORIGINAL receipt that was reversed prints with a clear "REVERSED" mark.
  *
- * Branding is presentation: a missing logo, an unreadable image or a storage hiccup drops that one element (logged) and the
- * receipt still prints. The QR code is omitted, not faked, for a receipt that predates verification tokens.
+ * Beyond that, branding is presentation: a missing footer, an unreadable image or a storage hiccup drops that one element
+ * (logged) and the receipt still prints.
  */
 @Injectable()
 export class ReceiptPdfService {
@@ -58,11 +99,21 @@ export class ReceiptPdfService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly themesService: ThemesService,
     private readonly filesService: FilesService,
-    private readonly documentVerification: DocumentVerificationService,
+    private readonly receiptVerification: ReceiptVerificationService,
     private readonly config: AppConfigService,
   ) {}
 
-  async render(receiptId: string): Promise<{ filename: string; buffer: Buffer }> {
+  /** What the school still has to set up for its receipts (logo, letterhead text, a public QR address). Read-only. */
+  async readiness(options: RenderReceiptOptions = {}): Promise<ReceiptSetupReadiness> {
+    const branding = await this.loadBranding();
+    const issues: ReceiptSetupIssue[] = [];
+    if (!branding.logo) issues.push("NO_LOGO");
+    if (!branding.headerText) issues.push("NO_LETTERHEAD");
+    if (chooseVerificationBase(this.config.webAppUrl, options.fallbackWebUrl).source === "not_public") issues.push("QR_ADDRESS_NOT_PUBLIC");
+    return { canIssue: Boolean(branding.logo || branding.headerText), complete: issues.length === 0, issues };
+  }
+
+  async render(receiptId: string, options: RenderReceiptOptions = {}): Promise<{ filename: string; buffer: Buffer }> {
     const rows: ReceiptRow[] = await this.dataSource.query(
       `
       SELECT r.id, r.student_id, r.number, to_char(r.receipt_date, 'YYYY-MM-DD') AS date, r.total::text AS total, r.status, r.payer_name,
@@ -96,8 +147,14 @@ export class ReceiptPdfService {
       ) as Promise<Array<{ amount: string; to_prepayment: boolean; invoice_number: string | null }>>,
       this.loadAccount(row.student_id, row.id),
       this.loadBranding(),
-      this.loadVerification(row.id, row.number),
+      this.loadVerification(row.id, row.number, options.fallbackWebUrl),
     ]);
+
+    // Never issued anonymously: something on the receipt must say whose it is.
+    if (!branding.logo && !branding.headerText) {
+      this.logger.error(`Receipt ${row.number} was not issued as a PDF: the school has no logo and no letterhead text set up (Branding -> Documents).`);
+      throw new ReceiptBrandingMissingException();
+    }
 
     const receipt: ReceiptPdfData = {
       number: row.number,
@@ -212,16 +269,17 @@ export class ReceiptPdfService {
     return { logo, headerText: clean(documentConfig.headerText), footerText: clean(documentConfig.footerText) };
   }
 
-  /** The receipt's existing verification address, or null (no QR printed) when it has none. */
-  private async loadVerification(receiptId: string, number: string): Promise<ReceiptPdfVerification | null> {
-    try {
-      const found = await this.documentVerification.findByDocument(PAYMENT_RECEIPT_DOCUMENT_TYPE, receiptId);
-      if (!found) return null;
-      const base = this.config.webAppUrl.replace(/\/+$/, "");
-      return { url: `${base}/verify/${found.token}`, reference: number };
-    } catch (error) {
-      this.logger.warn(`Could not look up the verification token for receipt ${number} - printing without a QR code: ${(error as Error).message}`);
-      return null;
+  /**
+   * The receipt's verification address for its QR code. The receipt's token is minted first if it somehow has none, so this
+   * ALWAYS yields an address; if that cannot be done the request fails (and the parent is told to try again) rather than
+   * handing out a receipt that cannot be verified.
+   */
+  private async loadVerification(receiptId: string, number: string, fallbackWebUrl: string | null | undefined): Promise<ReceiptPdfVerification> {
+    const { token } = await this.receiptVerification.ensureToken(receiptId);
+    const { base, source } = chooseVerificationBase(this.config.webAppUrl, fallbackWebUrl);
+    if (source === "not_public") {
+      this.logger.warn(`The QR code on receipt ${number} points at "${base}", which a parent cannot open. Set WEB_APP_URL to the school's public address.`);
     }
+    return { url: `${base}/verify/${token}`, reference: number };
   }
 }

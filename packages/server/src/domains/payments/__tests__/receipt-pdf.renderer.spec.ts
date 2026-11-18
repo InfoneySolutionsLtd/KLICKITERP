@@ -147,6 +147,22 @@ describe("verification and branding degrade gracefully", () => {
     expect(body).toContain("Verify this receipt");
   });
 
+  it("puts the QR code in the HEADER, so it is on the first page of every receipt however long the account below it runs", () => {
+    const content = buildReceiptDocDefinition(input()).content as unknown[];
+    expect(JSON.stringify(content[0])).toContain('"qr":"https://erp.school.example/verify/abc123"');
+    expect(JSON.stringify(content[0])).toContain("Scan to verify");
+    // exactly one QR code in the whole document, and none after the header
+    expect(JSON.stringify(content.slice(1))).not.toContain('"qr"');
+    expect((JSON.stringify(content).match(/"qr"/g) ?? []).length).toBe(1);
+  });
+
+  it("still explains how to verify, with the address and the reference, at the end", () => {
+    const text = printed();
+    expect(text).toContain("Scan the code at the top of this receipt");
+    expect(text).toContain("https://erp.school.example/verify/abc123");
+    expect(text).toContain("Reference RCP-000042");
+  });
+
   it("omits the QR code (rather than faking one) for a receipt with no token", () => {
     const body = JSON.stringify(buildReceiptDocDefinition(input({ verification: null })).content);
     expect(body).not.toContain('"qr"');

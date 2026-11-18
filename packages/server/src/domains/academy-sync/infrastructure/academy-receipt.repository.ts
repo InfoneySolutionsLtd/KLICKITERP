@@ -41,6 +41,14 @@ export const MAX_RECEIPTS_PER_ANSWER = 100;
 export class AcademyReceiptRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
+  /** The address this ERP registered with the Academy (its public API address), or null when it has not registered. */
+  async registeredBaseUrl(): Promise<string | null> {
+    const rows: Array<{ registered_base_url: string }> = await this.dataSource.query(
+      `SELECT registered_base_url FROM app.acad_inbound_link ORDER BY created_at DESC LIMIT 1`,
+    );
+    return rows[0]?.registered_base_url ?? null;
+  }
+
   /** Is this Academy student one the ERP has linked (and not removed in the Academy)? */
   async isLinked(academyStudentId: string): Promise<boolean> {
     const rows: Array<{ ok: boolean }> = await this.dataSource.query(

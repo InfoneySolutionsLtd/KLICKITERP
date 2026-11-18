@@ -1,9 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
-import { describeReceiptAllocation, describeReceiptMethod, ReceiptPdfService } from "../../payments";
+import { describeReceiptAllocation, describeReceiptMethod, ReceiptPdfService, type ReceiptSetupReadiness } from "../../payments";
 import { AcademyReceiptRepository, MAX_RECEIPTS_PER_ANSWER } from "../infrastructure/academy-receipt.repository";
 
 export const DEFAULT_RECEIPTS_PER_ANSWER = 50;
+
+/**
+ * The public web origin to use for a receipt's QR code when `WEB_APP_URL` is not a real address: the origin of the address this
+ * ERP registered with the Academy (`https://erp.school.example/api/v1` -> `https://erp.school.example`). The web app and the API
+ * share an origin in the standard deployment. Null when it has not registered or the address is unusable.
+ */
+export function webOriginOf(registeredBaseUrl: string | null): string | null {
+  if (!registeredBaseUrl) return null;
+  try {
+    return new URL(registeredBaseUrl).origin;
+  } catch {
+    return null;
+  }
+}
 
 /** One receipt as the parent portal shows it. No cashier, no phone number, no internal ids beyond the receipt's own. */
 export interface AcademyReceiptView {
@@ -71,6 +85,11 @@ export class AcademyReceiptService {
     if (!(await this.repository.belongsTo(academyStudentId, receiptId))) {
       throw new NotFoundException("PayReceipt", receiptId);
     }
-    return this.receiptPdf.render(receiptId);
+    return this.receiptPdf.render(receiptId, { fallbackWebUrl: webOriginOf(await this.repository.registeredBaseUrl()) });
+  }
+
+  /** What the school still has to set up for its receipts: logo, letterhead text, a public QR address. */
+  async readiness(): Promise<ReceiptSetupReadiness> {
+    return this.receiptPdf.readiness({ fallbackWebUrl: webOriginOf(await this.repository.registeredBaseUrl()) });
   }
 }

@@ -50,6 +50,7 @@ import { BulkAllocationService } from "./application/bulk-allocation.service";
 import { MpesaLogOnlyAdapter } from "./infrastructure/adapters/mpesa-log-only.adapter";
 import { MpesaAdapterResolverService } from "./infrastructure/mpesa-adapter-resolver.service";
 import { ReceiptPdfService } from "./application/receipt-pdf/receipt-pdf.service";
+import { ReceiptVerificationService } from "./application/receipt-verification.service";
 import { CashierSessionsController } from "./api/cashier-sessions.controller";
 import { ReceiptsController } from "./api/receipts.controller";
 import { MpesaController } from "./api/mpesa.controller";
@@ -142,6 +143,7 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     MpesaLogOnlyAdapter,
     MpesaAdapterResolverService,
     ReceiptPdfService,
+    ReceiptVerificationService,
   ],
   exports: [
     PayCashierSessionRepository,
