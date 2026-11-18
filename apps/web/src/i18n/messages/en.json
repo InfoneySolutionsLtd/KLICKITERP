@@ -1,5 +1,33 @@
 {
   "academySync": {
+    "link": {
+      "title": "Let the parent portal reach this ERP",
+      "description": "When a parent taps Pay in the Klickit Academy parent portal, the Academy has to ask this ERP to start the payment. Tell it this ERP's public address; it answers with a secret that signs its requests. The secret is stored encrypted and is never shown.",
+      "badge": {
+        "notSetUp": "Not set up",
+        "untested": "Not tested",
+        "passed": "Working",
+        "failed": "Test failed"
+      },
+      "addressLabel": "This ERP's public API address",
+      "addressHint": "The address the internet uses to reach this ERP's API, ending in /api/v1 — for example https://erp.yourschool.ac.ke/api/v1. It must start with https://.",
+      "register": "Register address",
+      "registerAgain": "Register again",
+      "registering": "Registering…",
+      "test": "Test connection",
+      "testing": "Testing…",
+      "registeredAt": "Registered",
+      "secretVersion": "Secret version",
+      "lastCall": "Last call from the Academy",
+      "testPassed": "Test passed on {when}.",
+      "testFailed": "Test failed on {when}.",
+      "testFailedHint": "Check the address, that this ERP is reachable from the internet, and that the server clock is correct. Registering again creates a new secret.",
+      "testPending": "Registered. Run “Test connection” to check that the Academy can reach this ERP.",
+      "rotateNote": "Registering again replaces the secret straight away. The old one stops working at once.",
+      "toast": {
+        "registered": "Address registered with the Academy."
+      }
+    },
     "title": "Student sync from Klickit Academy",
     "description": "Brings this school's students and their parents from Klickit Academy into the ERP, so invoices and payments use the same children.",
     "badge": {

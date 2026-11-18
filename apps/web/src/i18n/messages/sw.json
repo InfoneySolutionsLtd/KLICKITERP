@@ -1,5 +1,33 @@
 {
   "academySync": {
+    "link": {
+      "title": "Ruhusu lango la wazazi kufikia ERP hii",
+      "description": "Mzazi anapobofya Lipa kwenye lango la wazazi la Klickit Academy, Academy inapaswa kuiomba ERP hii ianzishe malipo. Iambie anwani ya umma ya ERP hii; inajibu kwa siri inayotia saini maombi yake. Siri huhifadhiwa ikiwa imesimbwa na haionyeshwi kamwe.",
+      "badge": {
+        "notSetUp": "Haijawekwa",
+        "untested": "Haijajaribiwa",
+        "passed": "Inafanya kazi",
+        "failed": "Jaribio limeshindwa"
+      },
+      "addressLabel": "Anwani ya umma ya API ya ERP hii",
+      "addressHint": "Anwani ambayo mtandao hutumia kufikia API ya ERP hii, inayoishia na /api/v1 — kwa mfano https://erp.shuleyako.ac.ke/api/v1. Lazima ianze na https://.",
+      "register": "Sajili anwani",
+      "registerAgain": "Sajili tena",
+      "registering": "Inasajili…",
+      "test": "Jaribu muunganisho",
+      "testing": "Inajaribu…",
+      "registeredAt": "Imesajiliwa",
+      "secretVersion": "Toleo la siri",
+      "lastCall": "Simu ya mwisho kutoka Academy",
+      "testPassed": "Jaribio limefaulu tarehe {when}.",
+      "testFailed": "Jaribio limeshindwa tarehe {when}.",
+      "testFailedHint": "Angalia anwani, kwamba ERP hii inafikika kutoka mtandaoni, na kwamba saa ya seva ni sahihi. Kusajili tena huunda siri mpya.",
+      "testPending": "Imesajiliwa. Endesha “Jaribu muunganisho” kuangalia kwamba Academy inaweza kufikia ERP hii.",
+      "rotateNote": "Kusajili tena hubadilisha siri mara moja. Ya zamani huacha kufanya kazi papo hapo.",
+      "toast": {
+        "registered": "Anwani imesajiliwa kwa Academy."
+      }
+    },
     "title": "Ulandanishaji wa wanafunzi kutoka Klickit Academy",
     "description": "Huleta wanafunzi wa shule hii na wazazi wao kutoka Klickit Academy hadi kwenye ERP, ili ankara na malipo yatumie watoto wale wale.",
     "badge": {

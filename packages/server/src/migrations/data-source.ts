@@ -179,6 +179,7 @@ import { AcadStudentMapEntity } from "../domains/academy-sync/domain/acad-studen
 import { AcadGuardianMapEntity } from "../domains/academy-sync/domain/acad-guardian-map.entity";
 import { AcadClassMapEntity } from "../domains/academy-sync/domain/acad-class-map.entity";
 import { AcadSyncRunEntity } from "../domains/academy-sync/domain/acad-sync-run.entity";
+import { AcadInboundLinkEntity } from "../domains/academy-sync/domain/acad-inbound-link.entity";
 
 // `dotenv`'s default `config()` resolves `.env` relative to `process.cwd()`, which is
 // `packages/server` (not the repo root where `.env`/`.env.example` actually live) whenever this
@@ -402,6 +403,7 @@ export const AppDataSource = new DataSource({
     AcadGuardianMapEntity,
     AcadClassMapEntity,
     AcadSyncRunEntity,
+    AcadInboundLinkEntity,
     // NOTE: the 5 Module-18 materialized-view "entities"
     // (domains/reporting/domain/mv-*.view-entity.ts) are deliberately NOT
     // listed here. They are plain DTO classes, not TypeORM @Entity/@ViewEntity

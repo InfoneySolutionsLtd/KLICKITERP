@@ -9809,6 +9809,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy-sync/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Is this ERP registered with the Academy, and did the last connection test pass? */
+        get: operations["AcademyLinkController_status"];
+        /** Tell the Academy this ERP's public API address. Registering again replaces (rotates) the shared secret. */
+        put: operations["AcademyLinkController_register"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy-sync/link/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask the Academy to call this ERP's signed ping and report whether it got through */
+        post: operations["AcademyLinkController_test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy/inbound/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy -> ERP: signed reachability check */
+        get: operations["AcademyInboundController_ping"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -15074,6 +15126,30 @@ export interface components {
         };
         SetAcademyAutoSyncDto: {
             autoSyncEnabled: boolean;
+        };
+        AcademyLinkStatusDto: {
+            /** @description Whether this ERP has completed Academy onboarding (school code + OTP) */
+            connected: boolean;
+            /** @description Whether this ERP has told the Academy where to call it */
+            registered: boolean;
+            registeredBaseUrl?: string | null;
+            registeredAt?: string | null;
+            /** @description Bumps each time the address is registered again (the secret is replaced) */
+            secretVersion?: number | null;
+            lastVerifiedAt?: string | null;
+            lastVerifyOk?: boolean | null;
+            lastVerifyMessage?: string | null;
+            /** @description The last time a correctly signed call from the Academy arrived */
+            lastInboundAt?: string | null;
+            /** @description A starting point for the address field; the admin confirms it */
+            suggestedBaseUrl: string;
+        };
+        RegisterAcademyLinkDto: {
+            /**
+             * @description The public address of this ERP's API, as the internet sees it — e.g. https://erp.yourschool.ac.ke/api/v1. The Academy calls <this>/academy/inbound/...
+             * @example https://erp.yourschool.ac.ke/api/v1
+             */
+            erpBaseUrl: string;
         };
     };
     responses: never;
@@ -30903,6 +30979,87 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AcademySyncStatusDto"];
                 };
+            };
+        };
+    };
+    AcademyLinkController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyLinkStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyLinkController_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterAcademyLinkDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyLinkStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyLinkController_test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyLinkStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyInboundController_ping: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
