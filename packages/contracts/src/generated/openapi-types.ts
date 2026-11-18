@@ -9896,6 +9896,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy/inbound/payment-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Academy -> ERP: send the parent an M-Pesa prompt to pay a learner's fees. Idempotent on `requestId`; a request that cannot go ahead (nothing owing, too much, M-Pesa not set up...) is answered with status FAILED and a parent-safe message, and nothing is sent. */
+        post: operations["AcademyInboundController_createPaymentRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy/inbound/payment-requests/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy -> ERP: how is this payment going? (PENDING | PAID with the receipt number | FAILED | TIMED_OUT) */
+        get: operations["AcademyInboundController_getPaymentRequest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -15211,6 +15245,40 @@ export interface components {
         SetAcademyPublishDto: {
             /** @description Whether invoices are published to the Academy parent portal */
             enabled: boolean;
+        };
+        CreateAcademyPaymentRequestDto: {
+            /**
+             * Format: uuid
+             * @description The Academy's own id for this request. Sending the same id again never sends a second M-Pesa prompt.
+             */
+            requestId: string;
+            /** @description The Academy's id of the learner being paid for (the one the ERP linked during student sync) */
+            academyStudentId: string;
+            /** @description Whole shillings, as a decimal string (e.g. "2500" or "2500.00") */
+            amount: string;
+            /** @description The parent's M-Pesa number, any common Kenyan format (0712345678, +254712345678, ...) */
+            phone: string;
+            /** @description ERP invoice ids (as published to the portal) to pay toward. Omitted: the learner's open invoices, oldest first. */
+            invoiceIds?: string[];
+        };
+        AcademyPaymentRequestViewDto: {
+            /** Format: uuid */
+            requestId: string;
+            /**
+             * @description How the payment is going, read from the school's books every time
+             * @enum {string}
+             */
+            status: "PENDING" | "PAID" | "FAILED" | "TIMED_OUT";
+            /** @description Decimal string, 4 places */
+            amount: string;
+            /** @enum {string} */
+            currency: "KES";
+            /** @description The ERP receipt number, once the payment is received */
+            receiptNumber?: string | null;
+            /** @description Short machine code for a refusal or failure */
+            code?: string | null;
+            /** @description Plain wording that is safe to show a parent */
+            message?: string | null;
         };
     };
     responses: never;
@@ -31182,6 +31250,56 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AcademyInboundController_createPaymentRequest: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAcademyPaymentRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyPaymentRequestViewDto"];
+                };
+            };
+        };
+    };
+    AcademyInboundController_getPaymentRequest: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyPaymentRequestViewDto"];
+                };
             };
         };
     };

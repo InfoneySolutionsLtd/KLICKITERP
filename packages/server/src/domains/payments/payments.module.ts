@@ -150,6 +150,9 @@ import { BulkAllocationController } from "./api/bulk-allocation.controller";
     AllocationService,
     ReceiptsService,
     MpesaService,
+    // Exported so the Academy payment-request entry point can refuse to promise a prompt when only the log-only fallback is
+    // configured (`resolve()` returns `MpesaLogOnlyAdapter` then) — read-only use, it never sends through it directly.
+    MpesaAdapterResolverService,
     SuspenseService,
     ChequesService,
     BulkAllocationService,
