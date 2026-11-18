@@ -23,6 +23,19 @@ export class AcadInboundLinkRepository {
   }
 
   /**
+   * Stores the outcome of a connection test. A targeted UPDATE of just those columns: `save()` would also write back the
+   * (by then stale) `last_inbound_at` it loaded before the test — and the test itself makes the Academy call us, which
+   * updates that column in between.
+   */
+  async recordVerification(ok: boolean, message: string, at: Date, actorId: string | null): Promise<void> {
+    await this.repo
+      .createQueryBuilder()
+      .update()
+      .set({ lastVerifiedAt: at, lastVerifyOk: ok, lastVerifyMessage: message, updatedBy: actorId })
+      .execute();
+  }
+
+  /**
    * Records that a correctly signed call arrived. A plain UPDATE (not read-modify-save) so concurrent inbound calls
    * never fight over the row's optimistic-lock version.
    */

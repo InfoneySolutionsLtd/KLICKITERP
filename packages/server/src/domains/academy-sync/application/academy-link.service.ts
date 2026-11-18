@@ -145,11 +145,8 @@ export class AcademyLinkService {
       message = error instanceof Error ? error.message : "The Academy could not be asked to test the connection.";
     }
 
-    link.lastVerifiedAt = new Date();
-    link.lastVerifyOk = ok;
-    link.lastVerifyMessage = message.slice(0, MAX_MESSAGE_LENGTH);
-    link.updatedBy = actorId;
-    return this.toStatus(true, await this.repository.save(link));
+    await this.repository.recordVerification(ok, message.slice(0, MAX_MESSAGE_LENGTH), new Date(), actorId);
+    return this.toStatus(true, await this.repository.findCurrent());
   }
 
   private async requireConnection(): Promise<AcademyConnection> {

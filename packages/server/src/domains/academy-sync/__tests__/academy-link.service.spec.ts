@@ -23,6 +23,9 @@ function makeHarness(over: { connected?: boolean; nodeEnv?: string; existing?: a
     findCurrent: jest.fn(async () => stored),
     create: jest.fn(async (data: any) => (stored = { id: "link-1", ...data })),
     save: jest.fn(async (row: any) => (stored = row)),
+    recordVerification: jest.fn(async (ok: boolean, message: string, at: Date, actorId: string | null) => {
+      stored = { ...stored, lastVerifiedAt: at, lastVerifyOk: ok, lastVerifyMessage: message, updatedBy: actorId };
+    }),
   };
   const academyLink = { getConnection: jest.fn(async () => (over.connected === false ? null : { apiKey: "kfe_secret_key", academySchoolId: "s1", academySchoolCode: "S" })) };
   const config = { appEncryptionKeyBase64: KEY, nodeEnv: over.nodeEnv ?? "development", webAppUrl: "https://erp.school.example" };
@@ -144,6 +147,13 @@ describe("AcademyLinkService.testConnection", () => {
     expect(h.http.post).toHaveBeenCalledWith("kfe_secret_key", "/erp/link/verify", {});
     expect(status).toMatchObject({ lastVerifyOk: true, lastVerifyMessage: "The Academy reached this ERP." });
     expect(status.lastVerifiedAt).toBeInstanceOf(Date);
+  });
+
+  it("stores only the test outcome — it must not write back a stale last_inbound_at (the test itself makes the Academy call us)", async () => {
+    const h = makeHarness({ existing: existing(), postReply: { ok: true } });
+    await h.service.testConnection("admin");
+    expect(h.repository.recordVerification).toHaveBeenCalledWith(true, expect.any(String), expect.any(Date), "admin");
+    expect(h.repository.save).not.toHaveBeenCalled();
   });
 
   it("records a failure with the Academy's reason", async () => {
