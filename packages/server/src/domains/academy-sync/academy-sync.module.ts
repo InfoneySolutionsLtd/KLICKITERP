@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { SettingsModule } from "../../platform/settings";
+import { PaymentsModule } from "../payments";
 import { StudentsModule } from "../students";
 import { AcademyInboundController } from "./api/academy-inbound.controller";
 import { AcademyInboundGuard } from "./api/academy-inbound.guard";
@@ -7,18 +9,21 @@ import { AcademyLinkController } from "./api/academy-link.controller";
 import { AcademyPublishController } from "./api/academy-publish.controller";
 import { AcademySyncController } from "./api/academy-sync.controller";
 import { AcademyLinkService } from "./application/academy-link.service";
+import { AcademyPaymentRequestService } from "./application/academy-payment-request.service";
 import { AcademyPublishService } from "./application/academy-publish.service";
 import { AcademySyncService } from "./application/academy-sync.service";
 import { AcadClassMapEntity } from "./domain/acad-class-map.entity";
 import { AcadGuardianMapEntity } from "./domain/acad-guardian-map.entity";
 import { AcadInboundLinkEntity } from "./domain/acad-inbound-link.entity";
 import { AcadInvoicePublicationEntity } from "./domain/acad-invoice-publication.entity";
+import { AcadPaymentRequestEntity } from "./domain/acad-payment-request.entity";
 import { AcadStudentMapEntity } from "./domain/acad-student-map.entity";
 import { AcadSyncRunEntity } from "./domain/acad-sync-run.entity";
 import { AcadSyncStateEntity } from "./domain/acad-sync-state.entity";
 import { AcadClassMapRepository } from "./infrastructure/acad-class-map.repository";
 import { AcadGuardianMapRepository } from "./infrastructure/acad-guardian-map.repository";
 import { AcadInboundLinkRepository } from "./infrastructure/acad-inbound-link.repository";
+import { AcadPaymentRequestRepository } from "./infrastructure/acad-payment-request.repository";
 import { AcadStudentMapRepository } from "./infrastructure/acad-student-map.repository";
 import { AcadSyncRunRepository } from "./infrastructure/acad-sync-run.repository";
 import { AcadSyncStateRepository } from "./infrastructure/acad-sync-state.repository";
@@ -42,6 +47,8 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
 @Module({
   imports: [
     StudentsModule,
+    PaymentsModule,
+    SettingsModule,
     TypeOrmModule.forFeature([
       AcadSyncStateEntity,
       AcadStudentMapEntity,
@@ -50,6 +57,7 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
       AcadSyncRunEntity,
       AcadInboundLinkEntity,
       AcadInvoicePublicationEntity,
+      AcadPaymentRequestEntity,
     ]),
   ],
   controllers: [AcademySyncController, AcademyLinkController, AcademyPublishController, AcademyInboundController],
@@ -68,6 +76,8 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
     AcademyInvoiceSnapshotRepository,
     AcademyPublishClient,
     AcademyPublishService,
+    AcadPaymentRequestRepository,
+    AcademyPaymentRequestService,
   ],
   exports: [AcademySyncService, AcademyPublishService],
 })
