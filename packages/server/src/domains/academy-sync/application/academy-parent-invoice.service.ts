@@ -154,8 +154,9 @@ type Gate = { ok: true; actorUserId: string } | { ok: false; code: "FEATURE_OFF"
  * Who may do what is decided here, in the books, every time — the parent portal only draws what this says:
  *  - **Only what the school marked optional, plus transport.** A parent can never change a mandatory line, an amount or a
  *    date. They send category ids and a route id; every amount comes from the school's fee structure and route.
- *  - **One term at a time** from the current academic year (terms already over are not offered), for a learner the Academy
- *    named and this ERP has linked (`FeeOptions`/`create` trust the signed call for WHO the parent is, and check the books).
+ *  - **Only the school's current term**, the one marked current (with its academic year) on the Academic calendar page: never
+ *    an earlier or later term or another year. For a learner the Academy named and this ERP has linked
+ *    (`FeeOptions`/`create` trust the signed call for WHO the parent is, and check the books).
  *  - **No double billing.** `FULL` (nothing of the term billed yet) makes the term's whole fee invoice through the same
  *    billing engine the school uses; `TOP_UP` (something already billed) only adds optional items that are not billed yet
  *    and/or transport, as a small extra invoice. See `planTerm`.
@@ -212,7 +213,8 @@ export class AcademyParentInvoiceService {
     }
 
     const terms: TermFeeOptionsView[] = [];
-    for (const term of await this.eligibleTerms()) {
+    const term = await this.currentTerm();
+    if (term) {
       const built = await this.buildTerm(student.studentId, term.id);
       if (built?.plan) {
         terms.push(toTermView(term, built.plan));
@@ -316,8 +318,10 @@ export class AcademyParentInvoiceService {
 
     // Re-read what is on offer NOW, on a separate connection: this transaction's own snapshot was taken at the lock call,
     // which may predate a commit it just waited for (the same reason `ReceiptVerificationService.ensureToken` does this).
-    const term = (await this.eligibleTerms()).find((candidate) => candidate.id === termId);
-    if (!term) throw new ParentInvoiceRefusal("TERM_NOT_AVAILABLE");
+    // Only the term the school marks current right now: if the school moved on while the parent had the page open, or the
+    // request names any other term or year, nothing is created.
+    const term = await this.currentTerm();
+    if (!term || term.id !== termId) throw new ParentInvoiceRefusal("TERM_NOT_AVAILABLE");
     const built = await this.buildTerm(student.studentId, term.id);
     if (!built) throw new ParentInvoiceRefusal("TERM_NOT_AVAILABLE");
     if (!built.plan) throw new ParentInvoiceRefusal("NOTHING_TO_ADD");
@@ -372,15 +376,17 @@ export class AcademyParentInvoiceService {
     return { mode: plan.mode, feeInvoiceId, transportInvoiceId, termName: term.name };
   }
 
-  /** The current academic year's terms that have not ended, in order. */
-  private async eligibleTerms(): Promise<TermRef[]> {
-    const year = await this.calendar.getCurrentYear();
-    if (!year) return [];
-    const today = new Date().toISOString().slice(0, 10);
-    return (await this.calendar.listTerms(year.id))
-      .filter((term) => term.endsOn >= today)
-      .sort((a, b) => a.seq - b.seq)
-      .map((term) => ({ id: term.id, name: term.name, isCurrent: term.isCurrent, startsOn: term.startsOn, endsOn: term.endsOn }));
+  /**
+   * The ONE term a parent may be invoiced for: the term the school has marked current on the Academic calendar page, and only
+   * while it belongs to the academic year marked current there. A term that is not current (an earlier one, a later one, one
+   * from another year) is never offered and never accepted. The school's own marking is what counts, not the calendar dates:
+   * a term stays "current" until the school moves it on, so a parent is invoiced for the term the school is working in.
+   * `null` when the school has not marked a current year and term (or marked a term of a year that is not the current one).
+   */
+  private async currentTerm(): Promise<TermRef | null> {
+    const [year, term] = await Promise.all([this.calendar.getCurrentYear(), this.calendar.getCurrentTerm()]);
+    if (!year || !term || !term.isCurrent || term.academicYearId !== year.id) return null;
+    return { id: term.id, name: term.name, isCurrent: true, startsOn: term.startsOn, endsOn: term.endsOn };
   }
 
   /** Reads the books for one learner and one term (never inside a caller's transaction) and plans what a parent may do. */

@@ -48,7 +48,7 @@ export interface SetupFacts {
   /** Null when the receipt setup could not be checked. */
   receipts: { canIssue: boolean; complete: boolean; issues: string[] } | null;
   payments: { providerConfigured: boolean; cashierConfigured: boolean };
-  feeOptions: { hasOpenTerm: boolean; optionalItemLines: number; activeRoutes: number };
+  feeOptions: { hasCurrentTerm: boolean; optionalItemLines: number; activeRoutes: number };
   parentInvoicing: { enabled: boolean; invoiceUserConfigured: boolean };
 }
 
@@ -141,7 +141,7 @@ const DEFINITIONS: Record<SetupStepKey, StepDefinition> = {
     optional: true,
     needs: [],
     own: (f) => {
-      if (!f.feeOptions.hasOpenTerm) return { state: "TODO", detail: "NO_OPEN_TERM" };
+      if (!f.feeOptions.hasCurrentTerm) return { state: "TODO", detail: "NO_CURRENT_TERM" };
       // Something for a parent to choose: an optional fee item on the published structure, or an active transport route.
       return f.feeOptions.optionalItemLines > 0 || f.feeOptions.activeRoutes > 0
         ? { state: "DONE", detail: null }

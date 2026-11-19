@@ -11,7 +11,7 @@ export const PARENT_INVOICE_REFUSALS = {
   FEATURE_OFF: "Creating invoices online is not available for this school. Please contact the school office.",
   NOT_READY: "The school has not finished setting this up. Please contact the school office.",
   STUDENT_NOT_LINKED: "This learner is not set up for online invoices at the school yet. Please contact the school office.",
-  TERM_NOT_AVAILABLE: "That term is not available to invoice online. Please refresh and try again.",
+  TERM_NOT_AVAILABLE: "Invoices can only be generated for the school's current term. Please refresh and try again.",
   NOTHING_TO_ADD: "There is nothing to add for this term. Please choose at least one item.",
   ITEM_NOT_OFFERED: "One of the chosen items is no longer available. Please refresh and choose again.",
   ROUTE_NOT_OFFERED: "That transport route is no longer available. Please refresh and choose again.",
