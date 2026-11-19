@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
-import { DataSource } from "typeorm";
+import { DataSource, EntityManager } from "typeorm";
 import { randomBytes } from "node:crypto";
 import { runInTransaction } from "../../../shared/database/tx";
 import { OutboxWriterService } from "../../../shared/events/outbox-writer.service";
@@ -204,6 +204,16 @@ export class UsersService {
     if (userIds.length === 0) return [];
     const users = await this.userRepository.findManyByIds(userIds);
     return users.filter((user) => user.status === "ACTIVE");
+  }
+
+  /** Ids of ACTIVE staff users holding any of `permissionCodes` — picks the default recipients of a notification (`platform/notifications`). */
+  async listActiveUserIdsWithPermissions(permissionCodes: string[], manager?: EntityManager): Promise<string[]> {
+    return this.userRoleRepository.findActiveUserIdsWithPermissions(permissionCodes, manager);
+  }
+
+  /** Ids of ACTIVE staff users holding any of `roleIds` — the recipients a school chose for a notification (`platform/notifications`). */
+  async listActiveUserIdsInRoles(roleIds: string[], manager?: EntityManager): Promise<string[]> {
+    return this.userRoleRepository.findActiveUserIdsInRoles(roleIds, manager);
   }
 
   /** Whether `userId` currently holds `roleId` — `platform/approvals`' `ROLE` approver-type check (`ApprovalEngineService.decide()`/`.listPendingForApprover()`). */

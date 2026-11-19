@@ -427,6 +427,7 @@
       "commsMessages": "Messages",
       "commsOptouts": "Optouts",
       "commsTriggerBindings": "Trigger Bindings",
+      "commsNotificationSettings": "In-app notifications",
       "users": "Users",
       "usersAllUsers": "All Users",
       "usersRoles": "Roles",
@@ -510,11 +511,147 @@
     "pageSubtitle": "Every notification you've received, newest first.",
     "markAllRead": "Mark all read",
     "loadMore": "Load more",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "filter": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "emptyUnread": "You have no unread notifications.",
+    "defaults": {
+      "parentName": "A parent",
+      "value": "—"
+    },
+    "preferences": {
+      "title": "What you are notified about",
+      "description": "Choose which kinds of notification appear in your bell. Approvals and security alerts are always on.",
+      "alwaysOn": "Always on",
+      "toast": {
+        "saved": "Your notification choices were saved"
+      }
+    },
+    "settings": {
+      "pageTitle": "In-app notifications",
+      "pageSubtitle": "Choose which notifications appear in people's bell, and who receives them. Everything is on until you switch it off.",
+      "listTitle": "Notifications",
+      "listDescription": "Each one is sent to the people it concerns. Where the recipients can be chosen, you can pick roles instead.",
+      "on": "On",
+      "off": "Off",
+      "switchLabel": "Send this notification",
+      "recipientsTitle": "Who receives it",
+      "defaultRecipients": "People who hold one of these permissions: {permissions}",
+      "chosenRoles": "People in these roles",
+      "explicit": "Only the people it is about (for example the approver, or the person who started the request).",
+      "managedElsewhere": "Chosen on the Licence page.",
+      "openLicence": "Open the Licence page",
+      "chooseRoles": "Roles that receive it (leave empty to use the default)",
+      "rolesUnavailable": "The list of roles could not be loaded.",
+      "essentialNote": "People cannot switch this category off in their own settings.",
+      "saveRoles": "Save roles",
+      "saving": "Saving…",
+      "toast": {
+        "saved": "Notification settings saved"
+      }
+    },
     "types": {
-      "APPROVAL_PENDING": { "title": "New approval request" },
-      "APPROVAL_APPROVED": { "title": "Your request was approved" },
-      "APPROVAL_REJECTED": { "title": "Your request was rejected" },
-      "APPROVAL_RETURNED": { "title": "Your request was returned" }
+      "APPROVAL_PENDING": {
+        "title": "New approval request",
+        "body": "Waiting for your decision: {domainName}."
+      },
+      "APPROVAL_APPROVED": {
+        "title": "Your request was approved",
+        "body": "Your {domainName} request was approved."
+      },
+      "APPROVAL_REJECTED": {
+        "title": "Your request was rejected",
+        "body": "Your {domainName} request was rejected."
+      },
+      "APPROVAL_RETURNED": {
+        "title": "Your request was returned",
+        "body": "Your {domainName} request was returned for changes."
+      },
+      "CHEQUE_BOUNCED": {
+        "title": "Cheque bounced",
+        "body": "Cheque {chequeNo} for KES {amount} was returned unpaid."
+      },
+      "BANK_DEPOSIT_NEEDS_MATCHING": {
+        "title": "Bank deposit needs matching",
+        "body": "A bank deposit of KES {amount} (reference {reference}) could not be matched automatically and is waiting in suspense."
+      },
+      "PARENT_INVOICE_CREATED": {
+        "title": "Invoice created by a parent",
+        "body": "{parentName} has created {count, plural, one {an invoice} other {invoices}} {numbers} for {learner} ({admissionNo}), {term}: KES {total}."
+      },
+      "PARENT_PAYMENT_RECEIVED": {
+        "title": "Parent payment received",
+        "body": "{parentName} paid KES {amount} by M-Pesa for {learner}."
+      },
+      "PAYROLL_RUN_PAID": {
+        "title": "Payroll run paid",
+        "body": "The {period} payroll run has been paid."
+      },
+      "BACKUP_FAILED": {
+        "title": "Backup failed",
+        "body": "A backup did not complete. Open Backups to see why."
+      },
+      "RESTORE_CHECK_FAILED": {
+        "title": "Backup restore check failed",
+        "body": "A backup could not be restored in the verification test. Open Backups to see why."
+      },
+      "LICENCE_STATE_CHANGED": {
+        "title": "Licence status changed",
+        "body": "The licence changed from {from} to {to}."
+      },
+      "UPDATE_AVAILABLE": {
+        "title": "Update available",
+        "body": "Version {version} is available."
+      },
+      "ACADEMY_PUBLISH_FAILING": {
+        "title": "Publishing invoices to the Academy is failing",
+        "body": "Invoices are not reaching the parent portal. Open the Licence page to see why."
+      },
+      "ACADEMY_SYNC_FAILING": {
+        "title": "Syncing with the Academy is failing",
+        "body": "The last sync with the Klickit Academy did not complete. Open the Licence page to see why."
+      },
+      "LOW_STOCK": {
+        "title": "Low stock",
+        "body": "{item} is down to {onHand} (reorder level {reorderLevel})."
+      },
+      "BULK_BILLING_DONE": {
+        "title": "Bulk billing finished",
+        "body": "Bulk billing for {term} finished: {created} created, {skipped} skipped, {failed} failed."
+      },
+      "ACCOUNT_LOCKED": {
+        "title": "Account locked",
+        "body": "The account {username} was locked after too many failed sign-in attempts."
+      },
+      "SESSION_REUSE_DETECTED": {
+        "title": "Your sessions were signed out",
+        "body": "A sign-in token of yours was used twice, which can mean it was copied. For safety, every session of yours was signed out. Sign in again and change your password if this was not you."
+      }
+    },
+    "categories": {
+      "APPROVALS": {
+        "name": "Approvals",
+        "description": "Requests waiting for your decision, and decisions on your own requests."
+      },
+      "MONEY": {
+        "name": "Money and accounts",
+        "description": "Bounced cheques, bank deposits to match, parent invoices and payments, payroll."
+      },
+      "SYSTEM": {
+        "name": "System health",
+        "description": "Failed backups, licence and update notices, problems syncing with the Academy."
+      },
+      "OPERATIONS": {
+        "name": "Stock and operations",
+        "description": "Items reaching their reorder level and finished bulk billing runs."
+      },
+      "SECURITY": {
+        "name": "Security",
+        "description": "Locked accounts and sessions signed out for your safety."
+      }
     }
   },
   "dashboard": {

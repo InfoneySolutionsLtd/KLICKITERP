@@ -1,16 +1,16 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 import { MutableBaseEntity } from "../../../shared/database/mutable-base.entity";
 import { UsrUserEntity } from "../../users";
+import type { NotificationParams } from "../../../shared/notifications/notification-sink.port";
+import type { NotificationEventCode } from "./notification-catalogue";
 
 /**
- * Known `type` values this codebase currently emits — see
- * `application/notify.service.ts`'s own doc comment for why this is NOT a
- * DB CHECK constraint: any future emitter can introduce a brand-new string
- * with zero migration. This union exists purely so `platform/approvals`
- * (this module's first, real emitter) gets compile-time safety on its own
- * `type` literals; it is not exhaustive by design.
+ * Known `type` values this codebase currently emits: the codes in `notification-catalogue.ts`. See
+ * `application/notify.service.ts`'s own doc comment for why `type` is NOT a DB CHECK constraint: any future emitter
+ * can introduce a brand-new string with zero migration. This alias exists purely for compile-time safety on the literals
+ * callers know ahead of time; it is not exhaustive by design.
  */
-export type KnownNotificationType = "APPROVAL_PENDING" | "APPROVAL_APPROVED" | "APPROVAL_REJECTED" | "APPROVAL_RETURNED";
+export type KnownNotificationType = NotificationEventCode;
 
 /**
  * Maps to `ntf_notification` (migration `0256`) — a real per-user
@@ -36,6 +36,14 @@ export class NtfNotificationEntity extends MutableBaseEntity {
 
   @Column({ type: "varchar", length: 60, name: "type" })
   type!: string;
+
+  /** The catalogue category of `type`, kept on the row so "switch this category off" is a plain filter. `null` for a type outside the catalogue. */
+  @Column({ type: "varchar", length: 30, name: "category", nullable: true })
+  category!: string | null;
+
+  /** The values the notification's text is built from (names, amounts, numbers), so the reader sees it in their own language. */
+  @Column({ type: "jsonb", name: "params", nullable: true })
+  params!: NotificationParams | null;
 
   @Column({ type: "varchar", length: 200, name: "title" })
   title!: string;

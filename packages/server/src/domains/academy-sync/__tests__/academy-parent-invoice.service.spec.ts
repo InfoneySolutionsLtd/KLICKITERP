@@ -125,10 +125,12 @@ function harness(over: Over = {}) {
       return ["inv-transport"];
     }),
   };
+  // The service raises ONE event (with its recipients); the notification pipeline (settings, preferences, rows) is `platform/notifications`' own.
   const notifyService = {
-    notify: jest.fn(async (input: any) => {
+    emit: jest.fn(async (event: any) => {
       if (over.notifyError) throw over.notifyError;
-      calls.notified.push(input);
+      calls.notified.push(event);
+      return (event.userIds ?? []).length;
     }),
   };
   const publishService = { publishPending: jest.fn(async () => null) };
@@ -313,7 +315,7 @@ describe("AcademyParentInvoiceService.create — what is refused, and that nothi
     expect(h.invoicing.generateInvoice).not.toHaveBeenCalled();
     expect(h.transport.billStudentOnRoute).not.toHaveBeenCalled();
     expect(h.optionalItems.create).not.toHaveBeenCalled();
-    expect(h.notifyService.notify).not.toHaveBeenCalled();
+    expect(h.notifyService.emit).not.toHaveBeenCalled();
     expect(h.calls.refused[0].code).toBe(code);
     return h;
   }
@@ -399,7 +401,7 @@ describe("AcademyParentInvoiceService.create — idempotency and races", () => {
     const view = await h.service.create(input({ optionalCategoryIds: [MILK] }));
     expect(view).toMatchObject({ status: "CREATED", mode: "FULL", total: "21500.0000" });
     expect(h.invoicing.generateInvoice).not.toHaveBeenCalled();
-    expect(h.notifyService.notify).not.toHaveBeenCalled(); // and does not notify twice
+    expect(h.notifyService.emit).not.toHaveBeenCalled(); // and does not notify twice
   });
 
   it("a repeat of a refused request answers the same refusal", async () => {
@@ -429,7 +431,7 @@ describe("AcademyParentInvoiceService.create — idempotency and races", () => {
     const h = harness({ generateError: new ConflictException("BR-BILL-04: student already has a live structure-generated invoice") });
     const view = await h.service.create(input({ optionalCategoryIds: [MILK] }));
     expect(view).toMatchObject({ status: "REFUSED", code: "ALREADY_ISSUED" });
-    expect(h.notifyService.notify).not.toHaveBeenCalled();
+    expect(h.notifyService.emit).not.toHaveBeenCalled();
     expect(h.calls.created).toHaveLength(0);
   });
 
@@ -438,7 +440,7 @@ describe("AcademyParentInvoiceService.create — idempotency and races", () => {
     const view = await h.service.create(input({ optionalCategoryIds: [MILK] }));
     expect(view).toMatchObject({ status: "REFUSED", code: "NOT_CREATED" });
     expect(JSON.stringify(view)).not.toMatch(/relation|secret|srv/);
-    expect(h.notifyService.notify).not.toHaveBeenCalled();
+    expect(h.notifyService.emit).not.toHaveBeenCalled();
   });
 
   it("if the transport invoice cannot be made, the whole request fails (the fee invoice is rolled back with it, and never reported or notified)", async () => {
@@ -446,26 +448,33 @@ describe("AcademyParentInvoiceService.create — idempotency and races", () => {
     const view = await h.service.create(input({ routeId: BUS, optionalCategoryIds: [MILK] }));
     expect(view).toMatchObject({ status: "REFUSED", code: "NOT_CREATED" });
     expect(h.calls.created).toHaveLength(0); // markCreated is in the same transaction, so it never ran
-    expect(h.notifyService.notify).not.toHaveBeenCalled();
+    expect(h.notifyService.emit).not.toHaveBeenCalled();
   });
 });
 
 describe("AcademyParentInvoiceService.create — telling accounts and the portal", () => {
-  it("notifies every active user in the chosen roles (not the system user), once each, naming the parent, learner, invoice and total", async () => {
+  it("raises one PARENT_INVOICE_CREATED event for the chosen roles' active users (the system user excluded), carrying the parent, learner, invoices and total", async () => {
     const h = harness();
     await h.service.create(input({ optionalCategoryIds: [MILK], routeId: BUS }));
 
     expect(h.repository.activeUserIdsInRoles).toHaveBeenCalledWith([ROLE]);
-    expect(h.calls.notified.map((n) => n.userId).sort()).toEqual([ACCOUNTANT, BURSAR].sort());
-    const note = h.calls.notified[0];
-    expect(note.type).toBe("PARENT_INVOICE_CREATED");
-    expect(note.title).toBe("Invoice created by a parent");
-    expect(note.body).toContain("Grace Otieno has created invoices INV-000201, INV-000202");
-    expect(note.body).toContain("Amina Otieno (ADM-1001)");
-    expect(note.body).toContain("Term 1 2026");
-    expect(note.body).toContain("KES 26,500");
-    expect(note.link).toBe("/billing/invoices/inv-fee");
-    expect(note.entityId).toBe("inv-fee");
+    expect(h.notifyService.emit).toHaveBeenCalledTimes(1);
+    const event = h.calls.notified[0];
+    expect(event.code).toBe("PARENT_INVOICE_CREATED");
+    expect([...event.userIds].sort()).toEqual([ACCOUNTANT, BURSAR, ACTOR].sort());
+    expect(event.excludeUserIds).toEqual([ACTOR]); // the system user the invoice is recorded under is never told
+    expect(event.params).toEqual({
+      parentName: "Grace Otieno",
+      learner: "Amina Otieno",
+      admissionNo: "ADM-1001",
+      term: "Term 1 2026",
+      numbers: "INV-000201, INV-000202",
+      total: "26,500",
+      count: 2,
+    });
+    expect(event.link).toBe("/billing/invoices/inv-fee");
+    expect(event.entityType).toBe("INVOICE");
+    expect(event.entityId).toBe("inv-fee");
   });
 
   it("falls back to everyone who can post invoices when the school chose no role", async () => {
@@ -473,13 +482,14 @@ describe("AcademyParentInvoiceService.create — telling accounts and the portal
     await h.service.create(input({ optionalCategoryIds: [MILK] }));
     expect(h.repository.activeUserIdsInRoles).not.toHaveBeenCalled();
     expect(h.repository.activeUserIdsWithPermission).toHaveBeenCalledWith("billing:invoice:post");
-    expect(h.calls.notified.map((n) => n.userId)).toEqual([ACCOUNTANT]);
+    expect(h.calls.notified[0].userIds).toEqual([ACCOUNTANT]);
   });
 
   it("says 'A parent' when the Academy sent no name", async () => {
     const h = harness();
     await h.service.create(input({ optionalCategoryIds: [MILK], parentName: undefined }));
-    expect(h.calls.notified[0].body).toMatch(/^A parent has created an invoice INV-000201/);
+    expect(h.calls.notified[0].params.parentName).toBeNull(); // the catalogue's text then says "A parent"
+    expect(h.calls.notified[0].params.count).toBe(1);
   });
 
   it("publishes the learner's invoices to the portal straight away", async () => {

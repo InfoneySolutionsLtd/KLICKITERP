@@ -427,6 +427,7 @@
       "commsMessages": "Messages",
       "commsOptouts": "Désabonnements",
       "commsTriggerBindings": "Déclencheurs",
+      "commsNotificationSettings": "Notifications dans l'application",
       "users": "Utilisateurs",
       "usersAllUsers": "Tous les utilisateurs",
       "usersRoles": "Rôles",
@@ -488,9 +489,9 @@
     "topbar": {
       "searchPlaceholder": "Search…",
       "notifications": "Notifications",
-      "unreadAriaLabel": "{count} unread notifications",
+      "unreadAriaLabel": "{count} notifications non lues",
       "markAllRead": "Mark all read",
-      "viewAll": "View all"
+      "viewAll": "Tout voir"
     },
     "userMenu": {
       "profile": "Profile",
@@ -507,14 +508,150 @@
   },
   "notifications": {
     "pageTitle": "Notifications",
-    "pageSubtitle": "Every notification you've received, newest first.",
-    "markAllRead": "Mark all read",
-    "loadMore": "Load more",
+    "pageSubtitle": "Toutes les notifications que vous avez reçues, de la plus récente à la plus ancienne.",
+    "markAllRead": "Tout marquer comme lu",
+    "loadMore": "Charger plus",
+    "markRead": "Marquer comme lu",
+    "markUnread": "Marquer comme non lu",
+    "filter": {
+      "all": "Toutes",
+      "unread": "Non lues"
+    },
+    "emptyUnread": "Vous n'avez aucune notification non lue.",
+    "defaults": {
+      "parentName": "Un parent",
+      "value": "—"
+    },
+    "preferences": {
+      "title": "Ce dont vous êtes informé",
+      "description": "Choisissez les types de notifications qui apparaissent dans votre cloche. Les approbations et les alertes de sécurité sont toujours actives.",
+      "alwaysOn": "Toujours actif",
+      "toast": {
+        "saved": "Vos choix de notifications ont été enregistrés"
+      }
+    },
+    "settings": {
+      "pageTitle": "Notifications dans l'application",
+      "pageSubtitle": "Choisissez quelles notifications apparaissent dans la cloche des utilisateurs et qui les reçoit. Tout est actif tant que vous ne le désactivez pas.",
+      "listTitle": "Notifications",
+      "listDescription": "Chacune est envoyée aux personnes concernées. Lorsque les destinataires peuvent être choisis, vous pouvez désigner des rôles.",
+      "on": "Activée",
+      "off": "Désactivée",
+      "switchLabel": "Envoyer cette notification",
+      "recipientsTitle": "Qui la reçoit",
+      "defaultRecipients": "Les personnes qui détiennent l'une de ces permissions : {permissions}",
+      "chosenRoles": "Les personnes de ces rôles",
+      "explicit": "Uniquement les personnes concernées (par exemple l'approbateur, ou la personne à l'origine de la demande).",
+      "managedElsewhere": "Choisis sur la page Licence.",
+      "openLicence": "Ouvrir la page Licence",
+      "chooseRoles": "Rôles qui la reçoivent (laisser vide pour la valeur par défaut)",
+      "rolesUnavailable": "La liste des rôles n'a pas pu être chargée.",
+      "essentialNote": "Les personnes ne peuvent pas désactiver cette catégorie dans leurs propres réglages.",
+      "saveRoles": "Enregistrer les rôles",
+      "saving": "Enregistrement…",
+      "toast": {
+        "saved": "Réglages des notifications enregistrés"
+      }
+    },
     "types": {
-      "APPROVAL_PENDING": { "title": "New approval request" },
-      "APPROVAL_APPROVED": { "title": "Your request was approved" },
-      "APPROVAL_REJECTED": { "title": "Your request was rejected" },
-      "APPROVAL_RETURNED": { "title": "Your request was returned" }
+      "APPROVAL_PENDING": {
+        "title": "Nouvelle demande d'approbation",
+        "body": "En attente de votre décision : {domainName}."
+      },
+      "APPROVAL_APPROVED": {
+        "title": "Votre demande a été approuvée",
+        "body": "Votre demande « {domainName} » a été approuvée."
+      },
+      "APPROVAL_REJECTED": {
+        "title": "Votre demande a été refusée",
+        "body": "Votre demande « {domainName} » a été refusée."
+      },
+      "APPROVAL_RETURNED": {
+        "title": "Votre demande a été renvoyée",
+        "body": "Votre demande « {domainName} » a été renvoyée pour modification."
+      },
+      "CHEQUE_BOUNCED": {
+        "title": "Chèque impayé",
+        "body": "Le chèque {chequeNo} de {amount} KES a été retourné impayé."
+      },
+      "BANK_DEPOSIT_NEEDS_MATCHING": {
+        "title": "Dépôt bancaire à rapprocher",
+        "body": "Un dépôt bancaire de {amount} KES (référence {reference}) n'a pas pu être rapproché automatiquement et attend en suspens."
+      },
+      "PARENT_INVOICE_CREATED": {
+        "title": "Facture créée par un parent",
+        "body": "{parentName} a créé {count, plural, one {la facture} other {les factures}} {numbers} pour {learner} ({admissionNo}), {term} : {total} KES."
+      },
+      "PARENT_PAYMENT_RECEIVED": {
+        "title": "Paiement d'un parent reçu",
+        "body": "{parentName} a payé {amount} KES par M-Pesa pour {learner}."
+      },
+      "PAYROLL_RUN_PAID": {
+        "title": "Paie versée",
+        "body": "La paie de {period} a été versée."
+      },
+      "BACKUP_FAILED": {
+        "title": "Échec de la sauvegarde",
+        "body": "Une sauvegarde n'a pas abouti. Ouvrez Sauvegardes pour en voir la cause."
+      },
+      "RESTORE_CHECK_FAILED": {
+        "title": "Échec du test de restauration",
+        "body": "Une sauvegarde n'a pas pu être restaurée lors du test de vérification. Ouvrez Sauvegardes pour en voir la cause."
+      },
+      "LICENCE_STATE_CHANGED": {
+        "title": "Statut de la licence modifié",
+        "body": "La licence est passée de {from} à {to}."
+      },
+      "UPDATE_AVAILABLE": {
+        "title": "Mise à jour disponible",
+        "body": "La version {version} est disponible."
+      },
+      "ACADEMY_PUBLISH_FAILING": {
+        "title": "La publication des factures vers l'Academy échoue",
+        "body": "Les factures n'arrivent pas sur le portail parents. Ouvrez la page Licence pour en voir la cause."
+      },
+      "ACADEMY_SYNC_FAILING": {
+        "title": "La synchronisation avec l'Academy échoue",
+        "body": "La dernière synchronisation avec Klickit Academy n'a pas abouti. Ouvrez la page Licence pour en voir la cause."
+      },
+      "LOW_STOCK": {
+        "title": "Stock bas",
+        "body": "{item} est descendu à {onHand} (seuil de réapprovisionnement : {reorderLevel})."
+      },
+      "BULK_BILLING_DONE": {
+        "title": "Facturation en masse terminée",
+        "body": "La facturation en masse de {term} est terminée : {created} créées, {skipped} ignorées, {failed} en échec."
+      },
+      "ACCOUNT_LOCKED": {
+        "title": "Compte verrouillé",
+        "body": "Le compte {username} a été verrouillé après trop de tentatives de connexion échouées."
+      },
+      "SESSION_REUSE_DETECTED": {
+        "title": "Vos sessions ont été fermées",
+        "body": "Un jeton de connexion vous appartenant a été utilisé deux fois, ce qui peut signifier qu'il a été copié. Par sécurité, toutes vos sessions ont été fermées. Reconnectez-vous et changez votre mot de passe si ce n'était pas vous."
+      }
+    },
+    "categories": {
+      "APPROVALS": {
+        "name": "Approbations",
+        "description": "Demandes en attente de votre décision et décisions sur vos propres demandes."
+      },
+      "MONEY": {
+        "name": "Argent et comptabilité",
+        "description": "Chèques impayés, dépôts bancaires à rapprocher, factures et paiements des parents, paie."
+      },
+      "SYSTEM": {
+        "name": "Santé du système",
+        "description": "Sauvegardes en échec, avis de licence et de mise à jour, problèmes de synchronisation avec l'Academy."
+      },
+      "OPERATIONS": {
+        "name": "Stock et opérations",
+        "description": "Articles atteignant leur seuil de réapprovisionnement et facturations en masse terminées."
+      },
+      "SECURITY": {
+        "name": "Sécurité",
+        "description": "Comptes verrouillés et sessions fermées pour votre sécurité."
+      }
     }
   },
   "dashboard": {

@@ -529,22 +529,26 @@ export class AcademyParentInvoiceService {
         state.parentInvoiceNotifyRoleIds.length > 0
           ? await this.repository.activeUserIdsInRoles(state.parentInvoiceNotifyRoleIds)
           : await this.repository.activeUserIdsWithPermission(PARENT_INVOICE_NOTIFY_FALLBACK_PERMISSION);
-      const numbers = view.invoices.map((invoice) => invoice.number).join(", ");
       const first = view.invoices[0];
-      const body =
-        `${parentName ?? "A parent"} has created ${view.invoices.length > 1 ? "invoices" : "an invoice"} ${numbers} ` +
-        `for ${student.fullName} (${student.admissionNo}), ${termName}: KES ${formatKes(view.total)}.`;
-      for (const userId of [...new Set(recipients)].filter((id) => id !== actorUserId)) {
-        await this.notifyService.notify({
-          userId,
-          type: PARENT_INVOICE_NOTIFICATION_TYPE,
-          title: "Invoice created by a parent",
-          body,
-          link: first ? `/billing/invoices/${first.invoiceId}` : "/billing/invoices",
-          entityType: "INVOICE",
-          entityId: first?.invoiceId ?? null,
-        });
-      }
+      // The recipients are the roles the school chose for this event on the Licence page (or everyone who can post invoices);
+      // the notification pipeline still applies the school's on/off for the event and each person's own category preference.
+      await this.notifyService.emit({
+        code: PARENT_INVOICE_NOTIFICATION_TYPE,
+        params: {
+          parentName,
+          learner: student.fullName,
+          admissionNo: student.admissionNo,
+          term: termName,
+          numbers: view.invoices.map((invoice) => invoice.number).join(", "),
+          total: formatKes(view.total),
+          count: view.invoices.length,
+        },
+        link: first ? `/billing/invoices/${first.invoiceId}` : "/billing/invoices",
+        entityType: "INVOICE",
+        entityId: first?.invoiceId ?? null,
+        userIds: recipients,
+        excludeUserIds: [actorUserId],
+      });
     } catch (error) {
       this.logger.warn(`Parent invoice for ${student.studentId} was created but accounts could not be notified: ${(error as Error).message}`);
     }

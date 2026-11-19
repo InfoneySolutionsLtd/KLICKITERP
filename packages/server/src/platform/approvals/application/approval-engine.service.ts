@@ -191,14 +191,16 @@ export class ApprovalEngineService {
       // never actually act on their own request, so notifying them "this
       // needs your decision" would be actively wrong, not just noise).
       const approverIds = (await this.legitimateApproverIds(firstLevel, matchedRule)).filter((id) => id !== input.initiatorId);
+      const params = notificationParams(input.domainCode, workflowDef.name);
       for (const approverId of approverIds) {
         await this.notifyService.notify(
           {
             userId: approverId,
             type: "APPROVAL_PENDING",
             title: "New approval request",
-            body: `A ${input.domainCode} request is waiting for your decision.`,
-            link: "/approvals",
+            body: `Waiting for your decision: ${params.domainName ?? input.domainCode}.`,
+            params,
+            link: `/approvals/instances/${created.id}`,
             entityType: input.entityType,
             entityId: input.entityId,
           },
@@ -322,36 +324,43 @@ export class ApprovalEngineService {
       // new level notifies that level's approvers; a terminal outcome
       // notifies the initiator. Neither fires for the "stays PENDING at the
       // same level" (under-quorum) branch — nobody new became actionable.
-      if (advancedToLevel) {
-        // Excludes the initiator — same BR-APPR-01 guard as submit()'s own notification loop above.
-        const nextApproverIds = (await this.legitimateApproverIds(advancedToLevel, matchedRule)).filter((id) => id !== instance.initiatorId);
-        for (const approverId of nextApproverIds) {
+      if (advancedToLevel || saved.status === "APPROVED" || saved.status === "REJECTED" || saved.status === "RETURNED") {
+        const workflowDef = await this.workflowDefRepository.findByDomainCode(saved.domainCode, manager);
+        const params = notificationParams(saved.domainCode, workflowDef?.name);
+        const requestName = params.domainName ?? saved.domainCode;
+        if (advancedToLevel) {
+          // Excludes the initiator — same BR-APPR-01 guard as submit()'s own notification loop above.
+          const nextApproverIds = (await this.legitimateApproverIds(advancedToLevel, matchedRule)).filter((id) => id !== instance.initiatorId);
+          for (const approverId of nextApproverIds) {
+            await this.notifyService.notify(
+              {
+                userId: approverId,
+                type: "APPROVAL_PENDING",
+                title: "New approval request",
+                body: `Waiting for your decision: ${requestName}.`,
+                params,
+                link: `/approvals/instances/${saved.id}`,
+                entityType: saved.entityType,
+                entityId: saved.entityId,
+              },
+              manager,
+            );
+          }
+        } else {
           await this.notifyService.notify(
             {
-              userId: approverId,
-              type: "APPROVAL_PENDING",
-              title: "New approval request",
-              body: `A ${saved.domainCode} request is waiting for your decision.`,
-              link: "/approvals",
+              userId: saved.initiatorId,
+              type: `APPROVAL_${saved.status}`,
+              title: `Your request was ${saved.status.toLowerCase()}`,
+              body: `Your ${requestName} request was ${saved.status.toLowerCase()}.`,
+              params,
+              link: `/approvals/instances/${saved.id}`,
               entityType: saved.entityType,
               entityId: saved.entityId,
             },
             manager,
           );
         }
-      } else if (saved.status === "APPROVED" || saved.status === "REJECTED" || saved.status === "RETURNED") {
-        await this.notifyService.notify(
-          {
-            userId: saved.initiatorId,
-            type: `APPROVAL_${saved.status}`,
-            title: `Your request was ${saved.status.toLowerCase()}`,
-            body: `Your ${saved.domainCode} request was ${saved.status.toLowerCase()}.`,
-            link: null,
-            entityType: saved.entityType,
-            entityId: saved.entityId,
-          },
-          manager,
-        );
       }
 
       await this.outboxWriter.write(
@@ -558,4 +567,14 @@ function isUniqueViolation(error: unknown): boolean {
     (error as { code?: string; driverError?: { code?: string } })?.code ??
     (error as { driverError?: { code?: string } })?.driverError?.code;
   return code === PG_UNIQUE_VIOLATION;
+}
+
+/**
+ * What an approval notification's text is built from: the workflow's name as the school sees it ("Petty Cash Replenishment"),
+ * without the trailing word "Approval" every seeded workflow name carries, so it reads "A Petty Cash Replenishment request
+ * is waiting for your decision" instead of repeating itself. `domainCode` stays, as the fallback when no name is known.
+ */
+function notificationParams(domainCode: string, workflowName: string | null | undefined): { domainCode: string; domainName: string | null } {
+  const name = workflowName?.replace(/\s+approvals?$/i, "").trim();
+  return { domainCode, domainName: name ? name : null };
 }

@@ -30,6 +30,41 @@ export class UsrUserRoleRepository {
     return rows.map((row) => row.userId);
   }
 
+  /**
+   * ACTIVE staff users who hold at least one of `permissionCodes` through any of their roles (de-duplicated). Portal users
+   * (`PARENT`) never count: they hold no staff permissions and have no bell. Used to pick who a notification goes to.
+   */
+  async findActiveUserIdsWithPermissions(permissionCodes: string[], manager?: EntityManager): Promise<string[]> {
+    if (permissionCodes.length === 0) return [];
+    const rows: Array<{ user_id: string }> = await (manager ?? this.repo.manager).query(
+      `
+      SELECT DISTINCT ur.user_id
+        FROM app.usr_user_role ur
+        JOIN app.usr_user u ON u.id = ur.user_id
+        JOIN app.usr_role_permission rp ON rp.role_id = ur.role_id
+        JOIN app.usr_permission p ON p.id = rp.permission_id
+       WHERE p.code = ANY($1::text[]) AND u.status = 'ACTIVE' AND u.user_type <> 'PARENT'
+      `,
+      [permissionCodes],
+    );
+    return rows.map((row) => row.user_id);
+  }
+
+  /** ACTIVE staff users who hold at least one of `roleIds` (de-duplicated). */
+  async findActiveUserIdsInRoles(roleIds: string[], manager?: EntityManager): Promise<string[]> {
+    if (roleIds.length === 0) return [];
+    const rows: Array<{ user_id: string }> = await (manager ?? this.repo.manager).query(
+      `
+      SELECT DISTINCT ur.user_id
+        FROM app.usr_user_role ur
+        JOIN app.usr_user u ON u.id = ur.user_id
+       WHERE ur.role_id = ANY($1::uuid[]) AND u.status = 'ACTIVE' AND u.user_type <> 'PARENT'
+      `,
+      [roleIds],
+    );
+    return rows.map((row) => row.user_id);
+  }
+
   async assign(userId: string, roleId: string, manager: EntityManager): Promise<UsrUserRoleEntity> {
     const repo = manager.getRepository(UsrUserRoleEntity);
     return repo.save(repo.create({ userId, roleId }));
