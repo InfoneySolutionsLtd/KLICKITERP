@@ -10,6 +10,7 @@ import { useAcademyStatus } from "@/features/licensing/hooks/use-academy";
 import { LicenseStatusCard } from "@/features/licensing/components/license-status-card";
 import { AcademyIntegrationCard } from "@/features/licensing/components/academy-integration-card";
 import { AcademyLinkSection } from "@/features/academy-sync/components/academy-link-card";
+import { AcademyParentInvoicingSection } from "@/features/academy-sync/components/academy-parent-invoicing-card";
 import { AcademyPublishSection } from "@/features/academy-sync/components/academy-publish-card";
 import { AcademySyncSection } from "@/features/academy-sync/components/academy-sync-card";
 import { ApiCallLogTable } from "@/features/licensing/components/api-call-log-table";
@@ -77,6 +78,8 @@ export default function LicensePage() {
       <AcademyLinkSection connected={academyStatusQuery.data?.connected ?? false} />
 
       <AcademyPublishSection connected={academyStatusQuery.data?.connected ?? false} />
+
+      <AcademyParentInvoicingSection connected={academyStatusQuery.data?.connected ?? false} />
 
       <Card>
         <CardHeader>

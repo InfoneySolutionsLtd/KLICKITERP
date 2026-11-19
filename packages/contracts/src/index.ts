@@ -27,6 +27,7 @@ export * from "./accounting/update-account.schema";
 export * from "./accounting/update-budget-line.schema";
 export * from "./accounting/update-cost-center.schema";
 export * from "./domains/academy-sync/academy-link.schema";
+export * from "./domains/academy-sync/academy-parent-invoice.schema";
 export * from "./domains/academy-sync/academy-payment-request.schema";
 export * from "./domains/academy-sync/academy-publish.schema";
 export * from "./domains/academy-sync/academy-receipt.schema";

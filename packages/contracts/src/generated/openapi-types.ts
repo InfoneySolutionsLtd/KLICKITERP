@@ -9879,6 +9879,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy-sync/parent-invoicing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Can parents customise and generate their own fee invoices, who is notified, and what is still missing? */
+        get: operations["AcademyParentInvoicingController_status"];
+        /** Switch parent invoicing on or off (off by default) and optionally set the roles notified when a parent generates an invoice. Cannot be switched on until the ERP is connected and publishing to the parent portal is on. */
+        put: operations["AcademyParentInvoicingController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/academy/inbound/ping": {
         parameters: {
             query?: never;
@@ -9922,6 +9940,57 @@ export interface paths {
         };
         /** Academy -> ERP: how is this payment going? (PENDING | PAID with the receipt number | FAILED | TIMED_OUT) */
         get: operations["AcademyInboundController_getPaymentRequest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy/inbound/students/{academyStudentId}/fee-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy -> ERP: what may a parent add to this learner's invoice? Per term of the current year: the optional fee items and transport routes on offer, or `available: false` when the school has not switched parent invoicing on. 404 for a learner this ERP has not linked. The Academy only ever asks about a learner it has verified is the signed-in parent's own child. */
+        get: operations["AcademyInboundController_feeOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy/inbound/students/{academyStudentId}/invoice-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Academy -> ERP: generate the invoice(s) a parent customised for their learner (the term's fee invoice, or a top-up of optional items, plus a transport invoice). Idempotent on `requestId`. A request that cannot go ahead is answered with status REFUSED and a parent-safe message, and nothing is created. */
+        post: operations["AcademyInboundController_createInvoiceRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy/inbound/invoice-requests/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy -> ERP: how did this invoice request go? (CREATED with the invoices | REFUSED | PENDING) */
+        get: operations["AcademyInboundController_getInvoiceRequest"];
         put?: never;
         post?: never;
         delete?: never;
@@ -15290,6 +15359,20 @@ export interface components {
             /** @description Whether invoices are published to the Academy parent portal */
             enabled: boolean;
         };
+        AcademyParentInvoicingStatusDto: {
+            /** @description Parents may customise and generate their own fee invoices from the parent portal */
+            enabled: boolean;
+            /** @description Publishing invoices to the parent portal is on (parents only see what is published) */
+            publishingOn: boolean;
+            /** @description Roles told when a parent generates an invoice. Empty: everyone who can post invoices. */
+            notifyRoleIds: string[];
+            issues: ("NOT_CONNECTED" | "PUBLISHING_OFF" | "NO_SYSTEM_USER")[];
+        };
+        SetAcademyParentInvoicingDto: {
+            enabled: boolean;
+            /** @description Omit to leave the notification roles as they are; [] = everyone who can post invoices */
+            notifyRoleIds?: string[];
+        };
         CreateAcademyPaymentRequestDto: {
             /**
              * Format: uuid
@@ -15323,6 +15406,98 @@ export interface components {
             code?: string | null;
             /** @description Plain wording that is safe to show a parent */
             message?: string | null;
+        };
+        AcademyFeeOptionLineDto: {
+            /** Format: uuid */
+            categoryId: string;
+            name: string;
+            /** @description Decimal string, 4 places — the school's own amount */
+            amount: string;
+            /** @description YYYY-MM-DD */
+            dueDate: string;
+        };
+        AcademyTransportRouteDto: {
+            /** Format: uuid */
+            routeId: string;
+            name: string;
+            /** @description Decimal string, 4 places — the route's flat fare for the term */
+            amount: string;
+        };
+        AcademyTermFeeOptionsDto: {
+            /** Format: uuid */
+            termId: string;
+            name: string;
+            isCurrent: boolean;
+            /** @description YYYY-MM-DD */
+            startsOn: string;
+            /** @description YYYY-MM-DD */
+            endsOn: string;
+            /**
+             * @description FULL: nothing of this term is billed yet, so the parent's invoice is the whole fee invoice. TOP_UP: the school already billed the term; the parent can only add optional items and/or transport.
+             * @enum {string}
+             */
+            mode: "FULL" | "TOP_UP";
+            /** @description FULL only: lines the invoice carries whatever is chosen (read-only) */
+            included: components["schemas"]["AcademyFeeOptionLineDto"][];
+            /** @description Optional items the parent may tick */
+            optional: components["schemas"]["AcademyFeeOptionLineDto"][];
+            /** @description Routes the parent may pick; empty when transport is already billed for the term */
+            transportRoutes: components["schemas"]["AcademyTransportRouteDto"][];
+            transportAlreadyBilled: boolean;
+        };
+        AcademyParentFeeOptionsDto: {
+            /** @description False when the school has not switched this on or has not finished setting it up */
+            available: boolean;
+            /** @description Plain wording safe to show a parent when not available */
+            message?: string | null;
+            terms: components["schemas"]["AcademyTermFeeOptionsDto"][];
+        };
+        CreateAcademyParentInvoiceRequestDto: {
+            /**
+             * Format: uuid
+             * @description The Academy's own id for this request. Sending the same id again never creates a second invoice.
+             */
+            requestId: string;
+            /**
+             * Format: uuid
+             * @description The term to invoice (one the fee options offered)
+             */
+            termId: string;
+            /** @description Fee category ids of the OPTIONAL items the parent ticked. Only ids: every amount comes from the school's fee structure. */
+            optionalCategoryIds: string[];
+            /**
+             * Format: uuid
+             * @description The transport route the parent picked, if any
+             */
+            routeId?: Record<string, never> | null;
+            /** @description The signed-in parent's name as the Academy verified it. Shown to accounts staff in the notification. */
+            parentName?: string | null;
+        };
+        AcademyParentInvoiceDto: {
+            /** Format: uuid */
+            invoiceId: string;
+            number: string;
+            /** @enum {string} */
+            kind: "FEE" | "TRANSPORT";
+            /** @description Decimal string, 4 places, after any concession applied when posting */
+            total: string;
+            /** @description YYYY-MM-DD */
+            dueDate: string;
+        };
+        AcademyParentInvoiceRequestViewDto: {
+            /** Format: uuid */
+            requestId: string;
+            /** @enum {string} */
+            status: "CREATED" | "REFUSED" | "PENDING";
+            /** @description Short machine code for a refusal */
+            code?: string | null;
+            /** @description Plain wording that is safe to show a parent */
+            message?: string | null;
+            /** @enum {string|null} */
+            mode?: "FULL" | "TOP_UP" | null;
+            invoices: components["schemas"]["AcademyParentInvoiceDto"][];
+            /** @description Sum of the invoices' totals, decimal string, 4 places */
+            total: string;
         };
         AcademyReceiptMethodDto: {
             /** @description How the money was paid, in words a parent reads: Cash, M-Pesa, Bank transfer, ... */
@@ -31314,6 +31489,48 @@ export interface operations {
             };
         };
     };
+    AcademyParentInvoicingController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyParentInvoicingStatusDto"];
+                };
+            };
+        };
+    };
+    AcademyParentInvoicingController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetAcademyParentInvoicingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyParentInvoicingStatusDto"];
+                };
+            };
+        };
+    };
     AcademyInboundController_ping: {
         parameters: {
             query?: never;
@@ -31380,6 +31597,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AcademyPaymentRequestViewDto"];
+                };
+            };
+        };
+    };
+    AcademyInboundController_feeOptions: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path: {
+                academyStudentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyParentFeeOptionsDto"];
+                };
+            };
+        };
+    };
+    AcademyInboundController_createInvoiceRequest: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path: {
+                academyStudentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAcademyParentInvoiceRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyParentInvoiceRequestViewDto"];
+                };
+            };
+        };
+    };
+    AcademyInboundController_getInvoiceRequest: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description v1=<hex HMAC-SHA256>, see academy-signature.ts */
+                "X-Klickit-Signature": string;
+            };
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademyParentInvoiceRequestViewDto"];
                 };
             };
         };
