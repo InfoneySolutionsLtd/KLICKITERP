@@ -11,6 +11,8 @@ import { LicenseStatusCard } from "@/features/licensing/components/license-statu
 import { AcademyIntegrationCard } from "@/features/licensing/components/academy-integration-card";
 import { AcademyLinkSection } from "@/features/academy-sync/components/academy-link-card";
 import { AcademyParentInvoicingSection } from "@/features/academy-sync/components/academy-parent-invoicing-card";
+import { AcademySetupGuideSection } from "@/features/academy-sync/components/academy-setup-guide-card";
+import { SECTION_IDS } from "@/features/academy-sync/setup-guide-targets";
 import { AcademyPublishSection } from "@/features/academy-sync/components/academy-publish-card";
 import { AcademySyncSection } from "@/features/academy-sync/components/academy-sync-card";
 import { ApiCallLogTable } from "@/features/licensing/components/api-call-log-table";
@@ -67,19 +69,32 @@ export default function LicensePage() {
         <p className="text-sm text-muted-foreground">{t("pageSubtitle")}</p>
       </div>
 
+      <AcademySetupGuideSection />
+
       <QueryBoundary query={statusQuery}>{(status) => <LicenseStatusCard status={status} />}</QueryBoundary>
 
-      <QueryBoundary query={academyStatusQuery}>
-        {(academyStatus) => <AcademyIntegrationCard status={academyStatus} />}
-      </QueryBoundary>
+      {/* Each card sits in a wrapper with an id, so the setup guide can scroll to it (the wrapper is outlined for a moment). */}
+      <div id={SECTION_IDS.CONNECT} className="scroll-mt-24">
+        <QueryBoundary query={academyStatusQuery}>
+          {(academyStatus) => <AcademyIntegrationCard status={academyStatus} />}
+        </QueryBoundary>
+      </div>
 
-      <AcademySyncSection connected={academyStatusQuery.data?.connected ?? false} />
+      <div id={SECTION_IDS.IMPORT_STUDENTS} className="scroll-mt-24">
+        <AcademySyncSection connected={academyStatusQuery.data?.connected ?? false} />
+      </div>
 
-      <AcademyLinkSection connected={academyStatusQuery.data?.connected ?? false} />
+      <div id={SECTION_IDS.REACH_ERP} className="scroll-mt-24">
+        <AcademyLinkSection connected={academyStatusQuery.data?.connected ?? false} />
+      </div>
 
-      <AcademyPublishSection connected={academyStatusQuery.data?.connected ?? false} />
+      <div id={SECTION_IDS.PUBLISH_INVOICES} className="scroll-mt-24">
+        <AcademyPublishSection connected={academyStatusQuery.data?.connected ?? false} />
+      </div>
 
-      <AcademyParentInvoicingSection connected={academyStatusQuery.data?.connected ?? false} />
+      <div id={SECTION_IDS.PARENT_INVOICING} className="scroll-mt-24">
+        <AcademyParentInvoicingSection connected={academyStatusQuery.data?.connected ?? false} />
+      </div>
 
       <Card>
         <CardHeader>
