@@ -427,6 +427,7 @@
       "commsMessages": "Ujumbe",
       "commsOptouts": "Kujiondoa",
       "commsTriggerBindings": "Vichocheo",
+      "commsNotificationSettings": "Arifa za ndani ya mfumo",
       "users": "Watumiaji",
       "usersAllUsers": "Watumiaji Wote",
       "usersRoles": "Majukumu",
@@ -488,9 +489,9 @@
     "topbar": {
       "searchPlaceholder": "Search…",
       "notifications": "Notifications",
-      "unreadAriaLabel": "{count} unread notifications",
+      "unreadAriaLabel": "Arifa {count} ambazo hazijasomwa",
       "markAllRead": "Mark all read",
-      "viewAll": "View all"
+      "viewAll": "Tazama zote"
     },
     "userMenu": {
       "profile": "Profile",
@@ -506,15 +507,151 @@
     }
   },
   "notifications": {
-    "pageTitle": "Notifications",
-    "pageSubtitle": "Every notification you've received, newest first.",
-    "markAllRead": "Mark all read",
-    "loadMore": "Load more",
+    "pageTitle": "Arifa",
+    "pageSubtitle": "Kila arifa uliyopokea, mpya zaidi kwanza.",
+    "markAllRead": "Weka zote kama zimesomwa",
+    "loadMore": "Pakia zaidi",
+    "markRead": "Weka kama imesomwa",
+    "markUnread": "Weka kama haijasomwa",
+    "filter": {
+      "all": "Zote",
+      "unread": "Hazijasomwa"
+    },
+    "emptyUnread": "Huna arifa ambazo hazijasomwa.",
+    "defaults": {
+      "parentName": "Mzazi",
+      "value": "—"
+    },
+    "preferences": {
+      "title": "Unachoarifiwa kuhusu",
+      "description": "Chagua aina za arifa zinazoonekana kwenye kengele yako. Idhini na tahadhari za usalama huwa zimewashwa kila wakati.",
+      "alwaysOn": "Huwa imewashwa kila wakati",
+      "toast": {
+        "saved": "Chaguo zako za arifa zimehifadhiwa"
+      }
+    },
+    "settings": {
+      "pageTitle": "Arifa za ndani ya mfumo",
+      "pageSubtitle": "Chagua arifa zipi zionekane kwenye kengele ya watu, na nani azipokee. Kila kitu kimewashwa hadi ukizime.",
+      "listTitle": "Arifa",
+      "listDescription": "Kila moja hutumwa kwa watu wanaohusika. Pale wapokeaji wanapoweza kuchaguliwa, unaweza kuchagua majukumu.",
+      "on": "Imewashwa",
+      "off": "Imezimwa",
+      "switchLabel": "Tuma arifa hii",
+      "recipientsTitle": "Nani anaipokea",
+      "defaultRecipients": "Watu wenye mojawapo ya ruhusa hizi: {permissions}",
+      "chosenRoles": "Watu walio katika majukumu haya",
+      "explicit": "Watu wanaohusika pekee (kwa mfano msimamizi wa idhini, au aliyeanzisha ombi).",
+      "managedElsewhere": "Huchaguliwa kwenye ukurasa wa Leseni.",
+      "openLicence": "Fungua ukurasa wa Leseni",
+      "chooseRoles": "Majukumu yanayoipokea (acha wazi kutumia chaguo-msingi)",
+      "rolesUnavailable": "Orodha ya majukumu haikuweza kupakiwa.",
+      "essentialNote": "Watu hawawezi kuzima kundi hili kwenye mipangilio yao wenyewe.",
+      "saveRoles": "Hifadhi majukumu",
+      "saving": "Inahifadhi…",
+      "toast": {
+        "saved": "Mipangilio ya arifa imehifadhiwa"
+      }
+    },
     "types": {
-      "APPROVAL_PENDING": { "title": "New approval request" },
-      "APPROVAL_APPROVED": { "title": "Your request was approved" },
-      "APPROVAL_REJECTED": { "title": "Your request was rejected" },
-      "APPROVAL_RETURNED": { "title": "Your request was returned" }
+      "APPROVAL_PENDING": {
+        "title": "Ombi jipya la idhini",
+        "body": "Inasubiri uamuzi wako: {domainName}."
+      },
+      "APPROVAL_APPROVED": {
+        "title": "Ombi lako limeidhinishwa",
+        "body": "Ombi lako la {domainName} limeidhinishwa."
+      },
+      "APPROVAL_REJECTED": {
+        "title": "Ombi lako limekataliwa",
+        "body": "Ombi lako la {domainName} limekataliwa."
+      },
+      "APPROVAL_RETURNED": {
+        "title": "Ombi lako limerudishwa",
+        "body": "Ombi lako la {domainName} limerudishwa kwa marekebisho."
+      },
+      "CHEQUE_BOUNCED": {
+        "title": "Hundi imerudishwa",
+        "body": "Hundi {chequeNo} ya KES {amount} imerudishwa bila kulipwa."
+      },
+      "BANK_DEPOSIT_NEEDS_MATCHING": {
+        "title": "Amana ya benki inahitaji kulinganishwa",
+        "body": "Amana ya benki ya KES {amount} (rejea {reference}) haikuweza kulinganishwa kiotomatiki na inasubiri kwenye akaunti ya muda."
+      },
+      "PARENT_INVOICE_CREATED": {
+        "title": "Ankara imetengenezwa na mzazi",
+        "body": "{parentName} ameunda {count, plural, one {ankara} other {ankara}} {numbers} ya {learner} ({admissionNo}), {term}: KES {total}."
+      },
+      "PARENT_PAYMENT_RECEIVED": {
+        "title": "Malipo ya mzazi yamepokelewa",
+        "body": "{parentName} amelipa KES {amount} kwa M-Pesa kwa ajili ya {learner}."
+      },
+      "PAYROLL_RUN_PAID": {
+        "title": "Mishahara imelipwa",
+        "body": "Mishahara ya {period} imelipwa."
+      },
+      "BACKUP_FAILED": {
+        "title": "Nakala rudufu imeshindwa",
+        "body": "Nakala rudufu haikukamilika. Fungua Nakala rudufu kuona sababu."
+      },
+      "RESTORE_CHECK_FAILED": {
+        "title": "Jaribio la kurejesha nakala rudufu limeshindwa",
+        "body": "Nakala rudufu haikuweza kurejeshwa katika jaribio la uthibitisho. Fungua Nakala rudufu kuona sababu."
+      },
+      "LICENCE_STATE_CHANGED": {
+        "title": "Hali ya leseni imebadilika",
+        "body": "Leseni imebadilika kutoka {from} kuwa {to}."
+      },
+      "UPDATE_AVAILABLE": {
+        "title": "Sasisho linapatikana",
+        "body": "Toleo {version} linapatikana."
+      },
+      "ACADEMY_PUBLISH_FAILING": {
+        "title": "Kuchapisha ankara kwa Academy kunashindwa",
+        "body": "Ankara hazifikii lango la wazazi. Fungua ukurasa wa Leseni kuona sababu."
+      },
+      "ACADEMY_SYNC_FAILING": {
+        "title": "Kusawazisha na Academy kunashindwa",
+        "body": "Usawazishaji wa mwisho na Klickit Academy haukukamilika. Fungua ukurasa wa Leseni kuona sababu."
+      },
+      "LOW_STOCK": {
+        "title": "Akiba ni ndogo",
+        "body": "{item} imeshuka hadi {onHand} (kiwango cha kuagiza upya {reorderLevel})."
+      },
+      "BULK_BILLING_DONE": {
+        "title": "Utozaji wa wingi umekamilika",
+        "body": "Utozaji wa wingi wa {term} umekamilika: {created} zimeundwa, {skipped} zimerukwa, {failed} zimeshindwa."
+      },
+      "ACCOUNT_LOCKED": {
+        "title": "Akaunti imefungwa",
+        "body": "Akaunti {username} imefungwa baada ya majaribio mengi ya kuingia yaliyoshindwa."
+      },
+      "SESSION_REUSE_DETECTED": {
+        "title": "Vipindi vyako vimetolewa",
+        "body": "Tokeni yako ya kuingia ilitumika mara mbili, jambo linaloweza kumaanisha ilinakiliwa. Kwa usalama, vipindi vyako vyote vimetolewa. Ingia tena na ubadilishe nenosiri ikiwa si wewe."
+      }
+    },
+    "categories": {
+      "APPROVALS": {
+        "name": "Idhini",
+        "description": "Maombi yanayosubiri uamuzi wako na maamuzi kuhusu maombi yako."
+      },
+      "MONEY": {
+        "name": "Fedha na hesabu",
+        "description": "Hundi zilizorudishwa, amana za benki za kulinganisha, ankara na malipo ya wazazi, mishahara."
+      },
+      "SYSTEM": {
+        "name": "Afya ya mfumo",
+        "description": "Nakala rudufu zilizoshindwa, taarifa za leseni na masasisho, matatizo ya kusawazisha na Academy."
+      },
+      "OPERATIONS": {
+        "name": "Akiba na shughuli",
+        "description": "Bidhaa zinazofikia kiwango cha kuagiza upya na utozaji wa wingi uliokamilika."
+      },
+      "SECURITY": {
+        "name": "Usalama",
+        "description": "Akaunti zilizofungwa na vipindi vilivyotolewa kwa usalama wako."
+      }
     }
   },
   "dashboard": {

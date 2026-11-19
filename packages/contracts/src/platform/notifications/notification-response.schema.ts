@@ -13,6 +13,8 @@ import { z } from "zod";
 export const NotificationResponseDtoSchema = z.object({
     id: z.string(),
     type: z.string(),
+    category: z.string().nullable(),
+    params: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).nullable(),
     title: z.string(),
     body: z.string().nullable(),
     link: z.string().nullable(),

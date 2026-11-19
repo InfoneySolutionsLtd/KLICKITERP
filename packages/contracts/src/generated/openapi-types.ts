@@ -1657,17 +1657,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/notifications/{id}/read": {
+    "/api/v1/notifications/stream": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Server-sent events for the caller's bell: `hello` when connected, `heartbeat` while quiet, `ping` when a notification arrived (ask the list again). Closed after about 14 minutes; reconnect with a fresh token. */
+        get: operations["NotificationsController_stream"];
         put?: never;
-        /** Mark one of the caller's own notifications read (silently no-ops if not theirs or already read) */
-        post: operations["NotificationsController_markRead"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's own notification categories and whether each is on (essential ones are always on) */
+        get: operations["NotificationsController_getPreferences"];
+        /** Switch one of the caller's own notification categories on or off (essential ones cannot be switched off) */
+        put: operations["NotificationsController_setPreference"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1685,6 +1703,74 @@ export interface paths {
         put?: never;
         /** Mark all of the caller's own notifications read */
         post: operations["NotificationsController_markAllRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one of the caller's own notifications read (silently no-ops if not theirs or already read) */
+        post: operations["NotificationsController_markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one of the caller's own notifications unread again (silently no-ops if not theirs or already unread) */
+        post: operations["NotificationsController_markUnread"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every bell notification the system can send, with the school's on/off and receiving roles (untouched ones are on, with their default recipients) */
+        get: operations["NotificationSettingsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/settings/{eventCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Switch one bell notification on or off for the whole school, and choose the roles that receive it */
+        put: operations["NotificationSettingsController_update"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -10945,6 +11031,12 @@ export interface components {
             /** Format: uuid */
             id: string;
             type: string;
+            /** @description The catalogue category of the type; null for a type outside the catalogue */
+            category: string | null;
+            /** @description The values the text is built from (names, amounts, numbers), so it can be shown in the reader's language */
+            params: {
+                [key: string]: unknown;
+            } | null;
             title: string;
             body: string | null;
             link: string | null;
@@ -10962,6 +11054,50 @@ export interface components {
         };
         UnreadCountResponseDto: {
             count: number;
+        };
+        NotificationPreferenceDto: {
+            /** @enum {string} */
+            category: "APPROVALS" | "MONEY" | "SYSTEM" | "OPERATIONS" | "SECURITY";
+            /** @description Approvals and security: always delivered, so they cannot be switched off */
+            essential: boolean;
+            isEnabled: boolean;
+        };
+        NotificationPreferencesResponseDto: {
+            items: components["schemas"]["NotificationPreferenceDto"][];
+        };
+        UpdateNotificationPreferenceDto: {
+            /** @enum {string} */
+            category: "APPROVALS" | "MONEY" | "SYSTEM" | "OPERATIONS" | "SECURITY";
+            isEnabled: boolean;
+        };
+        NotificationEventSettingDto: {
+            /** @description The event's code, e.g. CHEQUE_BOUNCED */
+            code: string;
+            /** @enum {string} */
+            category: "APPROVALS" | "MONEY" | "SYSTEM" | "OPERATIONS" | "SECURITY";
+            /** @description The category cannot be switched off by an individual (approvals, security) */
+            essentialCategory: boolean;
+            /**
+             * @description explicit = only the people the system names; permissions = holders of the default permissions or the roles chosen here
+             * @enum {string}
+             */
+            audienceKind: "explicit" | "permissions";
+            /** @description The recipients are chosen elsewhere (for example on the Licence page), so no roles are offered here */
+            audienceManagedElsewhere: boolean;
+            /** @description Permissions whose holders receive the event unless roles are chosen */
+            defaultPermissions: string[];
+            isEnabled: boolean;
+            /** @description Roles whose people receive the event instead of the default permission holders. Empty = the defaults. */
+            roleIds: string[];
+        };
+        NotificationEventSettingsResponseDto: {
+            items: components["schemas"]["NotificationEventSettingDto"][];
+        };
+        UpdateNotificationEventSettingDto: {
+            /** @description Omit to leave as it is */
+            isEnabled?: boolean;
+            /** @description Omit to leave as it is; [] = back to the default recipients */
+            roleIds?: string[];
         };
         CreateAccountDto: {
             code: string;
@@ -18371,6 +18507,8 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
+                /** @description Only the notifications that are not read yet */
+                unreadOnly?: boolean;
             };
             header?: never;
             path?: never;
@@ -18407,6 +18545,82 @@ export interface operations {
             };
         };
     };
+    NotificationsController_stream: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_getPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencesResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_setPreference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationPreferenceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencesResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_markAllRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     NotificationsController_markRead: {
         parameters: {
             query?: never;
@@ -18426,11 +18640,13 @@ export interface operations {
             };
         };
     };
-    NotificationsController_markAllRead: {
+    NotificationsController_markUnread: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -18440,6 +18656,50 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    NotificationSettingsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationEventSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationSettingsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationEventSettingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationEventSettingDto"];
+                };
             };
         };
     };

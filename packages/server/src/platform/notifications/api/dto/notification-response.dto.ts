@@ -7,6 +7,17 @@ export class NotificationResponseDto {
   @ApiProperty({ maxLength: 60 })
   type!: string;
 
+  @ApiProperty({ nullable: true, type: String, maxLength: 30, description: "The catalogue category of the type; null for a type outside the catalogue" })
+  category!: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    type: "object",
+    additionalProperties: true,
+    description: "The values the text is built from (names, amounts, numbers), so it can be shown in the reader's language",
+  })
+  params!: Record<string, string | number | boolean | null> | null;
+
   @ApiProperty({ maxLength: 200 })
   title!: string;
 

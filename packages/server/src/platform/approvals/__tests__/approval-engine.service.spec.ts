@@ -223,6 +223,39 @@ describe("ApprovalEngineService", () => {
       );
     });
 
+    it("tells the approver which request it is (the workflow's name, translatable params) and links to that request", async () => {
+      workflowDefRepository.findByDomainCode.mockResolvedValue({ id: "def-1", isActive: true, name: "Petty Cash Replenishment Approval" });
+      levelRepository.listByVersion.mockResolvedValue([makeLevel({ seq: 1, approverType: "USERS", userIds: ["approver-a"] })]);
+
+      await service.submit({} as EntityManager, {
+        domainCode: "TEST_DOMAIN",
+        entityType: "test_entity",
+        entityId: "entity-1",
+        amount: Money.fromInt(100),
+        initiatorId: "initiator-1",
+      });
+
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: "approver-a",
+          type: "APPROVAL_PENDING",
+          body: "Waiting for your decision: Petty Cash Replenishment.", // not the raw code
+          params: { domainCode: "TEST_DOMAIN", domainName: "Petty Cash Replenishment" }, // the trailing "Approval" is dropped
+          link: "/approvals/instances/inst-1", // the request itself, not the generic list
+        }),
+        expect.anything(),
+      );
+    });
+
+    it("falls back to the domain code when the workflow has no name", async () => {
+      levelRepository.listByVersion.mockResolvedValue([makeLevel({ seq: 1, approverType: "USERS", userIds: ["approver-a"] })]);
+      await service.submit({} as EntityManager, { domainCode: "TEST_DOMAIN", entityType: "test_entity", entityId: "entity-1", amount: Money.fromInt(100), initiatorId: "initiator-1" });
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ body: "Waiting for your decision: TEST_DOMAIN.", params: { domainCode: "TEST_DOMAIN", domainName: null } }),
+        expect.anything(),
+      );
+    });
+
     it("never notifies the initiator, even when they also hold the approving role (BR-APPR-01)", async () => {
       levelRepository.listByVersion.mockResolvedValue([
         makeLevel({ seq: 1, approverType: "USERS", userIds: ["initiator-1", "approver-a"] }),
@@ -275,6 +308,25 @@ describe("ApprovalEngineService", () => {
       );
       expect(notifyService.notify).toHaveBeenCalledWith(
         expect.objectContaining({ userId: "initiator-1", type: "APPROVAL_APPROVED" }),
+        expect.anything(),
+      );
+    });
+
+    it("tells the initiator about the decision with a link to the request and the workflow's name", async () => {
+      workflowDefRepository.findByDomainCode.mockResolvedValue({ id: "def-1", isActive: true, name: "Expense Voucher Approval" });
+      levelRepository.listByVersion.mockResolvedValue([makeLevel({ seq: 1, approverType: "USERS", userIds: ["approver-a"] })]);
+      instanceRepository.findByIdOrFail.mockResolvedValue(makeInstance({ currentLevel: 1 }));
+
+      await service.decide("inst-1", "approver-a", "APPROVE");
+
+      expect(notifyService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: "initiator-1",
+          type: "APPROVAL_APPROVED",
+          body: "Your Expense Voucher request was approved.",
+          params: { domainCode: "TEST_DOMAIN", domainName: "Expense Voucher" },
+          link: "/approvals/instances/inst-1", // used to be null: clicking it went nowhere
+        }),
         expect.anything(),
       );
     });
