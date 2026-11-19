@@ -1,6 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { EntityManager } from "typeorm";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
+import { formatAmount } from "../../../shared/notifications/format-amount";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { Money } from "../../../shared/money/money";
 import { InvItemRepository } from "../infrastructure/inv-item.repository";
 import { InvMovementRepository } from "../infrastructure/inv-movement.repository";
@@ -12,6 +14,7 @@ import { isItemInScope } from "./stock-take-scope.util";
 import {
   computeWeightedAverageCost,
   qtyAdd,
+  qtyCompare,
   qtyIsNegative,
   qtyIsPositive,
   qtyIsZero,
@@ -188,6 +191,8 @@ export class StockMovementsService {
     private readonly movementRepository: InvMovementRepository,
     private readonly itemRepository: InvItemRepository,
     private readonly stockTakeRepository: InvStockTakeRepository,
+    /** Tells the people who manage items that stock reached its reorder level (the bell, FR-INV-008). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** RECEIPT — recalculates `inv_item.avg_cost` per FR-INV-006.1's exact formula. */
@@ -393,6 +398,25 @@ export class StockMovementsService {
       const item = await this.itemRepository.findByIdOrFail(args.itemId, em);
       item.avgCost = computeWeightedAverageCost(priorQty, priorValue, args.signedQty, movementValue);
       await this.itemRepository.save(item, em);
+    }
+
+    // Low stock: told once, at the movement that CROSSES the reorder level (above it before, at or below it now), never again
+    // while it stays low, and told again the next time it is replenished and falls back.
+    if (this.notifications && qtyIsNegative(args.signedQty)) {
+      const item = await this.itemRepository.findByIdOrFail(args.itemId, em);
+      const level = item.reorderLevel;
+      if (level !== null && level !== "" && qtyCompare(priorQty, level) === 1 && qtyCompare(newQty, level) <= 0) {
+        await this.notifications.emit(
+          {
+            code: "LOW_STOCK",
+            params: { item: item.name, onHand: formatAmount(newQty), reorderLevel: formatAmount(level) },
+            link: `/inventory/items/${item.id}`,
+            entityType: "inv_item",
+            entityId: item.id,
+          },
+          em,
+        );
+      }
     }
 
     return this.movementRepository.create(

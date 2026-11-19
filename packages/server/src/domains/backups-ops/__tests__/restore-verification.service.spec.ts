@@ -105,6 +105,55 @@ describe("RestoreVerificationService", () => {
     expect(rowCountSampler.captureFromConnectionConfig).toHaveBeenCalledWith(TARGET, ["usr_user", "gl_account"]);
   });
 
+  describe("tells the people who verify restores (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new RestoreVerificationService(
+        backupRunRepository as never,
+        restoreRunRepository as never,
+        executor as never,
+        rowCountSampler as never,
+        backupStorageClient as never,
+        offsiteS3Adapter as never,
+        config as never,
+        sink as never,
+      );
+      return { sink, svc };
+    }
+
+    it("a row-count mismatch raises RESTORE_CHECK_FAILED with the reason and a link to the backup, leaving out whoever ran the check", async () => {
+      rowCountSampler.captureFromConnectionConfig.mockResolvedValueOnce({ usr_user: 3, gl_account: 999 });
+      const { sink, svc } = withSink();
+
+      const result = await svc.verifyBackup("backup-run-1", TARGET, "actor-1");
+
+      expect(result.status).toBe("FAILED");
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      const [event] = sink.emit.mock.calls[0] as unknown as [{ code: string; params: { reason: string }; link: string; entityType: string; excludeUserIds: string[] }];
+      expect(event.code).toBe("RESTORE_CHECK_FAILED");
+      expect(event.params.reason).toContain("gl_account");
+      expect(event.link).toBe("/ops/backups/backup-run-1");
+      expect(event.entityType).toBe("bkp_restore_run");
+      expect(event.excludeUserIds).toEqual(["actor-1"]);
+    });
+
+    it("a check that fails by throwing (wrong passphrase) is announced too", async () => {
+      config.backupPassphrase = "a-totally-different-passphrase";
+      const { sink, svc } = withSink();
+      const result = await svc.verifyBackup("backup-run-1", TARGET, null);
+      expect(result.status).toBe("FAILED");
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect((sink.emit.mock.calls[0] as unknown as [{ excludeUserIds: string[] }])[0].excludeUserIds).toEqual([]);
+    });
+
+    it("a check that passes raises nothing", async () => {
+      const { sink, svc } = withSink();
+      const result = await svc.verifyBackup("backup-run-1", TARGET, "actor-1");
+      expect(result.status).toBe("OK");
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+  });
+
   it("ends status='FAILED' with per-table mismatch details when a row count doesn't match", async () => {
     rowCountSampler.captureFromConnectionConfig.mockResolvedValueOnce({ usr_user: 3, gl_account: 999 });
 

@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { EntityManager } from "typeorm";
 import { ApprovalEngineService } from "../../../platform/approvals";
 import { SettingsService } from "../../../platform/settings";
 import { ConflictException } from "../../../shared/exceptions/conflict.exception";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { Money } from "../../../shared/money/money";
@@ -310,6 +311,8 @@ export class PayrollRunsService {
     private readonly settingsService: SettingsService,
     private readonly postingService: PostingService,
     private readonly glAccountRepository: GlAccountRepository,
+    /** Tells the people who can see payroll that a run was paid (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async createRun(em: EntityManager, input: CreatePyrlRunInput, initiatedBy: string): Promise<PyrlRunEntity> {
@@ -976,7 +979,13 @@ export class PayrollRunsService {
     }
 
     run.status = "PAID";
-    return this.runRepository.save(run, em);
+    const saved = await this.runRepository.save(run, em);
+    // Committed (or rolled back) with the payment itself; whoever paid it already knows.
+    await this.notifications?.emit(
+      { code: "PAYROLL_RUN_PAID", params: { period: run.periodKey }, link: `/payroll/runs/${run.id}`, entityType: "pyrl_run", entityId: run.id, excludeUserIds: [paidBy] },
+      em,
+    );
+    return saved;
   }
 
   /**

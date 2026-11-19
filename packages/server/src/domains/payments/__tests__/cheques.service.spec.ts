@@ -193,6 +193,62 @@ describe("ChequesService", () => {
     });
   });
 
+  describe("bounce — tells accounts (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new ChequesService(
+        chequeRepository as never,
+        splitRepository as never,
+        receiptRepository as never,
+        allocationRepository as never,
+        invoiceRepository as never,
+        installmentRepository as never,
+        feeCategoryRepository as never,
+        glAccountRepository as never,
+        postingService as never,
+        receiptsService as never,
+        invoicingService as never,
+        academicCalendarService as never,
+        settingsService as never,
+        dataSource,
+        sink as never,
+      );
+      return { sink, svc };
+    }
+
+    it("raises CHEQUE_BOUNCED in the bounce's own transaction, naming the cheque, amount and drawer, and leaves out the person who did it", async () => {
+      splitRepository.listByReceipt.mockResolvedValueOnce([makeSplit({})]);
+      const { sink, svc } = withSink();
+
+      await svc.bounce(EM, "cheque-1", false, "actor-1");
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith(
+        {
+          code: "CHEQUE_BOUNCED",
+          params: { chequeNo: "000123", amount: "1,000", payer: "Jane Doe" },
+          link: "/payments/cheques",
+          entityType: "pay_cheque",
+          entityId: "cheque-1",
+          excludeUserIds: ["actor-1"],
+        },
+        EM,
+      );
+    });
+
+    it("says nothing when the bounce is refused (the cheque was not UNCLEARED)", async () => {
+      chequeRepository.findByIdOrFail.mockResolvedValueOnce(makeCheque({ status: "BOUNCED" }));
+      const { sink, svc } = withSink();
+      await expect(svc.bounce(EM, "cheque-1", false, "actor-1")).rejects.toBeInstanceOf(ValidationException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("bounces exactly as before when this process has no inbox", async () => {
+      splitRepository.listByReceipt.mockResolvedValueOnce([makeSplit({})]);
+      await expect(service.bounce(EM, "cheque-1", false, "actor-1")).resolves.toMatchObject({ status: "BOUNCED" });
+    });
+  });
+
   describe("bounce — multi-split-on-receipt path (narrow reversal)", () => {
     it("does NOT call reverseReceipt; posts a narrow P-11 journal for just the cheque's own amount", async () => {
       splitRepository.listByReceipt.mockResolvedValueOnce([

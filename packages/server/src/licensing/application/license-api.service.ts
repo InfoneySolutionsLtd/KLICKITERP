@@ -1,5 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { ConflictException } from "../../shared/exceptions/conflict.exception";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../shared/notifications/notification-sink.port";
+import { notifyLicenceStateChange } from "./license-state-notice.util";
 import { ValidationException } from "../../shared/exceptions/validation.exception";
 import { LicenseEntity, LicenseState } from "../domain/license.entity";
 import { UpdateNoticeEntity, UpdateNoticeUrgency } from "../domain/update-notice.entity";
@@ -96,6 +98,8 @@ export class LicenseApiService {
     private readonly usageStatsViewRepository: UsageStatsViewRepository,
     private readonly usageSnapshotRepository: UsageSnapshotRepository,
     private readonly updateNoticesService: UpdateNoticesService,
+    /** Tells the people who can see the Licence page when it changes (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** Provisions (or re-provisions) the singular license row — always resets state to `PROVISIONED`. */
@@ -155,9 +159,12 @@ export class LicenseApiService {
     if (input.validFrom) existing.validFrom = input.validFrom;
     if (input.validTo) existing.validTo = input.validTo;
     if (input.graceDays !== undefined) existing.graceDays = input.graceDays;
+    const before = existing.state;
     existing.state = "ACTIVE";
     existing.stateChangedAt = new Date();
-    return toStatusView(await this.licenseRepository.save(existing));
+    const saved = await this.licenseRepository.save(existing);
+    await notifyLicenceStateChange(this.notifications, { from: before, to: saved.state, validTo: saved.validTo });
+    return toStatusView(saved);
   }
 
   /** `ACTIVE|GRACE -> SUSPENDED` — a manual Super Admin suspension (e.g. non-payment), distinct from the automatic grace-expiry path `deriveState()` also reaches. */
@@ -166,9 +173,12 @@ export class LicenseApiService {
     if (!["ACTIVE", "GRACE"].includes(existing.state)) {
       throw new ConflictException(`Cannot suspend a license in state "${existing.state}"`, { from: existing.state });
     }
+    const before = existing.state;
     existing.state = "SUSPENDED";
     existing.stateChangedAt = new Date();
-    return toStatusView(await this.licenseRepository.save(existing));
+    const saved = await this.licenseRepository.save(existing);
+    await notifyLicenceStateChange(this.notifications, { from: before, to: saved.state, validTo: saved.validTo });
+    return toStatusView(saved);
   }
 
   /** Extends `valid_to`/`grace_days` and re-derives state — the normal path back to `ACTIVE` from `GRACE`/`SUSPENDED`. */
@@ -189,21 +199,27 @@ export class LicenseApiService {
       { validFrom: existing.validFrom, validTo: existing.validTo, graceDays: existing.graceDays },
       now,
     );
+    const before = existing.state;
     if (nextState !== existing.state) {
       existing.state = nextState;
       existing.stateChangedAt = now;
     }
-    return toStatusView(await this.licenseRepository.save(existing));
+    const saved = await this.licenseRepository.save(existing);
+    await notifyLicenceStateChange(this.notifications, { from: before, to: saved.state, validTo: saved.validTo });
+    return toStatusView(saved);
   }
 
   /** Terminal (for this pass — no handler among the 9 ever leaves `DEACTIVATED`) manual deactivation, from any state. */
   async deactivate(): Promise<LicenseStatusView> {
     const existing = await this.licenseRepository.findCurrentOrFail();
+    const before = existing.state;
     if (existing.state !== "DEACTIVATED") {
       existing.state = "DEACTIVATED";
       existing.stateChangedAt = new Date();
     }
-    return toStatusView(await this.licenseRepository.save(existing));
+    const saved = await this.licenseRepository.save(existing);
+    await notifyLicenceStateChange(this.notifications, { from: before, to: saved.state, validTo: saved.validTo });
+    return toStatusView(saved);
   }
 
   async status(): Promise<LicenseStatusView> {

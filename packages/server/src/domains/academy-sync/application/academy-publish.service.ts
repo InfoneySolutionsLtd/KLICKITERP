@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
 import type { Redis } from "ioredis";
 import { REDIS_CLIENT } from "../../../shared/cache/redis.provider";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { ACADEMY_LINK_PORT } from "../../../shared/integrations/academy/academy-link.port";
 import type { AcademyLinkPort } from "../../../shared/integrations/academy/academy-link.port";
 import { AcadSyncStateEntity } from "../domain/acad-sync-state.entity";
@@ -66,6 +67,8 @@ export class AcademyPublishService {
     private readonly snapshots: AcademyInvoiceSnapshotRepository,
     private readonly stateRepository: AcadSyncStateRepository,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    /** Tells the people who manage the Academy link when publishing or syncing starts failing (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async getStatus(): Promise<PublishStatus> {
@@ -202,10 +205,20 @@ export class AcademyPublishService {
       return;
     }
     const state = await this.stateRepository.getOrCreate();
+    const wasFailing = state.lastPublishOk === false;
     state.lastPublishAt = new Date();
     state.lastPublishOk = ok;
     state.lastPublishMessage = message.slice(0, MAX_MESSAGE_LENGTH);
     await this.stateRepository.save(state);
+    // Told once, when it STARTS failing; the sweeps that follow while it keeps failing say nothing more.
+    if (!ok && !wasFailing) {
+      await this.notifications?.emit({
+        code: "ACADEMY_PUBLISH_FAILING",
+        params: { reason: message.slice(0, 200) },
+        link: "/license",
+        entityType: "acad_sync_state",
+      });
+    }
   }
 
   /** Releases the lock only if it is still ours (it may have expired and been taken by another run). */

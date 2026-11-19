@@ -1,6 +1,7 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
 import { ConflictException } from "../../../shared/exceptions/conflict.exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { ACADEMY_LINK_PORT } from "../../../shared/integrations/academy/academy-link.port";
 import type { AcademyConnection, AcademyLinkPort } from "../../../shared/integrations/academy/academy-link.port";
 import {
@@ -130,6 +131,8 @@ export class AcademySyncService {
     private readonly studentMapRepository: AcadStudentMapRepository,
     private readonly guardianMapRepository: AcadGuardianMapRepository,
     private readonly classMapRepository: AcadClassMapRepository,
+    /** Tells the people who manage the Academy link when publishing or syncing starts failing (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   // ---------------------------------------------------------------------------------------------------------------
@@ -311,11 +314,32 @@ export class AcademySyncService {
     run.issues = ctx.issues;
     run.issuesTotal = ctx.issuesTotal;
     run.finishedAt = new Date();
+    let saved = run;
     try {
-      return await this.runRepository.save(run);
+      saved = await this.runRepository.save(run);
     } catch (error) {
       this.logger.error(`Could not save the result of Academy sync run ${run.id}: ${this.describeError(error)}`);
-      return run;
+    }
+    // A scheduled run nobody is watching: told once, when the syncing STARTS failing (the run before it did not fail).
+    if (saved.status === "FAILED" && options.trigger !== "MANUAL") {
+      await this.tellSyncFailing(saved);
+    }
+    return saved;
+  }
+
+  private async tellSyncFailing(run: AcadSyncRunEntity): Promise<void> {
+    try {
+      const previous = (await this.runRepository.listRecent(2)).find((other) => other.id !== run.id);
+      if (previous?.status === "FAILED") return;
+      await this.notifications?.emit({
+        code: "ACADEMY_SYNC_FAILING",
+        params: { reason: (run.error ?? "").slice(0, 200) },
+        link: "/license",
+        entityType: "acad_sync_run",
+        entityId: run.id,
+      });
+    } catch (error) {
+      this.logger.warn(`Academy sync failed and accounts could not be told: ${this.describeError(error)}`);
     }
   }
 

@@ -1,9 +1,11 @@
 import { timingSafeEqual } from "node:crypto";
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, EntityManager } from "typeorm";
 import { AppConfigService } from "../../../shared/config/app-config.service";
 import { runInTransaction } from "../../../shared/database/tx";
+import { formatAmount } from "../../../shared/notifications/format-amount";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { AuthenticationException } from "../../../shared/exceptions/authentication.exception";
 import { DomainException } from "../../../shared/exceptions/domain-exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
@@ -105,6 +107,8 @@ export class KcbIpnService {
     private readonly configResolver: KcbBuniConfigResolverService,
     private readonly appConfig: AppConfigService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    /** Tells accounts about a payment that needs matching, and about online payments receipted automatically (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async handleAccountNotification(input: BankNotificationInput): Promise<AccountNotificationAck> {
@@ -286,10 +290,23 @@ export class KcbIpnService {
       return await runInTransaction(this.dataSource, async (em) => {
         const row = await this.ipnRepository.findByExternalRefForUpdate(ipn.provider, ipn.kind, ipn.externalRef, em);
         if (!row || row.state !== "RECEIVED") return row ?? ipn; // another delivery finished it first
-        row.receiptId = await this.captureReceiptFor(em, row, resolved);
+        const captured = await this.captureReceiptFor(em, row, resolved);
+        row.receiptId = captured.receiptId;
         row.state = "MATCHED";
         row.note = null;
-        return this.ipnRepository.save(row, em);
+        const matched = await this.ipnRepository.save(row, em);
+        // Receipted with nobody at a till: accounts hear about it (in the same transaction as the receipt).
+        await this.notifications?.emit(
+          {
+            code: "ONLINE_PAYMENT_RECEIVED",
+            params: { payer: row.payerName ?? captured.learner, amount: formatAmount(row.amount.toDecimalString()), learner: captured.learner, receiptNo: captured.receiptNumber },
+            link: `/payments/receipts/${captured.receiptId}`,
+            entityType: "pay_receipt",
+            entityId: captured.receiptId,
+          },
+          em,
+        );
+        return matched;
       });
     } catch (error) {
       const matchingProblem = error instanceof BankIpnUnmatchedError;
@@ -304,7 +321,7 @@ export class KcbIpnService {
     }
   }
 
-  private async captureReceiptFor(em: EntityManager, row: PayBankIpnEntity, resolved: ResolvedKcbBuni): Promise<string> {
+  private async captureReceiptFor(em: EntityManager, row: PayBankIpnEntity, resolved: ResolvedKcbBuni): Promise<{ receiptId: string; receiptNumber: string; learner: string }> {
     if (row.currency !== "KES") throw new BankIpnUnmatchedError(`Currency ${row.currency} is not KES`);
     if (!row.customerReference) throw new BankIpnUnmatchedError("The notification carries no customer reference");
 
@@ -333,7 +350,7 @@ export class KcbIpnService {
       cashierId,
       idempotencyKey: `kcb-ipn-${row.kind}-${row.externalRef}`,
     });
-    return receipt.id;
+    return { receiptId: receipt.id, receiptNumber: receipt.number, learner: `${student.firstName} ${student.lastName}` };
   }
 
   private async parkInSuspense(ipn: PayBankIpnEntity, reason: string, resolved: ResolvedKcbBuni): Promise<PayBankIpnEntity> {
@@ -361,7 +378,18 @@ export class KcbIpnService {
       row.suspenseItemId = item.id;
       row.state = "SUSPENDED";
       row.note = reason;
-      return this.ipnRepository.save(row, em);
+      const parked = await this.ipnRepository.save(row, em);
+      await this.notifications?.emit(
+        {
+          code: "PAYMENT_NEEDS_MATCHING",
+          params: { amount: formatAmount(row.amount.toDecimalString()), reference: row.customerReference ?? row.externalRef },
+          link: `/payments/suspense/${item.id}`,
+          entityType: "pay_suspense_item",
+          entityId: item.id,
+        },
+        em,
+      );
+      return parked;
     });
   }
 

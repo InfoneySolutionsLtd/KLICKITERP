@@ -192,6 +192,71 @@ describe("BackupOrchestratorService", () => {
       }
     });
 
+    it("tells the people who watch backups when a backup fails, with the reason and a link to the run", async () => {
+      executor.dumpDatabase.mockRejectedValueOnce(new Error("pg_dump not found on PATH"));
+      const sink = { emit: jest.fn(async () => 1) };
+      const withSink = new BackupOrchestratorService(
+        backupRunRepository as never,
+        storage as never,
+        executor as never,
+        backupStorageClient as never,
+        offsiteS3Adapter as never,
+        rowCountSampler as never,
+        config as never,
+        {} as DataSource,
+        sink as never,
+      );
+
+      const run = await withSink.runBackup("SCHEDULED", null);
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith({
+        code: "BACKUP_FAILED",
+        params: { kind: "SCHEDULED", reason: "pg_dump not found on PATH" },
+        link: `/ops/backups/${run.id}`,
+        entityType: "bkp_backup_run",
+        entityId: run.id,
+      });
+    });
+
+    it("a backup that succeeds raises nothing", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const withSink = new BackupOrchestratorService(
+        backupRunRepository as never,
+        storage as never,
+        executor as never,
+        backupStorageClient as never,
+        offsiteS3Adapter as never,
+        rowCountSampler as never,
+        config as never,
+        {} as DataSource,
+        sink as never,
+      );
+      const run = await withSink.runBackup("MANUAL", "actor-1");
+      expect(run.status).toBe("OK");
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("keeps only the first 200 characters of a long error in the notification (the full text stays on the run)", async () => {
+      executor.dumpDatabase.mockRejectedValueOnce(new Error("x".repeat(500)));
+      const sink = { emit: jest.fn(async () => 1) };
+      const withSink = new BackupOrchestratorService(
+        backupRunRepository as never,
+        storage as never,
+        executor as never,
+        backupStorageClient as never,
+        offsiteS3Adapter as never,
+        rowCountSampler as never,
+        config as never,
+        {} as DataSource,
+        sink as never,
+      );
+      const run = await withSink.runBackup("MANUAL", "actor-1");
+      expect(run.error).toHaveLength(500);
+      const [event] = sink.emit.mock.calls[0] as unknown as [{ params: { reason: string } }];
+      expect(event.params.reason).toHaveLength(200);
+    });
+
     it("ends status='FAILED' when the files-bucket mirror step fails (MinIO unreachable)", async () => {
       backupStorageClient.mirrorBucketToDir.mockRejectedValueOnce(new Error("connect ECONNREFUSED"));
 
