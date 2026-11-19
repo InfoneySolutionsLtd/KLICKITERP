@@ -9897,6 +9897,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academy-sync/setup-guide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The setup steps for the Klickit Academy link: done / to do / needs attention / locked, what each needs, and the next step */
+        get: operations["AcademySetupGuideController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academy-sync/setup-guide/payments-cashier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Choose the user the receipts of parent M-Pesa payments are recorded under (the M-Pesa system cashier). The user must exist and be active; a refused choice changes nothing. */
+        put: operations["AcademySetupGuideController_setPaymentsCashier"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/academy/inbound/ping": {
         parameters: {
             query?: never;
@@ -15393,6 +15427,63 @@ export interface components {
              * @description The ACTIVE user parent-generated invoices are recorded under (ideally a service account). Omit to leave it as it is.
              */
             actorUserId?: string;
+        };
+        AcademySetupStepDto: {
+            /** @enum {string} */
+            key: "CONNECT" | "IMPORT_STUDENTS" | "REACH_ERP" | "PUBLISH_INVOICES" | "RECEIPTS" | "PAYMENTS" | "FEE_OPTIONS" | "PARENT_INVOICING";
+            /**
+             * @description Which part of the journey the step belongs to
+             * @enum {string}
+             */
+            group: "SHOW_INVOICES" | "RECEIPTS_AND_PAYMENTS" | "PARENT_INVOICES";
+            /** @description Optional steps are never needed to show invoices to parents */
+            optional: boolean;
+            /**
+             * @description TODO = not started; ATTENTION = started but something is wrong; LOCKED = a step it needs is not done yet
+             * @enum {string}
+             */
+            state: "DONE" | "TODO" | "ATTENTION" | "LOCKED";
+            /** @description The steps that must be done first and are not (only when LOCKED) */
+            blockedBy: ("CONNECT" | "IMPORT_STUDENTS" | "REACH_ERP" | "PUBLISH_INVOICES" | "RECEIPTS" | "PAYMENTS" | "FEE_OPTIONS" | "PARENT_INVOICING")[];
+            /** @description A short code saying why the step is in this state (turned into words by the web app) */
+            detail: string | null;
+        };
+        AcademySetupCashierDto: {
+            /** @description True when a user is set AND is active */
+            configured: boolean;
+            /** Format: uuid */
+            userId: string | null;
+            userName: string | null;
+            /** @description False when a user id is saved but that user is missing or not active */
+            userActive: boolean;
+        };
+        AcademySetupPaymentsDto: {
+            /** @description A real M-Pesa provider is set up (not the log-only fallback that sends nothing) */
+            providerConfigured: boolean;
+            /** @description The user receipts of parent M-Pesa payments are recorded under */
+            cashier: components["schemas"]["AcademySetupCashierDto"];
+        };
+        AcademySetupGuideDto: {
+            /** @description Every step, in the order a person should do them */
+            steps: components["schemas"]["AcademySetupStepDto"][];
+            doneCount: number;
+            totalCount: number;
+            /** @description Done steps among the ones needed to show invoices to parents */
+            requiredDone: number;
+            requiredTotal: number;
+            /**
+             * @description The first step to do or fix (never a locked one); null when everything is done
+             * @enum {string|null}
+             */
+            nextStepKey: "CONNECT" | "IMPORT_STUDENTS" | "REACH_ERP" | "PUBLISH_INVOICES" | "RECEIPTS" | "PAYMENTS" | "FEE_OPTIONS" | "PARENT_INVOICING" | null;
+            payments: components["schemas"]["AcademySetupPaymentsDto"];
+        };
+        SetPaymentsCashierDto: {
+            /**
+             * Format: uuid
+             * @description The ACTIVE user receipts of parent M-Pesa payments are recorded under (ideally a service account)
+             */
+            userId: string;
         };
         CreateAcademyPaymentRequestDto: {
             /**
@@ -31548,6 +31639,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AcademyParentInvoicingStatusDto"];
+                };
+            };
+        };
+    };
+    AcademySetupGuideController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySetupGuideDto"];
+                };
+            };
+        };
+    };
+    AcademySetupGuideController_setPaymentsCashier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPaymentsCashierDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademySetupGuideDto"];
                 };
             };
         };
