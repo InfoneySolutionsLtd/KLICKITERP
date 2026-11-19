@@ -146,6 +146,29 @@ export class AcademyParentInvoiceRequestViewDto {
   total!: string;
 }
 
+/** Which user invoices a parent generates are recorded under, and where that came from. */
+export class AcademyParentInvoiceActorDto {
+  @ApiProperty({ description: "True when a user is set AND is active: parent invoices can be created" })
+  configured!: boolean;
+
+  @ApiProperty({
+    enum: ["PARENT_INVOICES", "MPESA"],
+    nullable: true,
+    type: String,
+    description: "Which setting supplied it: this feature's own, or the existing M-Pesa system cashier (the fallback)",
+  })
+  source!: "PARENT_INVOICES" | "MPESA" | null;
+
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  userId!: string | null;
+
+  @ApiProperty({ type: String, nullable: true })
+  userName!: string | null;
+
+  @ApiProperty({ description: "False when a user id is saved but that user is missing or not active" })
+  userActive!: boolean;
+}
+
 /** Staff side: the school's switch for parent invoicing. */
 export class AcademyParentInvoicingStatusDto {
   @ApiProperty({ description: "Parents may customise and generate their own fee invoices from the parent portal" })
@@ -156,6 +179,9 @@ export class AcademyParentInvoicingStatusDto {
 
   @ApiProperty({ type: [String], format: "uuid", description: "Roles told when a parent generates an invoice. Empty: everyone who can post invoices." })
   notifyRoleIds!: string[];
+
+  @ApiProperty({ type: AcademyParentInvoiceActorDto, description: "The user parent-generated invoices are recorded under" })
+  actor!: AcademyParentInvoiceActorDto;
 
   @ApiProperty({ enum: ["NOT_CONNECTED", "PUBLISHING_OFF", "NO_SYSTEM_USER"], isArray: true })
   issues!: Array<"NOT_CONNECTED" | "PUBLISHING_OFF" | "NO_SYSTEM_USER">;
@@ -172,4 +198,12 @@ export class SetAcademyParentInvoicingDto {
   @ArrayMaxSize(50)
   @IsUUID("all", { each: true })
   notifyRoleIds?: string[];
+
+  @ApiPropertyOptional({
+    format: "uuid",
+    description: "The ACTIVE user parent-generated invoices are recorded under (ideally a service account). Omit to leave it as it is.",
+  })
+  @IsOptional()
+  @IsUUID()
+  actorUserId?: string;
 }

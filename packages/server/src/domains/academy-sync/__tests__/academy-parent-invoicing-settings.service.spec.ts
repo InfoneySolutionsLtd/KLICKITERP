@@ -5,7 +5,10 @@ import { AcademyParentInvoicingSettingsService } from "../application/academy-pa
 const ROLE_A = "r0000000-0000-4000-8000-000000000001";
 const ROLE_B = "r0000000-0000-4000-8000-000000000002";
 
-function harness(over: { connected?: boolean; publishing?: boolean; enabled?: boolean; roles?: string[]; existingRoles?: string[]; issues?: string[] } = {}) {
+const ACTOR_A = "u0000000-0000-4000-8000-0000000000aa";
+const NO_ACTOR = { configured: false, source: null, userId: null, userName: null, userActive: false };
+
+function harness(over: { connected?: boolean; publishing?: boolean; enabled?: boolean; roles?: string[]; existingRoles?: string[]; issues?: string[]; user?: { id: string; fullName: string; status: string } | null } = {}) {
   const state = {
     parentInvoicingEnabled: over.enabled ?? false,
     publishInvoicesEnabled: over.publishing ?? true,
@@ -14,16 +17,20 @@ function harness(over: { connected?: boolean; publishing?: boolean; enabled?: bo
   };
   const academyLink = { getConnection: jest.fn(async () => (over.connected === false ? null : { schoolCode: "KAS-2414" })) };
   const stateRepository = { getOrCreate: jest.fn(async () => state), save: jest.fn(async (s: unknown) => s) };
-  const requests = { existingRoleIds: jest.fn(async (ids: string[]) => over.existingRoles ?? ids) };
-  const parentInvoices = { readiness: jest.fn(async () => ({ issues: over.issues ?? [] })) };
-  const service = new AcademyParentInvoicingSettingsService(academyLink as any, stateRepository as any, requests as any, parentInvoices as any);
-  return { service, state, stateRepository, requests, parentInvoices };
+  const requests = {
+    existingRoleIds: jest.fn(async (ids: string[]) => over.existingRoles ?? ids),
+    findUserBrief: jest.fn(async (id: string) => (over.user === undefined ? { id, fullName: "Service Account", status: "ACTIVE" } : over.user)),
+  };
+  const parentInvoices = { readiness: jest.fn(async () => ({ issues: over.issues ?? [] })), actorStatus: jest.fn(async () => NO_ACTOR) };
+  const settingsService = { set: jest.fn(async () => undefined) };
+  const service = new AcademyParentInvoicingSettingsService(academyLink as any, stateRepository as any, requests as any, parentInvoices as any, settingsService as any);
+  return { service, state, stateRepository, requests, parentInvoices, settingsService };
 }
 
 describe("AcademyParentInvoicingSettingsService", () => {
   it("is off by default and reports what is missing", async () => {
     const h = harness({ issues: ["NO_SYSTEM_USER"] });
-    expect(await h.service.getStatus()).toEqual({ enabled: false, publishingOn: true, notifyRoleIds: [], issues: ["NO_SYSTEM_USER"] });
+    expect(await h.service.getStatus()).toEqual({ enabled: false, publishingOn: true, notifyRoleIds: [], actor: NO_ACTOR, issues: ["NO_SYSTEM_USER"] });
   });
 
   it("switches on when the ERP is connected and publishing is on, remembers who did it, and saves the notification roles", async () => {
@@ -58,6 +65,47 @@ describe("AcademyParentInvoicingSettingsService", () => {
     const h = harness({ existingRoles: [ROLE_A] });
     await expect(h.service.update({ enabled: false, notifyRoleIds: [ROLE_A, ROLE_B] }, "admin-1")).rejects.toThrow(/role/i);
     expect(h.stateRepository.save).not.toHaveBeenCalled();
+  });
+
+  describe("the user the invoices are recorded under", () => {
+    it("saves an active user under the feature's own setting key, plain (not secret), remembering who chose it", async () => {
+      const h = harness();
+      await h.service.update({ enabled: false, actorUserId: ACTOR_A }, "admin-1");
+      expect(h.settingsService.set).toHaveBeenCalledWith("academy.parent_invoice_actor_user_id", ACTOR_A, false, "admin-1");
+    });
+
+    it("can be chosen before the feature is connected or switched on (it is part of setting up)", async () => {
+      const h = harness({ connected: false, publishing: false });
+      await h.service.update({ enabled: false, actorUserId: ACTOR_A }, "admin-1");
+      expect(h.settingsService.set).toHaveBeenCalledTimes(1);
+    });
+
+    it("refuses a user that does not exist, and saves nothing at all", async () => {
+      const h = harness({ user: null });
+      await expect(h.service.update({ enabled: true, notifyRoleIds: [ROLE_A], actorUserId: ACTOR_A }, "admin-1")).rejects.toThrow(/does not exist/i);
+      expect(h.settingsService.set).not.toHaveBeenCalled();
+      expect(h.stateRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("refuses a user who is not active, naming them, and saves nothing", async () => {
+      const h = harness({ user: { id: ACTOR_A, fullName: "Left School", status: "SUSPENDED" } });
+      await expect(h.service.update({ enabled: false, actorUserId: ACTOR_A }, "admin-1")).rejects.toThrow(/Left School is not an active user/);
+      expect(h.settingsService.set).not.toHaveBeenCalled();
+      expect(h.stateRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("saves no user when the switch is refused (a failed 'switch on' changes nothing)", async () => {
+      const h = harness({ publishing: false });
+      await expect(h.service.update({ enabled: true, actorUserId: ACTOR_A }, "admin-1")).rejects.toThrow(/parent portal/i);
+      expect(h.settingsService.set).not.toHaveBeenCalled();
+    });
+
+    it("leaves the saved user alone when none is sent", async () => {
+      const h = harness();
+      await h.service.update({ enabled: false }, "admin-1");
+      expect(h.settingsService.set).not.toHaveBeenCalled();
+      expect(h.requests.findUserBrief).not.toHaveBeenCalled();
+    });
   });
 
   it("leaves the notification roles alone when none are sent, and clears them (back to 'everyone who can post invoices') when [] is sent", async () => {

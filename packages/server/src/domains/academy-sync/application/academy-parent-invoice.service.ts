@@ -112,6 +112,18 @@ export interface ParentInvoiceRequestView {
   total: string;
 }
 
+/** Which user parent-generated invoices are recorded under, and where that came from. */
+export interface ParentInvoiceActorStatus {
+  /** True when a user is set AND is active: the feature can create invoices. */
+  configured: boolean;
+  /** `PARENT_INVOICES` = this feature's own setting; `MPESA` = the existing M-Pesa system cashier, used as the fallback. */
+  source: "PARENT_INVOICES" | "MPESA" | null;
+  userId: string | null;
+  userName: string | null;
+  /** False when a user id is saved but that user is missing or not active. */
+  userActive: boolean;
+}
+
 export interface ParentInvoicingReadiness {
   /** Issues that stop parents from using the feature (or that the school should know about). */
   issues: Array<"NOT_CONNECTED" | "PUBLISHING_OFF" | "NO_SYSTEM_USER">;
@@ -417,15 +429,31 @@ export class AcademyParentInvoiceService {
     return actorUserId ? { ok: true, actorUserId } : { ok: false, code: "NOT_READY" };
   }
 
-  /** The user parent-generated invoices are recorded under: this feature's own setting, else the M-Pesa system cashier. */
-  private async resolveActor(): Promise<string | null> {
-    for (const key of [PARENT_INVOICE_ACTOR_SETTING_KEY, MPESA_SYSTEM_ACTOR_SETTING_KEY]) {
+  /**
+   * The user parent-generated invoices are recorded under: this feature's own setting first, else the existing M-Pesa system
+   * cashier. A saved id whose user is missing or not active does not count (the next one is tried); if none works, the first
+   * saved one is reported so the school can see WHY it cannot be used.
+   */
+  async actorStatus(): Promise<ParentInvoiceActorStatus> {
+    let unusable: ParentInvoiceActorStatus | null = null;
+    for (const [key, source] of [
+      [PARENT_INVOICE_ACTOR_SETTING_KEY, "PARENT_INVOICES"],
+      [MPESA_SYSTEM_ACTOR_SETTING_KEY, "MPESA"],
+    ] as const) {
       const id = await this.settingsService.getTyped<string | null>(key, null);
-      if (id && (await this.repository.isActiveUser(id))) {
-        return id;
-      }
+      if (!id) continue;
+      const user = await this.repository.findUserBrief(id);
+      const active = user?.status === "ACTIVE";
+      const status: ParentInvoiceActorStatus = { configured: active, source, userId: id, userName: user?.fullName ?? null, userActive: active };
+      if (active) return status;
+      unusable ??= status;
     }
-    return null;
+    return unusable ?? { configured: false, source: null, userId: null, userName: null, userActive: false };
+  }
+
+  private async resolveActor(): Promise<string | null> {
+    const actor = await this.actorStatus();
+    return actor.configured ? actor.userId : null;
   }
 
   private async refuse(row: ParentInvoiceRequestRow, code: ParentInvoiceRefusalCode, studentId: string | null): Promise<ParentInvoiceRequestView> {

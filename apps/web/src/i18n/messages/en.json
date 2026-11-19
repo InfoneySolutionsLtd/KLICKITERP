@@ -1,6 +1,27 @@
 {
   "academySync": {
     "parentInvoicing": {
+      "actor": {
+        "title": "Record parent invoices under this user",
+        "hint": "Nobody at the school presses a button when a parent generates an invoice, and every invoice records who created it. Choose a user for that, ideally a service account rather than a real staff member.",
+        "configured": "Parent invoices are recorded under {name}.",
+        "configuredFromMpesa": "Parent invoices are recorded under {name}, the M-Pesa system cashier. Choose a different user if you prefer.",
+        "change": "Change",
+        "missingTitle": "No user is set for parent invoices",
+        "missingBody": "Until one is chosen, parents are told the school has not finished setting this up, and no invoice is created.",
+        "inactiveTitle": "The saved user can't be used",
+        "inactiveBody": "{name} is no longer an active user, so parent invoices can't be created. Pick another user.",
+        "unknownUser": "The saved user",
+        "loadingUsers": "Loading users…",
+        "pickPlaceholder": "Choose a user",
+        "searchUsers": "Search users",
+        "noUsers": "No users found.",
+        "cannotLoadUsers": "Couldn't load the list of users (you may not have permission to see users).",
+        "save": "Use this user",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "manageUsers": "Create or manage users"
+      },
       "title": "Parents customise their own invoices",
       "description": "Lets a parent choose, in the Klickit Academy parent portal, the optional fee items and the transport route for their own child, check the total and generate the invoice themselves, then pay it. Schools often only learn who wants milk or transport when a parent visits; this lets parents tell you directly.",
       "badge": {
@@ -20,7 +41,7 @@
       "issue": {
         "NOT_CONNECTED": "Connect this ERP to its Klickit Academy school on this page first.",
         "PUBLISHING_OFF": "Switch on “Invoices in the parent portal” above first: parents can only see invoices that are published to the portal.",
-        "NO_SYSTEM_USER": "Choose the user these invoices are recorded under: set the Settings key academy.parent_invoice_actor_user_id (or payments.mpesa_system_actor_user_id) to an active user's id."
+        "NO_SYSTEM_USER": "Choose the user parent invoices are recorded under (below)."
       },
       "toast": {
         "saved": "Parent invoicing setting saved."

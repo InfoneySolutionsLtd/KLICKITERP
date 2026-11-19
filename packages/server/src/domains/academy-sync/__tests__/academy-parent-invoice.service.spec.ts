@@ -30,6 +30,8 @@ interface Over {
   publishInvoicesEnabled?: boolean;
   roles?: string[];
   actor?: string | null;
+  /** What the user lookup answers for any saved system-user id (default: an active user named "System User"). */
+  actorUser?: { id: string; fullName: string; status: string } | null;
   student?: { studentId: string; admissionNo: string; fullName: string; status: string } | null;
   liveStructureInvoice?: boolean;
   billed?: string[];
@@ -57,7 +59,7 @@ function harness(over: Over = {}) {
     findLinkedStudent: jest.fn(async () => (over.student === undefined ? { studentId: "erp-student-1", admissionNo: "ADM-1001", fullName: "Amina Otieno", status: "ACTIVE" } : over.student)),
     hasLiveStructureInvoice: jest.fn(async () => over.liveStructureInvoice ?? false),
     hasTransportBilled: jest.fn(async () => over.transportBilled ?? false),
-    isActiveUser: jest.fn(async () => true),
+    findUserBrief: jest.fn(async (id: string) => (over.actorUser === undefined ? { id, fullName: "System User", status: "ACTIVE" } : over.actorUser)),
     markRefused: jest.fn(async (_id: string, code: string, message: string, studentId: string | null) => void calls.refused.push({ code, message, studentId })),
     markCreated: jest.fn(async (id: string, result: any, em: unknown) => void calls.created.push({ id, result, em })),
     findInvoiceBriefs: jest.fn(async (ids: string[]) => ids.map((id) => ({ id, number: id === "inv-fee" ? "INV-000201" : "INV-000202", total: id === "inv-fee" ? "21500.0000" : "5000.0000", dueDate: "2026-02-28" }))),
@@ -434,6 +436,45 @@ describe("AcademyParentInvoiceService.create — telling accounts and the portal
 describe("AcademyParentInvoiceService.getStatus", () => {
   it("answers 404 for an unknown request", async () => {
     await expect(harness().service.getStatus(REQ)).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe("AcademyParentInvoiceService.actorStatus — which user the invoices are recorded under", () => {
+  const PARENT_KEY_USER = "u0000000-0000-4000-8000-0000000000aa";
+
+  it("is this feature's own setting when it names an active user", async () => {
+    const h = harness();
+    expect(await h.service.actorStatus()).toEqual({ configured: true, source: "PARENT_INVOICES", userId: ACTOR, userName: "System User", userActive: true });
+  });
+
+  it("falls back to the existing M-Pesa system cashier when this feature's own setting is not set, and says so", async () => {
+    const h = harness();
+    h.settings.getTyped.mockImplementation(async (key: string) => (key.startsWith("payments.") ? PARENT_KEY_USER : null));
+    expect(await h.service.actorStatus()).toMatchObject({ configured: true, source: "MPESA", userId: PARENT_KEY_USER });
+  });
+
+  it("skips a saved user who is no longer active and uses the next one that works", async () => {
+    const h = harness();
+    h.settings.getTyped.mockImplementation(async (key: string) => (key.startsWith("academy.") ? "u-inactive" : PARENT_KEY_USER));
+    h.repository.findUserBrief.mockImplementation(async (id: string) => ({ id, fullName: id === "u-inactive" ? "Left School" : "Cashier", status: id === "u-inactive" ? "SUSPENDED" : "ACTIVE" }));
+    expect(await h.service.actorStatus()).toMatchObject({ configured: true, source: "MPESA", userName: "Cashier" });
+  });
+
+  it("when the only saved user is not active, reports THAT user (so the school can see why) as not usable", async () => {
+    const h = harness({ actorUser: { id: ACTOR, fullName: "Left School", status: "SUSPENDED" } });
+    expect(await h.service.actorStatus()).toEqual({ configured: false, source: "PARENT_INVOICES", userId: ACTOR, userName: "Left School", userActive: false });
+    const view = await h.service.options(ACADEMY_STUDENT);
+    expect(view.available).toBe(false); // and parents are told the school has not finished setting it up
+  });
+
+  it("when a saved id points at no user at all, it is not usable and has no name", async () => {
+    const h = harness({ actorUser: null });
+    expect(await h.service.actorStatus()).toEqual({ configured: false, source: "PARENT_INVOICES", userId: ACTOR, userName: null, userActive: false });
+  });
+
+  it("nothing saved: not configured, no source", async () => {
+    const h = harness({ actor: null });
+    expect(await h.service.actorStatus()).toEqual({ configured: false, source: null, userId: null, userName: null, userActive: false });
   });
 });
 

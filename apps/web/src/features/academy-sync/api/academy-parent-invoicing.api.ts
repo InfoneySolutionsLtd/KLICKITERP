@@ -13,6 +13,11 @@ export async function getAcademyParentInvoicing(): Promise<AcademyParentInvoicin
  * `PUT /academy-sync/parent-invoicing` (`academy:sync:manage`) — switch parents customising and generating their own fee invoices on
  * or off (off by default) and, optionally, set the roles notified when one does (`[]` = everyone who can post invoices).
  */
-export async function setAcademyParentInvoicing(input: { enabled: boolean; notifyRoleIds?: string[] }): Promise<AcademyParentInvoicingStatusDto> {
+export async function setAcademyParentInvoicing(input: {
+  enabled: boolean;
+  notifyRoleIds?: string[];
+  /** The ACTIVE user parent-generated invoices are recorded under (ideally a service account). */
+  actorUserId?: string;
+}): Promise<AcademyParentInvoicingStatusDto> {
   return unwrapApiResult<AcademyParentInvoicingStatusDto>(await apiClient.PUT("/api/v1/academy-sync/parent-invoicing", { body: input }));
 }

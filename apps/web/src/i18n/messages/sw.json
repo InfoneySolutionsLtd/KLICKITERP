@@ -1,6 +1,27 @@
 {
   "academySync": {
     "parentInvoicing": {
+      "actor": {
+        "title": "Rekodi ankara za wazazi chini ya mtumiaji huyu",
+        "hint": "Hakuna mtu shuleni anayebonyeza kitufe mzazi anapotengeneza ankara, na kila ankara hurekodi aliyeitengeneza. Chagua mtumiaji kwa ajili hiyo, ikiwezekana akaunti ya huduma badala ya mfanyakazi halisi.",
+        "configured": "Ankara za wazazi hurekodiwa chini ya {name}.",
+        "configuredFromMpesa": "Ankara za wazazi hurekodiwa chini ya {name}, mtunza fedha wa mfumo wa M-Pesa. Chagua mtumiaji mwingine ukipenda.",
+        "change": "Badilisha",
+        "missingTitle": "Hakuna mtumiaji aliyewekwa kwa ankara za wazazi",
+        "missingBody": "Hadi mmoja achaguliwe, wazazi huambiwa kwamba shule haijamaliza kuweka mipangilio hii, na hakuna ankara inayotengenezwa.",
+        "inactiveTitle": "Mtumiaji aliyehifadhiwa hawezi kutumika",
+        "inactiveBody": "{name} si mtumiaji hai tena, kwa hivyo ankara za wazazi haziwezi kutengenezwa. Chagua mtumiaji mwingine.",
+        "unknownUser": "Mtumiaji aliyehifadhiwa",
+        "loadingUsers": "Inapakia watumiaji…",
+        "pickPlaceholder": "Chagua mtumiaji",
+        "searchUsers": "Tafuta watumiaji",
+        "noUsers": "Hakuna watumiaji waliopatikana.",
+        "cannotLoadUsers": "Imeshindwa kupakia orodha ya watumiaji (huenda huna ruhusa ya kuwaona watumiaji).",
+        "save": "Tumia mtumiaji huyu",
+        "saving": "Inahifadhi…",
+        "cancel": "Ghairi",
+        "manageUsers": "Unda au simamia watumiaji"
+      },
       "title": "Wazazi wanarekebisha ankara zao wenyewe",
       "description": "Humruhusu mzazi, katika tovuti ya wazazi ya Klickit Academy, kuchagua ada za hiari na njia ya usafiri ya mtoto wake, kuangalia jumla na kutengeneza ankara mwenyewe, kisha kuilipa. Shule mara nyingi hujua nani anataka maziwa au usafiri mzazi anapofika shuleni; hii inawawezesha wazazi kukuambia moja kwa moja.",
       "badge": {
@@ -20,7 +41,7 @@
       "issue": {
         "NOT_CONNECTED": "Unganisha kwanza ERP hii na shule yake ya Klickit Academy kwenye ukurasa huu.",
         "PUBLISHING_OFF": "Washa kwanza “Ankara katika tovuti ya wazazi” hapo juu: wazazi huona tu ankara zilizochapishwa kwenye tovuti.",
-        "NO_SYSTEM_USER": "Chagua mtumiaji ambaye ankara hizi zitarekodiwa chini yake: weka ufunguo wa Mipangilio academy.parent_invoice_actor_user_id (au payments.mpesa_system_actor_user_id) kuwa kitambulisho cha mtumiaji hai."
+        "NO_SYSTEM_USER": "Chagua mtumiaji ambaye ankara za wazazi zitarekodiwa chini yake (hapa chini)."
       },
       "toast": {
         "saved": "Mpangilio wa ankara za wazazi umehifadhiwa."

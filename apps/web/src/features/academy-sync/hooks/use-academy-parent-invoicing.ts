@@ -14,7 +14,7 @@ export function useSetAcademyParentInvoicing() {
   const queryClient = useQueryClient();
   return useMutation({
     meta: { successKey: "academySync.parentInvoicing.toast.saved" },
-    mutationFn: (input: { enabled: boolean; notifyRoleIds?: string[] }) => setAcademyParentInvoicing(input),
+    mutationFn: (input: { enabled: boolean; notifyRoleIds?: string[]; actorUserId?: string }) => setAcademyParentInvoicing(input),
     onSuccess: (data) => queryClient.setQueryData(ACADEMY_PARENT_INVOICING_QUERY_KEY, data),
   });
 }

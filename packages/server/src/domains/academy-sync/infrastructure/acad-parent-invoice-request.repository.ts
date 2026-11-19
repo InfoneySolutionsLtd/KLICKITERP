@@ -208,13 +208,15 @@ export class AcadParentInvoiceRequestRepository {
     return rows[0]?.found === true;
   }
 
-  /** Is this user an ACTIVE user (the id the school configured to record parent-generated invoices under)? */
-  async isActiveUser(userId: string): Promise<boolean> {
-    const rows: Array<{ found: boolean }> = await this.dataSource.query(
-      `SELECT EXISTS (SELECT 1 FROM app.usr_user WHERE id = $1::uuid AND status = 'ACTIVE') AS found`,
+  /** A user's name and status (the id the school configured to record parent-generated invoices under); null when there is no such user. */
+  async findUserBrief(userId: string): Promise<{ id: string; fullName: string; status: string } | null> {
+    // A value that is not a UUID (a hand-typed setting) is simply "no such user", not a database error.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) return null;
+    const rows: Array<{ id: string; full_name: string; status: string }> = await this.dataSource.query(
+      `SELECT id, full_name, status FROM app.usr_user WHERE id = $1::uuid`,
       [userId],
     );
-    return rows[0]?.found === true;
+    return rows[0] ? { id: rows[0].id, fullName: rows[0].full_name, status: rows[0].status } : null;
   }
 
   /** Which of these role ids exist (so a typo or a deleted role cannot be saved as a notification target). */

@@ -1,20 +1,113 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { CheckCircle2, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
 import { useRoles } from "@/features/roles/hooks/use-roles";
+import { useUsers } from "@/features/users/hooks/use-users";
 import type { AcademyParentInvoicingStatusDto } from "../api/academy-parent-invoicing.api";
 import { useAcademyParentInvoicing, useSetAcademyParentInvoicing } from "../hooks/use-academy-parent-invoicing";
 
 function sameIds(a: string[], b: string[]): boolean {
   return a.length === b.length && [...a].sort().every((id, index) => id === [...b].sort()[index]);
+}
+
+/** The list of active users, fetched only while the picker is on screen. */
+function ActorPicker({ enabled, changing, onDone }: { enabled: boolean; changing: boolean; onDone: () => void }) {
+  const t = useTranslations("academySync.parentInvoicing.actor");
+  const save = useSetAcademyParentInvoicing();
+  const [userId, setUserId] = React.useState("");
+  const usersQuery = useUsers({ status: "ACTIVE", pageSize: 200 });
+  const items = React.useMemo(() => (usersQuery.data?.items ?? []).map((user) => ({ value: user.id, label: user.fullName })), [usersQuery.data]);
+
+  async function submit() {
+    if (!userId) return;
+    await save.mutateAsync({ enabled, actorUserId: userId });
+    setUserId("");
+    onDone();
+  }
+
+  return (
+    <div className="space-y-2">
+      {usersQuery.isError ? (
+        <p className="text-xs text-muted-foreground">{t("cannotLoadUsers")}</p>
+      ) : (
+        <Combobox
+          items={items}
+          value={userId}
+          onChange={setUserId}
+          placeholder={usersQuery.isLoading ? t("loadingUsers") : t("pickPlaceholder")}
+          searchPlaceholder={t("searchUsers")}
+          emptyText={t("noUsers")}
+          disabled={usersQuery.isLoading || save.isPending}
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" size="sm" onClick={() => void submit()} disabled={!userId || save.isPending}>
+          {save.isPending ? t("saving") : t("save")}
+        </Button>
+        {changing && (
+          <Button type="button" variant="ghost" size="sm" onClick={onDone} disabled={save.isPending}>
+            {t("cancel")}
+          </Button>
+        )}
+        <Link href="/users" className="text-xs text-primary hover:underline">
+          {t("manageUsers")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Which user the invoices a parent generates are recorded under. Nobody at the school presses a button when a parent
+ * generates an invoice, and every invoice records who created it, so the school names a user for that (ideally a service
+ * account). Mirrors the receipting-cashier panel on the KCB settings. Until one is chosen the feature creates nothing and
+ * parents are told the school has not finished setting it up.
+ */
+function ActorSection({ status }: { status: AcademyParentInvoicingStatusDto }) {
+  const t = useTranslations("academySync.parentInvoicing.actor");
+  const [changing, setChanging] = React.useState(false);
+  const actor = status.actor;
+  const picking = changing || !actor.configured;
+  // Widened to a plain string: the generated zod type for a nullable enum is not comparable with a literal here.
+  const source: string = String(actor.source);
+
+  return (
+    <div className="space-y-2" aria-live="polite">
+      <p className="text-sm font-medium text-foreground">{t("title")}</p>
+      <p className="text-xs text-muted-foreground">{t("hint")}</p>
+      {actor.configured ? (
+        <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+          <CheckCircle2 className="size-4 text-success" aria-hidden />
+          <span>{t(source === "MPESA" ? "configuredFromMpesa" : "configured", { name: actor.userName ?? "—" })}</span>
+          {!changing && (
+            <Button type="button" variant="ghost" size="sm" onClick={() => setChanging(true)}>
+              {t("change")}
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-start gap-2 rounded-lg border border-warning bg-tint-warning p-3 text-sm text-foreground">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+          <div className="space-y-1">
+            <p className="font-medium">{actor.userId ? t("inactiveTitle") : t("missingTitle")}</p>
+            <p className="text-muted-foreground">{actor.userId ? t("inactiveBody", { name: actor.userName ?? t("unknownUser") }) : t("missingBody")}</p>
+          </div>
+        </div>
+      )}
+      {picking && <ActorPicker enabled={status.enabled} changing={changing} onDone={() => setChanging(false)} />}
+    </div>
+  );
 }
 
 function AcademyParentInvoicingCard({ status }: { status: AcademyParentInvoicingStatusDto }) {
@@ -75,6 +168,8 @@ function AcademyParentInvoicingCard({ status }: { status: AcademyParentInvoicing
             <p className="text-xs text-muted-foreground">{t("switchHint")}</p>
           </div>
         </div>
+
+        <ActorSection status={status} />
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">{t("notifyTitle")}</p>
