@@ -79,15 +79,29 @@ export class NotifyService implements NotificationSink {
     return written[0] ?? null;
   }
 
+  /**
+   * Never throws: a notification problem must not undo the change that caused it (a bounced cheque, a receipt, a sign-out). With a
+   * transaction the notification's own reads and writes run inside a SAVEPOINT, so a failure rolls back only the notification and the
+   * caller's transaction carries on; on success the rows commit (or roll back) together with the caller's change.
+   */
   async emit(event: NotificationEvent, manager?: EntityManager): Promise<number> {
     const run = async (): Promise<number> => {
       const recipients = await this.resolveRecipients(event, manager);
       const written = await this.deliver(recipients, event, manager);
       return written.length;
     };
-    if (manager) return run();
+    const runner = manager?.queryRunner;
     try {
-      return await run();
+      if (!runner?.isTransactionActive) return await run();
+      await runner.startTransaction(); // nested: SAVEPOINT
+      try {
+        const count = await run();
+        await runner.commitTransaction(); // RELEASE SAVEPOINT
+        return count;
+      } catch (error) {
+        await runner.rollbackTransaction().catch(() => undefined); // ROLLBACK TO SAVEPOINT: the outer transaction stays usable
+        throw error;
+      }
     } catch (error) {
       this.logger.warn(`Notification ${event.code} could not be written: ${(error as Error).message}`);
       return 0;

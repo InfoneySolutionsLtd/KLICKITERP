@@ -175,10 +175,34 @@ describe("NotifyService.emit — failures", () => {
     await expect(h.service.emit(chequeEvent)).resolves.toBe(0);
   });
 
-  it("inside a transaction a failure propagates: the transaction is unusable anyway and must roll back", async () => {
+  function transaction() {
+    return { queryRunner: { isTransactionActive: true, startTransaction: jest.fn(async () => undefined), commitTransaction: jest.fn(async () => undefined), rollbackTransaction: jest.fn(async () => undefined) } } as any;
+  }
+
+  it("inside a transaction the notification runs in a savepoint that is released on success", async () => {
     const h = harness({ holders: [A] });
+    const tx = transaction();
+    await expect(h.service.emit(chequeEvent, tx)).resolves.toBe(1);
+    expect(tx.queryRunner.startTransaction).toHaveBeenCalledTimes(1);
+    expect(tx.queryRunner.commitTransaction).toHaveBeenCalledTimes(1);
+    expect(tx.queryRunner.rollbackTransaction).not.toHaveBeenCalled();
+  });
+
+  it("inside a transaction a failure rolls back ONLY the savepoint and never reaches the caller, so the business change survives", async () => {
+    const h = harness({ holders: [A] });
+    const tx = transaction();
     h.repo.createMany.mockRejectedValueOnce(new Error("db down"));
-    await expect(h.service.emit(chequeEvent, {} as any)).rejects.toThrow("db down");
+    await expect(h.service.emit(chequeEvent, tx)).resolves.toBe(0);
+    expect(tx.queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
+    expect(tx.queryRunner.commitTransaction).not.toHaveBeenCalled();
+  });
+
+  it("a failing recipient lookup inside a transaction is contained the same way", async () => {
+    const h = harness({ holders: [A] });
+    const tx = transaction();
+    h.users.listActiveUserIdsWithPermissions.mockRejectedValueOnce(new Error("lookup failed"));
+    await expect(h.service.emit(chequeEvent, tx)).resolves.toBe(0);
+    expect(tx.queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
   });
 });
 

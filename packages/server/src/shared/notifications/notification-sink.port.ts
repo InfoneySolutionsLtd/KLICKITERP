@@ -41,9 +41,9 @@ export interface NotificationEvent {
 export interface NotificationSink {
   /**
    * Notifies the people the event's audience selects. Pass the caller's `EntityManager` when it has a transaction, so the
-   * notification is committed (or rolled back) together with the change that caused it; a failure then propagates, because
-   * the transaction is already unusable. Without one it is written on its own and a failure is logged, never thrown into
-   * the caller. Resolves to the number of notifications written.
+   * notification is committed (or rolled back) together with the change that caused it. It NEVER throws into the caller: with a
+   * transaction its writes run in a savepoint, so a failure undoes only the notification and the caller's transaction carries on;
+   * without one a failure is logged. Resolves to the number of notifications written (0 when none, or when it failed).
    */
   emit(event: NotificationEvent, manager?: EntityManager): Promise<number>;
 }
