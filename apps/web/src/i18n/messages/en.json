@@ -574,17 +574,17 @@
         "title": "Cheque bounced",
         "body": "Cheque {chequeNo} for KES {amount} was returned unpaid."
       },
-      "BANK_DEPOSIT_NEEDS_MATCHING": {
-        "title": "Bank deposit needs matching",
-        "body": "A bank deposit of KES {amount} (reference {reference}) could not be matched automatically and is waiting in suspense."
+      "PAYMENT_NEEDS_MATCHING": {
+        "title": "Payment needs matching",
+        "body": "A payment of KES {amount} (reference {reference}) could not be matched automatically and is waiting in suspense."
       },
       "PARENT_INVOICE_CREATED": {
         "title": "Invoice created by a parent",
         "body": "{parentName} has created {count, plural, one {an invoice} other {invoices}} {numbers} for {learner} ({admissionNo}), {term}: KES {total}."
       },
-      "PARENT_PAYMENT_RECEIVED": {
-        "title": "Parent payment received",
-        "body": "{parentName} paid KES {amount} by M-Pesa for {learner}."
+      "ONLINE_PAYMENT_RECEIVED": {
+        "title": "Online payment received",
+        "body": "{payer} paid KES {amount} for {learner} (receipt {receiptNo})."
       },
       "PAYROLL_RUN_PAID": {
         "title": "Payroll run paid",

@@ -1,7 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, EntityManager } from "typeorm";
 import { runInTransaction } from "../../../shared/database/tx";
+import { formatAmount } from "../../../shared/notifications/format-amount";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { ConflictException } from "../../../shared/exceptions/conflict.exception";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
@@ -116,6 +118,8 @@ export class MpesaService {
     private readonly studentRepository: StdStudentRepository,
     private readonly settingsService: SettingsService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    /** Tells accounts about a payment that needs matching, and about online payments receipted automatically (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   // ---- STK ----
@@ -232,6 +236,20 @@ export class MpesaService {
       txn.mpesaRef = parsed.mpesaRef ?? null;
       txn.matchedReceiptId = receipt.id;
       await this.mpesaTransactionRepository.save(txn, manager);
+      // A prompt a cashier started is already known to the person at the till; one the system started on a parent's behalf
+      // (the cashier IS the automated M-Pesa account) is told to accounts.
+      if (rawRequest.initiatedBy === (await this.settingsService.getTyped<string | null>(MPESA_SYSTEM_ACTOR_SETTING_KEY, null))) {
+        await this.notifications?.emit(
+          {
+            code: "ONLINE_PAYMENT_RECEIVED",
+            params: { payer: `${student.firstName} ${student.lastName}`, amount: formatAmount(confirmedAmount.toDecimalString()), learner: `${student.firstName} ${student.lastName}`, receiptNo: receipt.number },
+            link: `/payments/receipts/${receipt.id}`,
+            entityType: "pay_receipt",
+            entityId: receipt.id,
+          },
+          manager,
+        );
+      }
       return { resultCode: "0", resultDesc: "Accepted" };
     });
   }
@@ -312,7 +330,7 @@ export class MpesaService {
       const student = admissionNo ? await this.studentRepository.findByAdmissionNo(admissionNo, manager) : null;
 
       if (!student) {
-        await this.suspenseItemRepository.create(
+        const parked = await this.suspenseItemRepository.create(
           {
             source: "C2B",
             amount: parsed.amount,
@@ -327,13 +345,23 @@ export class MpesaService {
           },
           manager,
         );
+        await this.notifications?.emit(
+          {
+            code: "PAYMENT_NEEDS_MATCHING",
+            params: { amount: formatAmount(parsed.amount.toDecimalString()), reference: parsed.billRefNumber || parsed.transId },
+            link: `/payments/suspense/${parked.id}`,
+            entityType: "pay_suspense_item",
+            entityId: parked.id,
+          },
+          manager,
+        );
         return { resultCode: "0", resultDesc: "Accepted (parked in suspense — no matching admission number)" };
       }
 
       const systemActorId = await this.resolveSystemActorId();
       const payerName = [parsed.firstName, parsed.middleName, parsed.lastName].filter(Boolean).join(" ") || `${student.firstName} ${student.lastName}`;
 
-      await this.receiptsService.captureReceipt(manager, {
+      const receipt = await this.receiptsService.captureReceipt(manager, {
         studentId: student.id,
         payerName,
         payerPhone: parsed.msisdn,
@@ -343,6 +371,16 @@ export class MpesaService {
         cashierId: systemActorId,
         idempotencyKey: `mpesa-c2b-${parsed.transId}`,
       });
+      await this.notifications?.emit(
+        {
+          code: "ONLINE_PAYMENT_RECEIVED",
+          params: { payer: payerName, amount: formatAmount(parsed.amount.toDecimalString()), learner: `${student.firstName} ${student.lastName}`, receiptNo: receipt.number },
+          link: `/payments/receipts/${receipt.id}`,
+          entityType: "pay_receipt",
+          entityId: receipt.id,
+        },
+        manager,
+      );
 
       return { resultCode: "0", resultDesc: "Accepted (auto-matched)" };
     });

@@ -354,4 +354,74 @@ describe("KcbIpnService", () => {
       expect(receiptsService.captureReceipt.mock.calls[0][1].cashierId).toBe("system-actor-bank");
     });
   });
+
+  describe("tells accounts (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const dataSource = {
+        transaction: jest.fn(async (_isolation: string, work: (manager: EntityManager) => Promise<unknown>) => work({} as EntityManager)),
+      } as unknown as DataSource;
+      const svc = new KcbIpnService(
+        ipnRepository as never,
+        suspenseRepository as never,
+        receiptsService as never,
+        studentRepository as never,
+        invoiceRepository as never,
+        settingsService as never,
+        configResolver as never,
+        appConfig as never,
+        dataSource,
+        sink as never,
+      );
+      return { sink, svc };
+    }
+
+    it("a payment receipted automatically raises ONLINE_PAYMENT_RECEIVED, in the receipt's own transaction", async () => {
+      const { sink, svc } = withSink();
+      await svc.handleAccountNotification(send(ACCOUNT_BODY));
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith(
+        {
+          code: "ONLINE_PAYMENT_RECEIVED",
+          params: { payer: "Peter Bor", amount: "1,000", learner: "John Doe", receiptNo: "PAY-000001" },
+          link: "/payments/receipts/receipt-1",
+          entityType: "pay_receipt",
+          entityId: "receipt-1",
+        },
+        expect.anything(),
+      );
+    });
+
+    it("a re-sent notification tells nobody a second time", async () => {
+      const { sink, svc } = withSink();
+      await svc.handleAccountNotification(send(ACCOUNT_BODY));
+      await svc.handleAccountNotification(send(ACCOUNT_BODY));
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it("a payment that cannot be matched raises PAYMENT_NEEDS_MATCHING and links to the suspense item, and is NOT announced as received", async () => {
+      const { sink, svc } = withSink();
+      await svc.handleAccountNotification(send({ ...ACCOUNT_BODY, customerReference: "99999" }));
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith(
+        {
+          code: "PAYMENT_NEEDS_MATCHING",
+          params: { amount: "1,000", reference: "99999" },
+          link: "/payments/suspense/suspense-1",
+          entityType: "pay_suspense_item",
+          entityId: "suspense-1",
+        },
+        expect.anything(),
+      );
+    });
+
+    it("a re-sent notification that was already parked does not tell accounts twice", async () => {
+      const { sink, svc } = withSink();
+      await svc.handleAccountNotification(send({ ...ACCOUNT_BODY, customerReference: "99999" }));
+      await svc.handleAccountNotification(send({ ...ACCOUNT_BODY, customerReference: "99999" }));
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+    });
+  });
 });

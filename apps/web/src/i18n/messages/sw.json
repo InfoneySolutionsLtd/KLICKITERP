@@ -574,17 +574,17 @@
         "title": "Hundi imerudishwa",
         "body": "Hundi {chequeNo} ya KES {amount} imerudishwa bila kulipwa."
       },
-      "BANK_DEPOSIT_NEEDS_MATCHING": {
-        "title": "Amana ya benki inahitaji kulinganishwa",
-        "body": "Amana ya benki ya KES {amount} (rejea {reference}) haikuweza kulinganishwa kiotomatiki na inasubiri kwenye akaunti ya muda."
+      "PAYMENT_NEEDS_MATCHING": {
+        "title": "Malipo yanahitaji kulinganishwa",
+        "body": "Malipo ya KES {amount} (rejea {reference}) hayakuweza kulinganishwa kiotomatiki na yanasubiri kwenye akaunti ya muda."
       },
       "PARENT_INVOICE_CREATED": {
         "title": "Ankara imetengenezwa na mzazi",
         "body": "{parentName} ameunda {count, plural, one {ankara} other {ankara}} {numbers} ya {learner} ({admissionNo}), {term}: KES {total}."
       },
-      "PARENT_PAYMENT_RECEIVED": {
-        "title": "Malipo ya mzazi yamepokelewa",
-        "body": "{parentName} amelipa KES {amount} kwa M-Pesa kwa ajili ya {learner}."
+      "ONLINE_PAYMENT_RECEIVED": {
+        "title": "Malipo ya mtandaoni yamepokelewa",
+        "body": "{payer} amelipa KES {amount} kwa ajili ya {learner} (risiti {receiptNo})."
       },
       "PAYROLL_RUN_PAID": {
         "title": "Mishahara imelipwa",

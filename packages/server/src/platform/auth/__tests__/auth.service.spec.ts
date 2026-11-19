@@ -114,6 +114,93 @@ describe("AuthService", () => {
     );
   });
 
+  describe("security alerts in the bell", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new AuthService(
+        dataSource,
+        userRepository as never,
+        sessionRepository as never,
+        loginEventRepository as never,
+        permissionResolution as never,
+        lockoutService as never,
+        jwtTokenService as never,
+        outboxWriter as never,
+        config as never,
+        redis as never,
+        sink as never,
+      );
+      return { sink, svc };
+    }
+    const wrong = (svc: AuthService) => svc.login("jdoe", "wrong-password", "127.0.0.1", "jest-agent");
+
+    it("the failed sign-in that LOCKS an account raises ACCOUNT_LOCKED: the admins who can suspend accounts, and the person themself", async () => {
+      userRepository.findByIdentifier.mockResolvedValue(activeUser);
+      lockoutService.registerFailure.mockResolvedValue(true);
+      const { sink, svc } = withSink();
+
+      await expect(wrong(svc)).rejects.toBeInstanceOf(AuthenticationException);
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith({
+        code: "ACCOUNT_LOCKED",
+        params: { username: "jdoe" },
+        link: "/users/user-1",
+        entityType: "usr_user",
+        entityId: "user-1",
+        userIds: ["user-1"],
+      });
+    });
+
+    it("a failed sign-in that does NOT lock the account says nothing (that would be a message per typo)", async () => {
+      userRepository.findByIdentifier.mockResolvedValue(activeUser);
+      lockoutService.registerFailure.mockResolvedValue(false);
+      const { sink, svc } = withSink();
+      await expect(wrong(svc)).rejects.toBeInstanceOf(AuthenticationException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("typing a name that is not an account never fills anyone's bell, even when it trips the lock", async () => {
+      userRepository.findByIdentifier.mockResolvedValue(null);
+      lockoutService.registerFailure.mockResolvedValue(true);
+      const { sink, svc } = withSink();
+      await expect(wrong(svc)).rejects.toBeInstanceOf(AuthenticationException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("a parent (portal) account locked by password attempts is not announced to staff", async () => {
+      userRepository.findByIdentifier.mockResolvedValue({ ...activeUser, userType: "PARENT" });
+      lockoutService.registerFailure.mockResolvedValue(true);
+      const { sink, svc } = withSink();
+      await expect(wrong(svc)).rejects.toBeInstanceOf(AuthenticationException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("reuse of a rotated refresh token raises SESSION_REUSE_DETECTED for that person only, in the sign-out's own transaction", async () => {
+      sessionRepository.findByRefreshTokenHash.mockResolvedValue({ id: "session-1", familyId: "family-1", userId: "user-1", revokedAt: new Date(), ip: "1.1.1.1", userAgent: "ua" });
+      sessionRepository.findFamily.mockResolvedValue([
+        { id: "session-1", userId: "user-1" },
+        { id: "session-2", userId: "user-1" },
+      ]);
+      const { sink, svc } = withSink();
+
+      await expect(svc.refresh("stolen-refresh-token")).rejects.toBeInstanceOf(AuthenticationException);
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith(
+        { code: "SESSION_REUSE_DETECTED", entityType: "usr_user", entityId: "user-1", userIds: ["user-1"] },
+        expect.anything(),
+      );
+    });
+
+    it("a refresh with a token that is simply unknown says nothing", async () => {
+      sessionRepository.findByRefreshTokenHash.mockResolvedValue(null);
+      const { sink, svc } = withSink();
+      await expect(svc.refresh("unknown-token")).rejects.toBeInstanceOf(AuthenticationException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+  });
+
   it("rejects login outright once LockoutService reports the identifier locked", async () => {
     lockoutService.isLocked.mockResolvedValue(true);
 

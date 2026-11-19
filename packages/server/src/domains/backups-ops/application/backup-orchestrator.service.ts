@@ -1,11 +1,12 @@
 import { promises as fs } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { encryptBuffer } from "../../../shared/crypto/aes-gcm.util";
 import { AppConfigService } from "../../../shared/config/app-config.service";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { STORAGE_PORT, StoragePort } from "../../../platform/files";
 import { BackupDestinationResult, BackupManifest, BkpBackupRunEntity, BkpBackupRunKind } from "../domain/bkp-backup-run.entity";
 import { BkpBackupRunRepository } from "../infrastructure/bkp-backup-run.repository";
@@ -60,6 +61,8 @@ export class BackupOrchestratorService {
     private readonly rowCountSampler: RowCountSamplerService,
     private readonly config: AppConfigService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    /** Tells the people who watch backups that one failed (the bell, FR-BKP-003). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async runBackup(kind: BkpBackupRunKind, initiatedBy: string | null): Promise<BkpBackupRunEntity> {
@@ -135,7 +138,15 @@ export class BackupOrchestratorService {
       run.finishedAt = new Date();
       run.error = (error as Error).message;
       run.updatedBy = initiatedBy;
-      return await this.backupRunRepository.save(run);
+      const failed = await this.backupRunRepository.save(run);
+      await this.notifications?.emit({
+        code: "BACKUP_FAILED",
+        params: { kind, reason: (run.error ?? "").slice(0, 200) },
+        link: `/ops/backups/${run.id}`,
+        entityType: "bkp_backup_run",
+        entityId: run.id,
+      });
+      return failed;
     } finally {
       await fs.rm(workDir, { recursive: true, force: true }).catch(() => undefined);
     }

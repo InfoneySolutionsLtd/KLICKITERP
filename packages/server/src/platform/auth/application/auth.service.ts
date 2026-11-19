@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import * as bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "node:crypto";
@@ -7,6 +7,7 @@ import { DataSource, EntityManager } from "typeorm";
 import { runInTransaction } from "../../../shared/database/tx";
 import { generateUuidV7 } from "../../../shared/ids/uuid7";
 import { OutboxWriterService } from "../../../shared/events/outbox-writer.service";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { AuthenticationException } from "../../../shared/exceptions/authentication.exception";
 import { AppConfigService } from "../../../shared/config/app-config.service";
 import { REDIS_CLIENT } from "../../../shared/cache/redis.provider";
@@ -56,6 +57,8 @@ export class AuthService {
     private readonly outboxWriter: OutboxWriterService,
     private readonly config: AppConfigService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    /** Security alerts in the bell: an account locked out, a refresh token used twice (FR-AUTH-002.1 / 007.1). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /** FR-AUTH-001.1 — §2.1 staff login (password + optional TOTP). */
@@ -98,8 +101,17 @@ export class AuthService {
         deviceFp,
       });
       const justLocked = await this.lockoutService.registerFailure(identifier);
-      if (justLocked) {
-        // FR-AUTH-007.1 — lockout events notify the user (comms stub only in Module 1).
+      if (justLocked && user && user.userType !== "PARENT") {
+        // FR-AUTH-007.1 — the administrators who can suspend accounts are told in the bell, and so is the person themself (they see it
+        // when the lock ends). Only for a real staff account: typing random names must not fill anyone's bell.
+        await this.notifications?.emit({
+          code: "ACCOUNT_LOCKED",
+          params: { username: user.username },
+          link: `/users/${user.id}`,
+          entityType: "usr_user",
+          entityId: user.id,
+          userIds: [user.id],
+        });
       }
       throw new AuthenticationException("Invalid credentials");
     }
@@ -264,6 +276,11 @@ export class AuthService {
         await this.outboxWriter.write(
           manager,
           new SessionFamilyRevokedEvent(familySessions[0].userId, { familyId, reason: "REUSE_DETECTED" }),
+        );
+        // FR-AUTH-002.1 — a security notification to the person whose token was used twice, in the same transaction as the sign-out.
+        await this.notifications?.emit(
+          { code: "SESSION_REUSE_DETECTED", entityType: "usr_user", entityId: familySessions[0].userId, userIds: [familySessions[0].userId] },
+          manager,
         );
       }
     });

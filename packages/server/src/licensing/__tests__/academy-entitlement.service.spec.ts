@@ -130,6 +130,53 @@ describe("AcademyEntitlementService", () => {
     expect(licenseRepository.save).toHaveBeenCalledWith(expect.objectContaining({ state: "SUSPENDED" }));
   });
 
+  describe("tells the people who can see the Licence page when the state changes (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new AcademyEntitlementService(gatewayClient as never, academyLinkRepository as never, licenseRepository as never, config, sink as never);
+      return { sink, svc };
+    }
+    const answer = (allowed: boolean) => ({
+      schoolId: "academy-school-1",
+      product: "ERP",
+      allowed,
+      status: allowed ? "ACTIVE" : "NONE",
+      expiresAt: "2027-01-31T00:00:00.000Z",
+      subscriptionId: "sub-1",
+      checkedAt: "2026-09-23T10:00:00.000Z",
+    });
+
+    it("ACTIVE -> SUSPENDED raises LICENCE_STATE_CHANGED with from, to and the valid-until date", async () => {
+      academyLinkRepository.findCurrent.mockResolvedValue(makeLink());
+      gatewayClient.getEntitlement.mockResolvedValue(answer(false));
+      licenseRepository.findCurrent.mockResolvedValue(makeLicense({ state: "ACTIVE", validTo: "2027-01-31" }));
+      const { sink, svc } = withSink();
+
+      await svc.checkEntitlement();
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith({ code: "LICENCE_STATE_CHANGED", params: { from: "ACTIVE", to: "SUSPENDED", validTo: "2027-01-31" }, link: "/license", entityType: "license" });
+    });
+
+    it("a poll that finds the state unchanged says nothing (it polls all the time)", async () => {
+      academyLinkRepository.findCurrent.mockResolvedValue(makeLink());
+      gatewayClient.getEntitlement.mockResolvedValue(answer(true));
+      licenseRepository.findCurrent.mockResolvedValue(makeLicense({ state: "ACTIVE" }));
+      const { sink, svc } = withSink();
+      await svc.checkEntitlement();
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("coming back from SUSPENDED to ACTIVE is also announced", async () => {
+      academyLinkRepository.findCurrent.mockResolvedValue(makeLink());
+      gatewayClient.getEntitlement.mockResolvedValue(answer(true));
+      licenseRepository.findCurrent.mockResolvedValue(makeLicense({ state: "SUSPENDED" }));
+      const { sink, svc } = withSink();
+      await svc.checkEntitlement();
+      expect((sink.emit.mock.calls[0] as unknown as [{ params: { from: string; to: string } }])[0].params).toMatchObject({ from: "SUSPENDED", to: "ACTIVE" });
+    });
+  });
+
   it("maps a successful status:EXPIRED response to the EXPIRED license state", async () => {
     academyLinkRepository.findCurrent.mockResolvedValue(makeLink());
     gatewayClient.getEntitlement.mockResolvedValue({

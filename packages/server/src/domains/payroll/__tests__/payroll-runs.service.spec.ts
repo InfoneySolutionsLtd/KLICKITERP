@@ -824,6 +824,55 @@ describe("PayrollRunsService", () => {
       expect(run.status).toBe("PAID");
     });
 
+    describe("tells the people who can see payroll (the bell)", () => {
+      function withSink() {
+        const sink = { emit: jest.fn(async () => 1) };
+        const svc = new PayrollRunsService(
+          runRepository as never,
+          runLineRepository as never,
+          runLineComponentRepository as never,
+          runLineLoanRecoveryRepository as never,
+          employeeRepository as never,
+          assignmentRepository as never,
+          structureComponentRepository as never,
+          employeeComponentRepository as never,
+          oneoffRepository as never,
+          componentRepository as never,
+          loanRepository as never,
+          loanScheduleRepository as never,
+          statutoryCalculationService as never,
+          loansService as never,
+          approvalEngine as never,
+          settingsService as never,
+          postingService as never,
+          glAccountRepository as never,
+          sink as never,
+        );
+        return { sink, svc };
+      }
+
+      it("raises PAYROLL_RUN_PAID in the payment's own transaction, naming the period and leaving out the person who paid", async () => {
+        runRepository.findByIdOrFail.mockResolvedValue(makeRun({ status: "COMMITTED", periodKey: "2026-07" }));
+        runLineRepository.findByRunId.mockResolvedValue([makeRunLine({ id: "line-1", netPay: Money.fromInt(22425) })]);
+        const { sink, svc } = withSink();
+
+        await svc.pay(em, "run-1", { method: "BANK" }, "payer-1");
+
+        expect(sink.emit).toHaveBeenCalledTimes(1);
+        expect(sink.emit).toHaveBeenCalledWith(
+          { code: "PAYROLL_RUN_PAID", params: { period: "2026-07" }, link: "/payroll/runs/run-1", entityType: "pyrl_run", entityId: "run-1", excludeUserIds: ["payer-1"] },
+          em,
+        );
+      });
+
+      it("a refused payment (not COMMITTED, or zero net pay) tells nobody", async () => {
+        runRepository.findByIdOrFail.mockResolvedValue(makeRun({ status: "APPROVED" }));
+        const { sink, svc } = withSink();
+        await expect(svc.pay(em, "run-1", { method: "BANK" }, "payer-1")).rejects.toBeInstanceOf(ValidationException);
+        expect(sink.emit).not.toHaveBeenCalled();
+      });
+    });
+
     it("rejects paying a run that is not COMMITTED", async () => {
       runRepository.findByIdOrFail.mockResolvedValue(makeRun({ status: "APPROVED" }));
       await expect(service.pay(em, "run-1", { method: "BANK" }, "payer-1")).rejects.toBeInstanceOf(ValidationException);
