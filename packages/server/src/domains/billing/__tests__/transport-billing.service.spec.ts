@@ -305,4 +305,45 @@ describe("TransportBillingService", () => {
       expect(result.skipped.map((s) => s.studentId)).toEqual(["s3"]);
     });
   });
+
+  describe("billStudentOnRoute() — one student inside the CALLER'S transaction (the Academy parent portal)", () => {
+    const CALLER_EM = { tag: "caller-em" } as unknown as EntityManager;
+
+    beforeEach(() => {
+      transportRouteRepository.findByIdOrFail.mockResolvedValue({ id: "route-1", name: "Route A", amount: Money.fromInt(500), isActive: true });
+    });
+
+    it("bills the route's own flat amount on the caller's manager, with the given due date, and records the route income line — without opening a transaction of its own", async () => {
+      const ids = await service.billStudentOnRoute(CALLER_EM, { studentId: "s1", routeId: "route-1", termId: "term-1", dueDate: "2026-02-28" }, "actor-1");
+
+      expect(ids).toEqual(["invoice-s1"]);
+      expect(dataSource.transaction).not.toHaveBeenCalled();
+      const [em, input] = invoicingService.generateInvoice.mock.calls[0];
+      expect(em).toBe(CALLER_EM);
+      expect(input).toMatchObject({ studentId: "s1", termId: "term-1", source: "ADHOC", dueDate: "2026-02-28", createdBy: "actor-1" });
+      expect(input.adhocLines).toHaveLength(1);
+      expect(input.adhocLines[0].feeCategoryId).toBe("cat-transport");
+      expect(input.adhocLines[0].description).toBe("Transport fee — Route A");
+      expect(input.adhocLines[0].amount.toDecimalString()).toBe("500.0000");
+      expect(invoicingService.postInvoice).toHaveBeenCalledWith(CALLER_EM, "invoice-s1", "actor-1");
+      expect(billingLineRepository.create).toHaveBeenCalledWith({ routeId: "route-1", invoiceLineId: "invoice-s1-line-1", studentId: "s1" }, CALLER_EM);
+    });
+
+    it("defaults the due date to the issue date when none is given (as every other transport bill does)", async () => {
+      await service.billStudentOnRoute(CALLER_EM, { studentId: "s1", routeId: "route-1", termId: "term-1" }, "actor-1");
+      expect(invoicingService.generateInvoice.mock.calls[0][1].dueDate).toBeUndefined();
+    });
+
+    it("refuses an inactive route and creates nothing", async () => {
+      transportRouteRepository.findByIdOrFail.mockResolvedValue({ id: "route-1", name: "Route A", amount: Money.fromInt(500), isActive: false });
+      await expect(service.billStudentOnRoute(CALLER_EM, { studentId: "s1", routeId: "route-1", termId: "term-1" }, "actor-1")).rejects.toBeInstanceOf(NotFoundException);
+      expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
+    });
+
+    it("fails (so the caller's transaction rolls back) when the designated Transport Fee category is missing", async () => {
+      feeCategoryRepository.findByName.mockResolvedValue(null);
+      await expect(service.billStudentOnRoute(CALLER_EM, { studentId: "s1", routeId: "route-1", termId: "term-1" }, "actor-1")).rejects.toBeInstanceOf(NotFoundException);
+      expect(invoicingService.generateInvoice).not.toHaveBeenCalled();
+    });
+  });
 });

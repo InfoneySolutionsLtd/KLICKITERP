@@ -1,5 +1,31 @@
 {
   "academySync": {
+    "parentInvoicing": {
+      "title": "Les parents personnalisent leurs factures",
+      "description": "Permet à un parent de choisir, dans le portail parents de Klickit Academy, les frais optionnels et l'itinéraire de transport de son enfant, de vérifier le total et de générer lui-même la facture, puis de la payer. Les écoles ne savent souvent qui veut du lait ou le transport que lorsqu'un parent se déplace ; ainsi les parents vous le disent directement.",
+      "badge": {
+        "off": "Désactivé",
+        "on": "Activé",
+        "needsSetup": "À configurer"
+      },
+      "rules": "Les parents ne peuvent modifier que ce que vous avez marqué comme optionnel dans la grille tarifaire, et choisir un itinéraire de transport. Les prix proviennent toujours de votre grille tarifaire et de vos itinéraires, jamais du parent. Avant de générer une facture, le parent doit confirmer, après un court compte à rebours. Un parent ne peut pas supprimer une facture : seule l'école peut l'annuler.",
+      "switchLabel": "Laisser les parents personnaliser et générer leurs propres factures de frais",
+      "switchHint": "Désactivé par défaut. Lorsqu'un parent génère une facture, elle est comptabilisée immédiatement, apparaît dans Facturation → Factures, est envoyée au portail parents pour qu'il puisse la payer, et les personnes ci-dessous sont averties.",
+      "notifyTitle": "Qui est averti lorsqu'un parent génère une facture",
+      "notifyHint": "Chaque utilisateur actif des rôles choisis reçoit une notification. Si vous n'en choisissez aucun, toutes les personnes qui peuvent comptabiliser des factures sont averties.",
+      "rolesUnavailable": "Vous n'avez pas l'autorisation de lister les rôles ; les rôles à avertir ne peuvent donc pas être modifiés ici.",
+      "saveRoles": "Enregistrer les rôles à avertir",
+      "savingRoles": "Enregistrement…",
+      "issuesTitle": "Avant que les parents puissent l'utiliser :",
+      "issue": {
+        "NOT_CONNECTED": "Connectez d'abord cet ERP à son école Klickit Academy sur cette page.",
+        "PUBLISHING_OFF": "Activez d'abord « Factures dans le portail parents » ci-dessus : les parents ne voient que les factures publiées sur le portail.",
+        "NO_SYSTEM_USER": "Choisissez l'utilisateur sous lequel ces factures sont enregistrées : définissez la clé de Paramètres academy.parent_invoice_actor_user_id (ou payments.mpesa_system_actor_user_id) sur l'identifiant d'un utilisateur actif."
+      },
+      "toast": {
+        "saved": "Paramètre de facturation par les parents enregistré."
+      }
+    },
     "publish": {
       "receipts": {
         "incompleteTitle": "Il manque des informations de l'école sur les reçus :",
