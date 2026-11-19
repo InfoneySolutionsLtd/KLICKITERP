@@ -16,7 +16,7 @@ interface Over {
   provider?: unknown | Error;
   cashierSetting?: string | null;
   user?: { id: string; fullName: string; status: string } | null;
-  fee?: { hasOpenTerm: boolean; optionalItemLines: number; activeRoutes: number };
+  fee?: { hasCurrentTerm: boolean; optionalItemLines: number; activeRoutes: number };
 }
 
 function harness(over: Over = {}) {
@@ -47,7 +47,7 @@ function harness(over: Over = {}) {
     getTyped: jest.fn(async () => (over.cashierSetting === undefined ? CASHIER : over.cashierSetting)),
     set: jest.fn(async () => undefined),
   };
-  const facts = { feeOptionFacts: jest.fn(async () => over.fee ?? { hasOpenTerm: true, optionalItemLines: 2, activeRoutes: 1 }) };
+  const facts = { feeOptionFacts: jest.fn(async () => over.fee ?? { hasCurrentTerm: true, optionalItemLines: 2, activeRoutes: 1 }) };
   const users = {
     findUserBrief: jest.fn(async (id: string) => (over.user === undefined ? { id, fullName: "Service Account", status: "ACTIVE" } : over.user)),
   };
@@ -117,8 +117,8 @@ describe("AcademySetupGuideService.getGuide", () => {
   });
 
   it("fee options come from the books' facts", async () => {
-    expect(stateOf(await harness({ fee: { hasOpenTerm: false, optionalItemLines: 0, activeRoutes: 0 } }).service.getGuide(), "FEE_OPTIONS")).toBe("TODO:NO_OPEN_TERM");
-    expect(stateOf(await harness({ fee: { hasOpenTerm: true, optionalItemLines: 0, activeRoutes: 0 } }).service.getGuide(), "FEE_OPTIONS")).toBe("TODO:NO_OPTIONAL_ITEMS");
+    expect(stateOf(await harness({ fee: { hasCurrentTerm: false, optionalItemLines: 0, activeRoutes: 0 } }).service.getGuide(), "FEE_OPTIONS")).toBe("TODO:NO_CURRENT_TERM");
+    expect(stateOf(await harness({ fee: { hasCurrentTerm: true, optionalItemLines: 0, activeRoutes: 0 } }).service.getGuide(), "FEE_OPTIONS")).toBe("TODO:NO_OPTIONAL_ITEMS");
   });
 
   it("never writes anything just by being read", async () => {
