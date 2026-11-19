@@ -1,9 +1,11 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Post, Query, Res, StreamableFile, UseGuards } from "@nestjs/common";
 import { ApiHeader, ApiOkResponse, ApiOperation, ApiProduces, ApiTags } from "@nestjs/swagger";
 import { Public } from "../../../shared/rbac/public.decorator";
+import { AcademyParentInvoiceService } from "../application/academy-parent-invoice.service";
 import { AcademyPaymentRequestService } from "../application/academy-payment-request.service";
 import { AcademyReceiptService, DEFAULT_RECEIPTS_PER_ANSWER } from "../application/academy-receipt.service";
 import { AcademyInboundGuard } from "./academy-inbound.guard";
+import { AcademyParentFeeOptionsDto, AcademyParentInvoiceRequestViewDto, CreateAcademyParentInvoiceRequestDto } from "./dto/academy-parent-invoice.dto";
 import { AcademyPaymentRequestViewDto, CreateAcademyPaymentRequestDto } from "./dto/academy-payment-request.dto";
 import { AcademyReceiptListDto } from "./dto/academy-receipt.dto";
 
@@ -16,6 +18,9 @@ import { AcademyReceiptListDto } from "./dto/academy-receipt.dto";
  * an M-Pesa prompt for a learner it already verified belongs to the signed-in parent, and later asks how it went.
  * `students/:id/receipts` lists a learner's receipts and `.../:receiptId/pdf` prints one; both are read from the books on every call
  * and a receipt is only ever found THROUGH its learner (the Academy names a learner it has verified is the parent's own child).
+ * `students/:id/fee-options` and `students/:id/invoice-requests` let a parent customise and generate their own fee invoice: what
+ * they may pick is decided in the books every time (only fee items the school marked optional, and transport), nothing is
+ * created unless the school switched it on, and a repeated request never creates a second invoice.
  */
 @ApiTags("academy-inbound")
 @Controller("academy/inbound")
@@ -23,6 +28,7 @@ export class AcademyInboundController {
   constructor(
     private readonly paymentRequests: AcademyPaymentRequestService,
     private readonly receipts: AcademyReceiptService,
+    private readonly parentInvoices: AcademyParentInvoiceService,
   ) {}
 
   @Get("ping")
@@ -57,6 +63,49 @@ export class AcademyInboundController {
   @ApiOkResponse({ type: AcademyPaymentRequestViewDto })
   getPaymentRequest(@Param("requestId", ParseUUIDPipe) requestId: string): Promise<AcademyPaymentRequestViewDto> {
     return this.paymentRequests.getStatus(requestId);
+  }
+
+  @Get("students/:academyStudentId/fee-options")
+  @Public()
+  @UseGuards(AcademyInboundGuard)
+  @ApiHeader({ name: "X-Klickit-Signature", required: true, description: "v1=<hex HMAC-SHA256>, see academy-signature.ts" })
+  @ApiOperation({
+    summary:
+      "Academy -> ERP: what may a parent add to this learner's invoice? Per term of the current year: the optional fee items and transport routes on offer, " +
+      "or `available: false` when the school has not switched parent invoicing on. 404 for a learner this ERP has not linked. " +
+      "The Academy only ever asks about a learner it has verified is the signed-in parent's own child.",
+  })
+  @ApiOkResponse({ type: AcademyParentFeeOptionsDto })
+  feeOptions(@Param("academyStudentId") academyStudentId: string): Promise<AcademyParentFeeOptionsDto> {
+    return this.parentInvoices.options(academyStudentId);
+  }
+
+  @Post("students/:academyStudentId/invoice-requests")
+  @HttpCode(200)
+  @Public()
+  @UseGuards(AcademyInboundGuard)
+  @ApiHeader({ name: "X-Klickit-Signature", required: true, description: "v1=<hex HMAC-SHA256>, see academy-signature.ts" })
+  @ApiOperation({
+    summary:
+      "Academy -> ERP: generate the invoice(s) a parent customised for their learner (the term's fee invoice, or a top-up of optional items, plus a transport invoice). " +
+      "Idempotent on `requestId`. A request that cannot go ahead is answered with status REFUSED and a parent-safe message, and nothing is created.",
+  })
+  @ApiOkResponse({ type: AcademyParentInvoiceRequestViewDto })
+  createInvoiceRequest(
+    @Param("academyStudentId") academyStudentId: string,
+    @Body() dto: CreateAcademyParentInvoiceRequestDto,
+  ): Promise<AcademyParentInvoiceRequestViewDto> {
+    return this.parentInvoices.create({ ...dto, academyStudentId });
+  }
+
+  @Get("invoice-requests/:requestId")
+  @Public()
+  @UseGuards(AcademyInboundGuard)
+  @ApiHeader({ name: "X-Klickit-Signature", required: true, description: "v1=<hex HMAC-SHA256>, see academy-signature.ts" })
+  @ApiOperation({ summary: "Academy -> ERP: how did this invoice request go? (CREATED with the invoices | REFUSED | PENDING)" })
+  @ApiOkResponse({ type: AcademyParentInvoiceRequestViewDto })
+  getInvoiceRequest(@Param("requestId", ParseUUIDPipe) requestId: string): Promise<AcademyParentInvoiceRequestViewDto> {
+    return this.parentInvoices.getStatus(requestId);
   }
 
   @Get("students/:academyStudentId/receipts")

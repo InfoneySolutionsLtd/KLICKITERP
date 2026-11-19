@@ -16,6 +16,7 @@ export { BillingModule } from "./billing.module";
 export { FeeCategoriesService } from "./application/fee-categories.service";
 export type { CreateFeeCategoryInput, UpdateFeeCategoryInput } from "./application/fee-categories.service";
 export { TransportRoutesService } from "./application/transport-routes.service";
+export { TransportBillingService, TRANSPORT_FEE_INCOME_CATEGORY_NAME } from "./application/transport-billing.service";
 export type { CreateTransportRouteInput, UpdateTransportRouteInput } from "./application/transport-routes.service";
 export { FeeStructuresService, FEE_STRUCTURE_DOCUMENT_TYPE } from "./application/fee-structures.service";
 export type { CreateFeeStructureInput, CreateFeeStructureLineInput } from "./application/fee-structures.service";

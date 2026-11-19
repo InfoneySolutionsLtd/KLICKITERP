@@ -1,5 +1,31 @@
 {
   "academySync": {
+    "parentInvoicing": {
+      "title": "Parents customise their own invoices",
+      "description": "Lets a parent choose, in the Klickit Academy parent portal, the optional fee items and the transport route for their own child, check the total and generate the invoice themselves, then pay it. Schools often only learn who wants milk or transport when a parent visits; this lets parents tell you directly.",
+      "badge": {
+        "off": "Off",
+        "on": "On",
+        "needsSetup": "Needs setup"
+      },
+      "rules": "Parents can only change what you marked as optional in the fee structure, and pick a transport route. Prices always come from your fee structure and routes, never from the parent. Before an invoice is generated the parent must confirm, after a short countdown. A parent cannot delete an invoice: only you can void it.",
+      "switchLabel": "Let parents customise and generate their own fee invoices",
+      "switchHint": "Off by default. When a parent generates an invoice it is posted straight away, appears under Billing → Invoices, is sent to the parent portal so they can pay it, and the people below are notified.",
+      "notifyTitle": "Who is notified when a parent generates an invoice",
+      "notifyHint": "Every active user in the chosen roles gets a notification. If you choose none, everyone who can post invoices is notified.",
+      "rolesUnavailable": "You do not have permission to list roles, so the notification roles cannot be changed here.",
+      "saveRoles": "Save notification roles",
+      "savingRoles": "Saving…",
+      "issuesTitle": "Before parents can use this:",
+      "issue": {
+        "NOT_CONNECTED": "Connect this ERP to its Klickit Academy school on this page first.",
+        "PUBLISHING_OFF": "Switch on “Invoices in the parent portal” above first: parents can only see invoices that are published to the portal.",
+        "NO_SYSTEM_USER": "Choose the user these invoices are recorded under: set the Settings key academy.parent_invoice_actor_user_id (or payments.mpesa_system_actor_user_id) to an active user's id."
+      },
+      "toast": {
+        "saved": "Parent invoicing setting saved."
+      }
+    },
     "publish": {
       "receipts": {
         "incompleteTitle": "Receipts are missing some of this school's details:",
