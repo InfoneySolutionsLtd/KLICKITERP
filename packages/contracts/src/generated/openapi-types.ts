@@ -9888,7 +9888,7 @@ export interface paths {
         };
         /** Can parents customise and generate their own fee invoices, who is notified, and what is still missing? */
         get: operations["AcademyParentInvoicingController_status"];
-        /** Switch parent invoicing on or off (off by default) and optionally set the roles notified when a parent generates an invoice. Cannot be switched on until the ERP is connected and publishing to the parent portal is on. */
+        /** Switch parent invoicing on or off (off by default) and optionally set the roles notified when a parent generates an invoice and the user the invoices are recorded under. Cannot be switched on until the ERP is connected and publishing to the parent portal is on. */
         put: operations["AcademyParentInvoicingController_update"];
         post?: never;
         delete?: never;
@@ -15359,6 +15359,20 @@ export interface components {
             /** @description Whether invoices are published to the Academy parent portal */
             enabled: boolean;
         };
+        AcademyParentInvoiceActorDto: {
+            /** @description True when a user is set AND is active: parent invoices can be created */
+            configured: boolean;
+            /**
+             * @description Which setting supplied it: this feature's own, or the existing M-Pesa system cashier (the fallback)
+             * @enum {string|null}
+             */
+            source: "PARENT_INVOICES" | "MPESA" | null;
+            /** Format: uuid */
+            userId: string | null;
+            userName: string | null;
+            /** @description False when a user id is saved but that user is missing or not active */
+            userActive: boolean;
+        };
         AcademyParentInvoicingStatusDto: {
             /** @description Parents may customise and generate their own fee invoices from the parent portal */
             enabled: boolean;
@@ -15366,12 +15380,19 @@ export interface components {
             publishingOn: boolean;
             /** @description Roles told when a parent generates an invoice. Empty: everyone who can post invoices. */
             notifyRoleIds: string[];
+            /** @description The user parent-generated invoices are recorded under */
+            actor: components["schemas"]["AcademyParentInvoiceActorDto"];
             issues: ("NOT_CONNECTED" | "PUBLISHING_OFF" | "NO_SYSTEM_USER")[];
         };
         SetAcademyParentInvoicingDto: {
             enabled: boolean;
             /** @description Omit to leave the notification roles as they are; [] = everyone who can post invoices */
             notifyRoleIds?: string[];
+            /**
+             * Format: uuid
+             * @description The ACTIVE user parent-generated invoices are recorded under (ideally a service account). Omit to leave it as it is.
+             */
+            actorUserId?: string;
         };
         CreateAcademyPaymentRequestDto: {
             /**

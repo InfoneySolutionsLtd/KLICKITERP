@@ -26,11 +26,11 @@ export class AcademyParentInvoicingController {
   @RequirePermission("academy:sync:manage")
   @ApiOperation({
     summary:
-      "Switch parent invoicing on or off (off by default) and optionally set the roles notified when a parent generates an invoice. " +
+      "Switch parent invoicing on or off (off by default) and optionally set the roles notified when a parent generates an invoice and the user the invoices are recorded under. " +
       "Cannot be switched on until the ERP is connected and publishing to the parent portal is on.",
   })
   @ApiResponse({ status: 200, type: AcademyParentInvoicingStatusDto })
   update(@Body() dto: SetAcademyParentInvoicingDto, @Req() req: AuthenticatedRequest): Promise<AcademyParentInvoicingStatusDto> {
-    return this.settings.update({ enabled: dto.enabled, notifyRoleIds: dto.notifyRoleIds }, req.user?.sub ?? null);
+    return this.settings.update({ enabled: dto.enabled, notifyRoleIds: dto.notifyRoleIds, actorUserId: dto.actorUserId }, req.user?.sub ?? null);
   }
 }

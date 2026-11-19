@@ -1,6 +1,27 @@
 {
   "academySync": {
     "parentInvoicing": {
+      "actor": {
+        "title": "Enregistrer les factures des parents sous cet utilisateur",
+        "hint": "Personne à l'école n'appuie sur un bouton lorsqu'un parent génère une facture, et chaque facture enregistre son auteur. Choisissez un utilisateur pour cela, de préférence un compte de service plutôt qu'un membre du personnel.",
+        "configured": "Les factures des parents sont enregistrées sous {name}.",
+        "configuredFromMpesa": "Les factures des parents sont enregistrées sous {name}, le caissier système M-Pesa. Choisissez un autre utilisateur si vous préférez.",
+        "change": "Modifier",
+        "missingTitle": "Aucun utilisateur n'est défini pour les factures des parents",
+        "missingBody": "Tant qu'il n'y en a pas, les parents apprennent que l'école n'a pas fini de configurer cette fonction et aucune facture n'est créée.",
+        "inactiveTitle": "L'utilisateur enregistré ne peut pas être utilisé",
+        "inactiveBody": "{name} n'est plus un utilisateur actif ; les factures des parents ne peuvent donc pas être créées. Choisissez un autre utilisateur.",
+        "unknownUser": "L'utilisateur enregistré",
+        "loadingUsers": "Chargement des utilisateurs…",
+        "pickPlaceholder": "Choisir un utilisateur",
+        "searchUsers": "Rechercher des utilisateurs",
+        "noUsers": "Aucun utilisateur trouvé.",
+        "cannotLoadUsers": "Impossible de charger la liste des utilisateurs (vous n'avez peut-être pas l'autorisation de les voir).",
+        "save": "Utiliser cet utilisateur",
+        "saving": "Enregistrement…",
+        "cancel": "Annuler",
+        "manageUsers": "Créer ou gérer les utilisateurs"
+      },
       "title": "Les parents personnalisent leurs factures",
       "description": "Permet à un parent de choisir, dans le portail parents de Klickit Academy, les frais optionnels et l'itinéraire de transport de son enfant, de vérifier le total et de générer lui-même la facture, puis de la payer. Les écoles ne savent souvent qui veut du lait ou le transport que lorsqu'un parent se déplace ; ainsi les parents vous le disent directement.",
       "badge": {
@@ -20,7 +41,7 @@
       "issue": {
         "NOT_CONNECTED": "Connectez d'abord cet ERP à son école Klickit Academy sur cette page.",
         "PUBLISHING_OFF": "Activez d'abord « Factures dans le portail parents » ci-dessus : les parents ne voient que les factures publiées sur le portail.",
-        "NO_SYSTEM_USER": "Choisissez l'utilisateur sous lequel ces factures sont enregistrées : définissez la clé de Paramètres academy.parent_invoice_actor_user_id (ou payments.mpesa_system_actor_user_id) sur l'identifiant d'un utilisateur actif."
+        "NO_SYSTEM_USER": "Choisissez l'utilisateur sous lequel les factures des parents sont enregistrées (ci-dessous)."
       },
       "toast": {
         "saved": "Paramètre de facturation par les parents enregistré."

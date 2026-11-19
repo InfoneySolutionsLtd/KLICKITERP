@@ -75,10 +75,20 @@ export const AcademyParentInvoiceRequestViewDtoSchema = z.object({
 });
 export type AcademyParentInvoiceRequestViewDto = z.infer<typeof AcademyParentInvoiceRequestViewDtoSchema>;
 
+export const AcademyParentInvoiceActorDtoSchema = z.object({
+    configured: z.boolean(),
+    source: z.literal("PARENT_INVOICES\" | \"MPESA").nullable(),
+    userId: z.string().nullable(),
+    userName: z.string().nullable(),
+    userActive: z.boolean(),
+});
+export type AcademyParentInvoiceActorDto = z.infer<typeof AcademyParentInvoiceActorDtoSchema>;
+
 export const AcademyParentInvoicingStatusDtoSchema = z.object({
     enabled: z.boolean(),
     publishingOn: z.boolean(),
     notifyRoleIds: z.array(z.string()),
+    actor: AcademyParentInvoiceActorDtoSchema,
     issues: z.array(z.literal("NOT_CONNECTED\" | \"PUBLISHING_OFF\" | \"NO_SYSTEM_USER")),
 });
 export type AcademyParentInvoicingStatusDto = z.infer<typeof AcademyParentInvoicingStatusDtoSchema>;
@@ -86,5 +96,6 @@ export type AcademyParentInvoicingStatusDto = z.infer<typeof AcademyParentInvoic
 export const SetAcademyParentInvoicingDtoSchema = z.object({
     enabled: z.boolean(),
     notifyRoleIds: z.array(z.string().uuid()).max(50).optional(),
+    actorUserId: z.string().uuid().optional(),
 });
 export type SetAcademyParentInvoicingDto = z.infer<typeof SetAcademyParentInvoicingDtoSchema>;
