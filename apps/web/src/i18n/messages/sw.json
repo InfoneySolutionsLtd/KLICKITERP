@@ -1,5 +1,31 @@
 {
   "academySync": {
+    "parentInvoicing": {
+      "title": "Wazazi wanarekebisha ankara zao wenyewe",
+      "description": "Humruhusu mzazi, katika tovuti ya wazazi ya Klickit Academy, kuchagua ada za hiari na njia ya usafiri ya mtoto wake, kuangalia jumla na kutengeneza ankara mwenyewe, kisha kuilipa. Shule mara nyingi hujua nani anataka maziwa au usafiri mzazi anapofika shuleni; hii inawawezesha wazazi kukuambia moja kwa moja.",
+      "badge": {
+        "off": "Imezimwa",
+        "on": "Imewashwa",
+        "needsSetup": "Inahitaji mipangilio"
+      },
+      "rules": "Wazazi wanaweza kubadilisha tu yale uliyoyaweka kuwa ya hiari katika muundo wa ada, na kuchagua njia ya usafiri. Bei hutoka kila mara kwenye muundo wako wa ada na njia zako, kamwe si kwa mzazi. Kabla ya kutengeneza ankara, mzazi lazima athibitishe, baada ya kuhesabu kwa muda mfupi. Mzazi hawezi kufuta ankara: ni wewe tu unayeweza kuibatilisha.",
+      "switchLabel": "Ruhusu wazazi kurekebisha na kutengeneza ankara zao za ada",
+      "switchHint": "Imezimwa kwa chaguo-msingi. Mzazi anapotengeneza ankara, huchapishwa mara moja, huonekana chini ya Bili → Ankara, hutumwa kwenye tovuti ya wazazi ili aweze kuilipa, na watu walio hapa chini wanaarifiwa.",
+      "notifyTitle": "Nani anaarifiwa mzazi anapotengeneza ankara",
+      "notifyHint": "Kila mtumiaji hai katika majukumu yaliyochaguliwa hupata arifa. Usipochagua yoyote, kila mtu anayeweza kuchapisha ankara anaarifiwa.",
+      "rolesUnavailable": "Huna ruhusa ya kuorodhesha majukumu, kwa hivyo majukumu ya kuarifiwa hayawezi kubadilishwa hapa.",
+      "saveRoles": "Hifadhi majukumu ya kuarifiwa",
+      "savingRoles": "Inahifadhi…",
+      "issuesTitle": "Kabla wazazi hawajaweza kutumia hii:",
+      "issue": {
+        "NOT_CONNECTED": "Unganisha kwanza ERP hii na shule yake ya Klickit Academy kwenye ukurasa huu.",
+        "PUBLISHING_OFF": "Washa kwanza “Ankara katika tovuti ya wazazi” hapo juu: wazazi huona tu ankara zilizochapishwa kwenye tovuti.",
+        "NO_SYSTEM_USER": "Chagua mtumiaji ambaye ankara hizi zitarekodiwa chini yake: weka ufunguo wa Mipangilio academy.parent_invoice_actor_user_id (au payments.mpesa_system_actor_user_id) kuwa kitambulisho cha mtumiaji hai."
+      },
+      "toast": {
+        "saved": "Mpangilio wa ankara za wazazi umehifadhiwa."
+      }
+    },
     "publish": {
       "receipts": {
         "incompleteTitle": "Risiti hazina baadhi ya taarifa za shule hii:",

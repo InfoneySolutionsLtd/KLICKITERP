@@ -172,6 +172,43 @@ export class TransportBillingService {
     return { succeeded, failed };
   }
 
+  /**
+   * Bills ONE student for ONE route inside the CALLER'S transaction (`manager`) — exactly what `billStudents()` does per
+   * student, but without opening its own transaction, so a caller that also creates other records (the Academy parent
+   * portal: a fee invoice and a transport invoice in one go) can make them all-or-nothing. The route's own flat `amount`
+   * is always the price (the caller never supplies one); `dueDate` defaults to the issue date, as everywhere else.
+   * Returns the new invoice ids. Unlike `billStudents()` this refuses an inactive route.
+   */
+  async billStudentOnRoute(
+    manager: EntityManager,
+    input: { studentId: string; routeId: string; termId: string; issueDate?: string; dueDate?: string },
+    initiatedBy: string,
+  ): Promise<string[]> {
+    const route = await this.transportRouteRepository.findByIdOrFail(input.routeId, manager);
+    if (!route.isActive) {
+      throw new NotFoundException("BillTransportRoute", `${input.routeId} is not active`);
+    }
+    const category = await this.feeCategoryRepository.findByName(TRANSPORT_FEE_INCOME_CATEGORY_NAME, manager);
+    if (!category) {
+      throw new NotFoundException(
+        "BillFeeCategory",
+        `${TRANSPORT_FEE_INCOME_CATEGORY_NAME} — expected migration 0245 to have upserted it`,
+      );
+    }
+    return this.billOneStudent(
+      manager,
+      input.studentId,
+      route.id,
+      route.name,
+      route.amount,
+      category.id,
+      input.termId,
+      input.issueDate,
+      initiatedBy,
+      input.dueDate,
+    );
+  }
+
   private async billOneStudent(
     manager: EntityManager,
     studentId: string,
@@ -182,6 +219,8 @@ export class TransportBillingService {
     termId: string,
     issueDate: string | undefined,
     initiatedBy: string,
+    // Appended LAST so every existing call keeps its meaning; only the parent-portal path sets it.
+    dueDate?: string,
   ): Promise<string[]> {
     const invoice = await this.invoicingService.generateInvoice(manager, {
       studentId,
@@ -195,6 +234,7 @@ export class TransportBillingService {
         },
       ],
       issueDate,
+      dueDate,
       createdBy: initiatedBy,
     });
     await this.invoicingService.postInvoice(manager, invoice.id, initiatedBy);

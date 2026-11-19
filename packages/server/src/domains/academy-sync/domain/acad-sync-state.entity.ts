@@ -48,4 +48,15 @@ export class AcadSyncStateEntity extends MutableBaseEntity {
 
   @Column({ type: "varchar", length: 300, name: "last_publish_message", nullable: true })
   lastPublishMessage!: string | null;
+
+  /**
+   * Parents may customise (optional fee items, transport) and generate their own fee invoices from the parent portal.
+   * OFF until an admin switches it on; needs `publishInvoicesEnabled` too, or the parent would never see what they made.
+   */
+  @Column({ type: "boolean", name: "parent_invoicing_enabled", default: false })
+  parentInvoicingEnabled!: boolean;
+
+  /** Roles whose active users are notified when a parent generates an invoice. Empty = everyone who can post invoices. */
+  @Column({ type: "uuid", name: "parent_invoice_notify_role_ids", array: true, default: () => "'{}'" })
+  parentInvoiceNotifyRoleIds!: string[];
 }
