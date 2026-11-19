@@ -574,17 +574,17 @@
         "title": "Chèque impayé",
         "body": "Le chèque {chequeNo} de {amount} KES a été retourné impayé."
       },
-      "BANK_DEPOSIT_NEEDS_MATCHING": {
-        "title": "Dépôt bancaire à rapprocher",
-        "body": "Un dépôt bancaire de {amount} KES (référence {reference}) n'a pas pu être rapproché automatiquement et attend en suspens."
+      "PAYMENT_NEEDS_MATCHING": {
+        "title": "Paiement à rapprocher",
+        "body": "Un paiement de {amount} KES (référence {reference}) n'a pas pu être rapproché automatiquement et attend en suspens."
       },
       "PARENT_INVOICE_CREATED": {
         "title": "Facture créée par un parent",
         "body": "{parentName} a créé {count, plural, one {la facture} other {les factures}} {numbers} pour {learner} ({admissionNo}), {term} : {total} KES."
       },
-      "PARENT_PAYMENT_RECEIVED": {
-        "title": "Paiement d'un parent reçu",
-        "body": "{parentName} a payé {amount} KES par M-Pesa pour {learner}."
+      "ONLINE_PAYMENT_RECEIVED": {
+        "title": "Paiement en ligne reçu",
+        "body": "{payer} a payé {amount} KES pour {learner} (reçu {receiptNo})."
       },
       "PAYROLL_RUN_PAID": {
         "title": "Paie versée",

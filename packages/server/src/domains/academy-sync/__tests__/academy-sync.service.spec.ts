@@ -38,7 +38,7 @@ const acad = (over: Partial<AcademyStudentDto> = {}): AcademyStudentDto => ({
 });
 
 /** The service wired to in-memory fakes of everything it touches, so whole runs can be exercised and inspected. */
-function makeHarness(init: { pages?: AcademyStudentDto[][]; erpStudents?: Row[]; erpClasses?: Row[]; connected?: boolean } = {}) {
+function makeHarness(init: { pages?: AcademyStudentDto[][]; erpStudents?: Row[]; erpClasses?: Row[]; connected?: boolean; sink?: unknown } = {}) {
   let pages = init.pages ?? [[]];
   let seq = 0;
   const nextId = (prefix: string) => `${prefix}-${++seq}`;
@@ -181,6 +181,7 @@ function makeHarness(init: { pages?: AcademyStudentDto[][]; erpStudents?: Row[];
     studentMapRepository as any,
     guardianMapRepository as any,
     classMapRepository as any,
+    init.sink as any,
   );
 
   const run = async (options: Partial<StartRunOptions> & Pick<StartRunOptions, "mode">) => {
@@ -575,6 +576,70 @@ describe("AcademySyncService — a full pass notices who disappeared", () => {
     h.setPages([[]]);
     const run = await h.run({ mode: "IMPORT", scope: "INCREMENTAL" });
     expect(run.counts.missing).toBe(0);
+  });
+});
+
+describe("AcademySyncService — tells the people who manage the Academy link when scheduled syncing STARTS failing (the bell)", () => {
+  const down = () => new Error("Academy Gateway unreachable (ECONNREFUSED)");
+
+  it("the first failed scheduled run raises ACADEMY_SYNC_FAILING with the reason and a link to the Licence page", async () => {
+    const sink = { emit: jest.fn(async () => 1) };
+    const h = makeHarness({ pages: [[acad()]], sink });
+    await h.firstImport(); // scheduled imports only run once the first import was confirmed
+    sink.emit.mockClear();
+    h.failures.gateway = down();
+    const run = await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+
+    expect(run.status).toBe("FAILED");
+    expect(sink.emit).toHaveBeenCalledTimes(1);
+    const [event] = sink.emit.mock.calls[0] as unknown as [{ code: string; params: { reason: string }; link: string; entityType: string; entityId: string }];
+    expect(event).toMatchObject({ code: "ACADEMY_SYNC_FAILING", link: "/license", entityType: "acad_sync_run", entityId: run.id });
+    expect(event.params.reason).toContain("ECONNREFUSED");
+  });
+
+  it("the runs that keep failing afterwards say nothing more", async () => {
+    const sink = { emit: jest.fn(async () => 1) };
+    const h = makeHarness({ pages: [[acad()]], sink });
+    await h.firstImport(); // scheduled imports only run once the first import was confirmed
+    sink.emit.mockClear();
+    h.failures.gateway = down();
+    await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+    await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+    await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+    expect(sink.emit).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts telling again after a run that succeeded and then a new failure", async () => {
+    const sink = { emit: jest.fn(async () => 1) };
+    const h = makeHarness({ pages: [[acad()]], sink });
+    await h.firstImport(); // scheduled imports only run once the first import was confirmed
+    sink.emit.mockClear();
+    h.failures.gateway = down();
+    await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+    h.failures.gateway = null;
+    await expect(h.run({ mode: "IMPORT", trigger: "SCHEDULED" })).resolves.toMatchObject({ status: "SUCCEEDED" });
+    h.failures.gateway = down();
+    await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+    expect(sink.emit).toHaveBeenCalledTimes(2);
+  });
+
+  it("a run someone started by hand says nothing (they are looking at the result)", async () => {
+    const sink = { emit: jest.fn(async () => 1) };
+    const h = makeHarness({ pages: [[acad()]], sink });
+    await h.firstImport(); // scheduled imports only run once the first import was confirmed
+    sink.emit.mockClear();
+    h.failures.gateway = down();
+    await h.run({ mode: "IMPORT", trigger: "MANUAL" });
+    expect(sink.emit).not.toHaveBeenCalled();
+  });
+
+  it("a scheduled run that succeeds says nothing", async () => {
+    const sink = { emit: jest.fn(async () => 1) };
+    const h = makeHarness({ pages: [[acad()]], sink });
+    await h.firstImport(); // scheduled imports only run once the first import was confirmed
+    sink.emit.mockClear();
+    await h.run({ mode: "IMPORT", trigger: "SCHEDULED" });
+    expect(sink.emit).not.toHaveBeenCalled();
   });
 });
 

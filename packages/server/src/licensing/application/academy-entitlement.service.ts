@@ -1,5 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Inject, Injectable, Logger, OnModuleInit, Optional } from "@nestjs/common";
 import { AppConfigService } from "../../shared/config/app-config.service";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../shared/notifications/notification-sink.port";
+import { notifyLicenceStateChange } from "./license-state-notice.util";
 import { decryptFromBuffer } from "../../shared/crypto/aes-gcm.util";
 import { AcademyLinkEntity } from "../domain/academy-link.entity";
 import { LicenseState } from "../domain/license.entity";
@@ -39,6 +41,8 @@ export class AcademyEntitlementService implements OnModuleInit {
     private readonly academyLinkRepository: AcademyLinkRepository,
     private readonly licenseRepository: LicenseRepository,
     private readonly config: AppConfigService,
+    /** Tells the people who can see the Licence page when it changes (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -146,10 +150,12 @@ export class AcademyEntitlementService implements OnModuleInit {
     if (expiresAt) {
       existing.validTo = expiresAt.slice(0, 10);
     }
-    if (existing.state !== nextState) {
+    const previousState = existing.state;
+    if (previousState !== nextState) {
       existing.state = nextState;
       existing.stateChangedAt = now;
     }
     await this.licenseRepository.save(existing);
+    await notifyLicenceStateChange(this.notifications, { from: previousState, to: nextState, validTo: existing.validTo });
   }
 }

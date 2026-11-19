@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { ConflictException } from "../../shared/exceptions/conflict.exception";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../shared/notifications/notification-sink.port";
 import { UpdateNoticeDecision, UpdateNoticeEntity, UpdateNoticeUrgency } from "../domain/update-notice.entity";
 import { UpdateNoticeRepository } from "../infrastructure/update-notice.repository";
 
@@ -31,10 +32,14 @@ const ALLOWED_DECISION_TRANSITIONS: Record<UpdateNoticeDecision, readonly Update
  */
 @Injectable()
 export class UpdateNoticesService {
-  constructor(private readonly repository: UpdateNoticeRepository) {}
+  constructor(
+    private readonly repository: UpdateNoticeRepository,
+    /** Tells the people who can see the Licence page that an update is available (the bell, FR-LIC-008). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
+  ) {}
 
   async record(input: RecordUpdateNoticeInput): Promise<UpdateNoticeEntity> {
-    return this.repository.create({
+    const notice = await this.repository.create({
       // Wire-level field is `version` (matches FR-LIC-002.1's payload naming);
       // the entity's own column is `releaseVersion` — see UpdateNoticeEntity's
       // own doc comment for why (collision with MutableBaseEntity's `version`
@@ -47,6 +52,14 @@ export class UpdateNoticesService {
       appliedAt: null,
       decision: "PENDING",
     });
+    await this.notifications?.emit({
+      code: "UPDATE_AVAILABLE",
+      params: { version: input.version, urgency: input.urgency },
+      link: "/license",
+      entityType: "update_notice",
+      entityId: notice.id,
+    });
+    return notice;
   }
 
   async list(limit = 50): Promise<UpdateNoticeEntity[]> {

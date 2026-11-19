@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, EntityManager } from "typeorm";
 import { runInTransaction } from "../../../shared/database/tx";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { AcademicCalendarService } from "../../../platform/settings";
 // Barrel import (a pure application-layer service dependency, not an entity
@@ -129,6 +130,8 @@ export class BulkBillingService {
     private readonly feeStructuresService: FeeStructuresService,
     private readonly academicCalendarService: AcademicCalendarService,
     private readonly invoicingService: InvoicingService,
+    /** Tells whoever started the run how it went (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async bulkGenerate(termId: string, filter: BulkGenerateFilter, initiatedBy: string): Promise<BulkGenerateResult> {
@@ -189,6 +192,16 @@ export class BulkBillingService {
         failed.push({ studentId: student.id, studentLabel, error: error instanceof Error ? error.message : String(error) });
       }
     }
+
+    // The person who started it is told the outcome (created / skipped / failed), whatever the size of the run.
+    await this.notifications?.emit({
+      code: "BULK_BILLING_DONE",
+      params: { term: targetTerm.name, created: succeeded.length, skipped: skipped.length, failed: failed.length },
+      link: "/billing/bulk-billing",
+      entityType: "set_term",
+      entityId: termId,
+      userIds: [initiatedBy],
+    });
 
     return { succeeded, failed, skipped };
   }
