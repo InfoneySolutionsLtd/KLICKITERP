@@ -213,5 +213,49 @@ describe("BulkAllocationService", () => {
       // The failing line contributes no receipt, but the succeeding line's is still counted.
       expect(batch.createdReceipts).toBe(1);
     });
+
+    describe("tells accounts about a line that went to suspense (the bell)", () => {
+      function withSink() {
+        const sink = { emit: jest.fn(async () => 1) };
+        const svc = new BulkAllocationService(
+          batchRepository as never,
+          lineRepository as never,
+          studentRepository as never,
+          suspenseRepository as never,
+          receiptsService as never,
+          dataSource,
+          sink as never,
+        );
+        return { sink, svc };
+      }
+
+      it("raises PAYMENT_NEEDS_MATCHING for the parked line (best effort, outside a transaction), leaving out the person who ran the batch", async () => {
+        lineRepository.listByBatch.mockResolvedValueOnce([makeLine({ id: "line-fails", studentId: "student-2", amount: Money.fromInt(1000) })]);
+        receiptsService.captureReceipt.mockImplementationOnce(async () => {
+          throw new Error("GL configuration error: no clearing account seeded");
+        });
+        const { sink, svc } = withSink();
+
+        await svc.matchAndPost("batch-1", "initiator-1");
+
+        expect(sink.emit).toHaveBeenCalledTimes(1);
+        expect(sink.emit).toHaveBeenCalledWith({
+          code: "PAYMENT_NEEDS_MATCHING",
+          params: { amount: "1,000", reference: "line-fails" },
+          link: "/payments/suspense/suspense-1",
+          entityType: "pay_suspense_item",
+          entityId: "suspense-1",
+          excludeUserIds: ["initiator-1"],
+        });
+      });
+
+      it("a batch where every line is receipted says nothing", async () => {
+        lineRepository.listByBatch.mockResolvedValueOnce([makeLine({ id: "line-ok", studentId: "student-1", amount: Money.fromInt(500) })]);
+        receiptsService.captureReceipt.mockImplementationOnce(async () => ({ id: "receipt-1", number: "PAY-000001" }));
+        const { sink, svc } = withSink();
+        await svc.matchAndPost("batch-1", "initiator-1");
+        expect(sink.emit).not.toHaveBeenCalled();
+      });
+    });
   });
 });

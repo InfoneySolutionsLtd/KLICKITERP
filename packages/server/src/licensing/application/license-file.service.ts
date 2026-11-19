@@ -1,6 +1,8 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Inject, Injectable, Logger, OnModuleInit, Optional } from "@nestjs/common";
 import { readFile } from "node:fs/promises";
 import { AppConfigService } from "../../shared/config/app-config.service";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../shared/notifications/notification-sink.port";
+import { notifyLicenceStateChange } from "./license-state-notice.util";
 import { LicenseEntity, LicenseState } from "../domain/license.entity";
 import { LicenseRepository } from "../infrastructure/license.repository";
 import { LicenseFilePayload, verifyLicenseBlob } from "../infrastructure/crypto/license-file-verifier";
@@ -22,6 +24,8 @@ export class LicenseFileService implements OnModuleInit {
   constructor(
     private readonly config: AppConfigService,
     private readonly licenseRepository: LicenseRepository,
+    /** Tells the people who can see the Licence page when it changes (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   /**
@@ -78,7 +82,9 @@ export class LicenseFileService implements OnModuleInit {
         existing.state = nextState;
         existing.stateChangedAt = now;
       }
-      return this.licenseRepository.save(existing);
+      const saved = await this.licenseRepository.save(existing);
+      await notifyLicenceStateChange(this.notifications, { from: previousState, to: nextState, validTo: saved.validTo });
+      return saved;
     }
 
     return this.licenseRepository.create({
@@ -112,9 +118,12 @@ export class LicenseFileService implements OnModuleInit {
     const window = { validFrom: existing.validFrom, validTo: existing.validTo, graceDays: existing.graceDays };
     const nextState = deriveState(existing.state, window, now);
     if (nextState !== existing.state) {
+      const before = existing.state;
       existing.state = nextState;
       existing.stateChangedAt = now;
-      return this.licenseRepository.save(existing);
+      const saved = await this.licenseRepository.save(existing);
+      await notifyLicenceStateChange(this.notifications, { from: before, to: nextState, validTo: saved.validTo });
+      return saved;
     }
     return existing;
   }

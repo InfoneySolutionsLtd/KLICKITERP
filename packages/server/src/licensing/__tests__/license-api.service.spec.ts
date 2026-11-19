@@ -169,6 +169,68 @@ describe("LicenseApiService — the 9 enumerated /license/v1/* handlers", () => 
     });
   });
 
+  describe("tells the people who can see the Licence page when the state changes (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new LicenseApiService(licenseRepository as never, usageStatsViewRepository as never, usageSnapshotRepository as never, updateNoticesService as never, sink as never);
+      return { sink, svc };
+    }
+    const expectChange = (sink: { emit: jest.Mock }, from: string, to: string) =>
+      expect(sink.emit).toHaveBeenCalledWith({ code: "LICENCE_STATE_CHANGED", params: { from, to, validTo: expect.anything() }, link: "/license", entityType: "license" });
+
+    it("activate: PROVISIONED -> ACTIVE", async () => {
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "PROVISIONED" }));
+      licenseRepository.save.mockImplementation(async (entity: LicenseEntity) => entity);
+      const { sink, svc } = withSink();
+      await svc.activate({});
+      expectChange(sink, "PROVISIONED", "ACTIVE");
+    });
+
+    it("suspend: ACTIVE -> SUSPENDED", async () => {
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "ACTIVE" }));
+      licenseRepository.save.mockImplementation(async (entity: LicenseEntity) => entity);
+      const { sink, svc } = withSink();
+      await svc.suspend();
+      expectChange(sink, "ACTIVE", "SUSPENDED");
+    });
+
+    it("renew: SUSPENDED -> ACTIVE", async () => {
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "SUSPENDED", validTo: "2020-01-01" }));
+      licenseRepository.save.mockImplementation(async (entity: LicenseEntity) => entity);
+      const { sink, svc } = withSink();
+      await svc.renew({ validTo: "2099-01-01" });
+      expectChange(sink, "SUSPENDED", "ACTIVE");
+    });
+
+    it("renew that leaves the state as it was says nothing", async () => {
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "ACTIVE", validTo: "2098-01-01" }));
+      licenseRepository.save.mockImplementation(async (entity: LicenseEntity) => entity);
+      const { sink, svc } = withSink();
+      await svc.renew({ validTo: "2099-01-01" });
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("deactivate: any state -> DEACTIVATED, and deactivating an already DEACTIVATED licence says nothing", async () => {
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "ACTIVE" }));
+      licenseRepository.save.mockImplementation(async (entity: LicenseEntity) => entity);
+      const first = withSink();
+      await first.svc.deactivate();
+      expectChange(first.sink, "ACTIVE", "DEACTIVATED");
+
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "DEACTIVATED" }));
+      const second = withSink();
+      await second.svc.deactivate();
+      expect(second.sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("a refused transition (activate a DEACTIVATED licence) says nothing", async () => {
+      licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense({ state: "DEACTIVATED" }));
+      const { sink, svc } = withSink();
+      await expect(svc.activate({})).rejects.toBeInstanceOf(ConflictException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+  });
+
   describe("status", () => {
     it("returns the current license view", async () => {
       licenseRepository.findCurrentOrFail.mockResolvedValue(makeLicense());

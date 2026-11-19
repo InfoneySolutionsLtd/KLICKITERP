@@ -1,7 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { runInTransaction } from "../../../shared/database/tx";
+import { formatAmount } from "../../../shared/notifications/format-amount";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { Money } from "../../../shared/money/money";
 import { StdStudentRepository } from "../../students";
@@ -62,6 +64,8 @@ export class BulkAllocationService {
     private readonly suspenseRepository: PaySuspenseItemRepository,
     private readonly receiptsService: ReceiptsService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    /** Tells accounts a line went to suspense (the bell). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async createBatch(
@@ -173,7 +177,7 @@ export class BulkAllocationService {
         createdCount++;
       } catch (error) {
         anyFailure = true;
-        await this.suspenseRepository.create({
+        const parked = await this.suspenseRepository.create({
           source: "BANK",
           amount: line.amount,
           // line.id alone — see the identical fix/comment above; the same
@@ -189,6 +193,15 @@ export class BulkAllocationService {
           resolutionNote: null,
           createdBy: initiatedBy,
           updatedBy: initiatedBy,
+        });
+        // Written outside any transaction here, so this is best effort: a notification problem never fails the batch.
+        await this.notifications?.emit({
+          code: "PAYMENT_NEEDS_MATCHING",
+          params: { amount: formatAmount(line.amount.toDecimalString()), reference: line.id },
+          link: `/payments/suspense/${parked.id}`,
+          entityType: "pay_suspense_item",
+          entityId: parked.id,
+          excludeUserIds: [initiatedBy],
         });
       }
     }

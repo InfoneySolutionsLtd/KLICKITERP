@@ -85,11 +85,11 @@ export const NOTIFICATION_EVENTS = [
     fallbackBody: (p) => `Cheque ${text(p, "chequeNo")} for KES ${text(p, "amount")} was returned unpaid${p.payer ? ` (${text(p, "payer")})` : ""}.`,
   },
   {
-    code: "BANK_DEPOSIT_NEEDS_MATCHING",
+    code: "PAYMENT_NEEDS_MATCHING",
     category: "MONEY",
     audience: { kind: "permissions", permissions: ["payments:suspense:manage"] },
-    fallbackTitle: "Bank deposit needs matching",
-    fallbackBody: (p) => `A bank deposit of KES ${text(p, "amount")} (reference ${text(p, "reference")}) could not be matched automatically and is waiting in suspense.`,
+    fallbackTitle: "Payment needs matching",
+    fallbackBody: (p) => `A payment of KES ${text(p, "amount")} (reference ${text(p, "reference")}) could not be matched automatically and is waiting in suspense.`,
   },
   {
     code: "PARENT_INVOICE_CREATED",
@@ -101,11 +101,11 @@ export const NOTIFICATION_EVENTS = [
       `${text(p, "parentName", "A parent")} has created ${Number(p.count) > 1 ? "invoices" : "an invoice"} ${text(p, "numbers")} for ${text(p, "learner")} (${text(p, "admissionNo")}), ${text(p, "term")}: KES ${text(p, "total")}.`,
   },
   {
-    code: "PARENT_PAYMENT_RECEIVED",
+    code: "ONLINE_PAYMENT_RECEIVED",
     category: "MONEY",
     audience: { kind: "permissions", permissions: ["payments:receipt:view"] },
-    fallbackTitle: "Parent payment received",
-    fallbackBody: (p) => `${text(p, "parentName", "A parent")} paid KES ${text(p, "amount")} by M-Pesa for ${text(p, "learner")}${p.receiptNo ? ` (receipt ${text(p, "receiptNo")})` : ""}.`,
+    fallbackTitle: "Online payment received",
+    fallbackBody: (p) => `${text(p, "payer", "Someone")} paid KES ${text(p, "amount")} for ${text(p, "learner")} (receipt ${text(p, "receiptNo")}).`,
   },
   {
     code: "PAYROLL_RUN_PAID",

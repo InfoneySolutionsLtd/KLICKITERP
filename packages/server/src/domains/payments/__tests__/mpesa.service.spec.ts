@@ -369,6 +369,98 @@ describe("MpesaService", () => {
     });
   });
 
+  describe("tells accounts (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new MpesaService(
+        mpesaTransactionRepository as never,
+        suspenseItemRepository as never,
+        adapterResolver as never,
+        receiptsService as never,
+        studentRepository as never,
+        settingsService as never,
+        dataSource,
+        sink as never,
+      );
+      return { sink, svc };
+    }
+
+    it("an STK prompt the SYSTEM started on a parent's behalf raises ONLINE_PAYMENT_RECEIVED when it is confirmed", async () => {
+      mpesaTransactionRepository.findByCheckoutRequestId.mockResolvedValueOnce(
+        makeTxn({ state: "PENDING", checkoutRequestId: "checkout-1", rawRequest: { studentId: "student-1", initiatedBy: "system-actor-1", accountRef: "ADM123", msisdn: "254700000001" } }),
+      );
+      const { sink, svc } = withSink();
+
+      await svc.handleStkCallback(makeStkCallbackPayload({ amount: "1000", mpesaRef: "NEX1234567" }));
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith(
+        {
+          code: "ONLINE_PAYMENT_RECEIVED",
+          params: { payer: "John Doe", amount: "1,000", learner: "John Doe", receiptNo: "PAY-000001" },
+          link: "/payments/receipts/receipt-1",
+          entityType: "pay_receipt",
+          entityId: "receipt-1",
+        },
+        expect.anything(),
+      );
+    });
+
+    it("an STK prompt a CASHIER started says nothing (the person at the till already knows)", async () => {
+      mpesaTransactionRepository.findByCheckoutRequestId.mockResolvedValueOnce(makeTxn({ state: "PENDING", checkoutRequestId: "checkout-1" })); // initiatedBy "cashier-1"
+      const { sink, svc } = withSink();
+      await svc.handleStkCallback(makeStkCallbackPayload({ amount: "1000", mpesaRef: "NEX1234567" }));
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("an STK prompt the customer did not complete says nothing", async () => {
+      mpesaTransactionRepository.findByCheckoutRequestId.mockResolvedValueOnce(
+        makeTxn({ state: "PENDING", checkoutRequestId: "checkout-1", rawRequest: { studentId: "student-1", initiatedBy: "system-actor-1", accountRef: "ADM123", msisdn: "254700000001" } }),
+      );
+      const { sink, svc } = withSink();
+      await svc.handleStkCallback(makeStkCallbackPayload({ resultCode: "1032" } as never));
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("a Paybill payment auto-matched to a student raises ONLINE_PAYMENT_RECEIVED", async () => {
+      studentRepository.findByAdmissionNo.mockResolvedValue({ id: "student-9", firstName: "Amina", lastName: "Otieno" });
+      const { sink, svc } = withSink();
+
+      await svc.handleC2BConfirmation(makeC2BPayload({ BillRefNumber: "123", TransAmount: "500" }));
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          code: "ONLINE_PAYMENT_RECEIVED",
+          params: expect.objectContaining({ amount: "500", learner: "Amina Otieno", receiptNo: "PAY-000001" }),
+          link: "/payments/receipts/receipt-1",
+        }),
+        expect.anything(),
+      );
+    });
+
+    it("a Paybill payment that matches no student raises PAYMENT_NEEDS_MATCHING with a link to the suspense item", async () => {
+      studentRepository.findByAdmissionNo.mockResolvedValue(null);
+      const { sink, svc } = withSink();
+
+      await svc.handleC2BConfirmation(makeC2BPayload({ BillRefNumber: "does-not-exist", TransAmount: "500" }));
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      const [event] = sink.emit.mock.calls[0] as unknown as [{ code: string; params: Record<string, string>; link: string; entityType: string }];
+      expect(event.code).toBe("PAYMENT_NEEDS_MATCHING");
+      expect(event.params).toEqual({ amount: "500", reference: "does-not-exist" });
+      expect(event.entityType).toBe("pay_suspense_item");
+      expect(event.link).toMatch(/^\/payments\/suspense\/.+/);
+    });
+
+    it("an already-parked confirmation does not tell accounts again", async () => {
+      suspenseItemRepository.findOpen.mockResolvedValueOnce([makeSuspenseItem({ externalRef: "QGH1234567" })]);
+      const { sink, svc } = withSink();
+      await svc.handleC2BConfirmation(makeC2BPayload({ TransID: "QGH1234567" }));
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+  });
+
   describe("queryPendingStatus", () => {
     it("explains — instead of calling the provider — when it has no status check (KCB M-Pesa Express)", async () => {
       (port as { supportsStatusQuery?: boolean }).supportsStatusQuery = false;

@@ -22,8 +22,8 @@ const snapshot = (n: number, over: Partial<InvoiceSnapshot> = {}): InvoiceSnapsh
   ...over,
 });
 
-function makeHarness(over: { enabled?: boolean; connected?: boolean; lockHeld?: boolean; pages?: InvoiceSnapshot[][]; reply?: (invoices: InvoiceSnapshot[]) => any; syncError?: Error } = {}) {
-  const state: any = { publishInvoicesEnabled: over.enabled ?? true, lastPublishAt: null, lastPublishOk: null, lastPublishMessage: null };
+function makeHarness(over: { enabled?: boolean; connected?: boolean; lockHeld?: boolean; pages?: InvoiceSnapshot[][]; reply?: (invoices: InvoiceSnapshot[]) => any; syncError?: Error; sink?: unknown; lastPublishOk?: boolean | null } = {}) {
+  const state: any = { publishInvoicesEnabled: over.enabled ?? true, lastPublishAt: null, lastPublishOk: over.lastPublishOk ?? null, lastPublishMessage: null };
   const pages = [...(over.pages ?? [[]])];
   const published: Array<[string, number]> = [];
   const rejected: Array<[string, string]> = [];
@@ -43,7 +43,7 @@ function makeHarness(over: { enabled?: boolean; connected?: boolean; lockHeld?: 
   };
   const stateRepository = { getOrCreate: jest.fn(async () => state), save: jest.fn(async (s: any) => s) };
   const redis = { set: jest.fn(async () => (over.lockHeld ? null : "OK")), expire: jest.fn(async () => 1), eval: jest.fn(async () => 1) };
-  const service = new AcademyPublishService(academyLink as any, client as any, snapshots as any, stateRepository as any, redis as any);
+  const service = new AcademyPublishService(academyLink as any, client as any, snapshots as any, stateRepository as any, redis as any, over.sink as any);
   return { service, state, academyLink, client, snapshots, stateRepository, redis, published, rejected };
 }
 
@@ -186,6 +186,55 @@ describe("AcademyPublishService.publishPending", () => {
       await h.service.publishPending();
       expect(h.state.lastPublishOk).toBe(false);
       expect(h.state.lastPublishMessage).toMatch(/1 not accepted/);
+    });
+  });
+
+  describe("tells the people who manage the Academy link when publishing STARTS failing (the bell)", () => {
+    const failing = (over: { lastPublishOk?: boolean | null; sink: unknown }) =>
+      makeHarness({ pages: [[snapshot(1)]], syncError: new Error("Academy Gateway unreachable (ECONNREFUSED)"), ...over });
+
+    it("the first failure raises ACADEMY_PUBLISH_FAILING with the reason, linking to the Licence page", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const h = failing({ sink });
+      await h.service.publishPending();
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith({ code: "ACADEMY_PUBLISH_FAILING", params: { reason: "Academy Gateway unreachable (ECONNREFUSED)" }, link: "/license", entityType: "acad_sync_state" });
+    });
+
+    it("a sweep that fails again while it is ALREADY failing says nothing more (no message every few minutes)", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const h = failing({ sink, lastPublishOk: false });
+      await h.service.publishPending();
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("after a successful sweep it can start failing again, and says so again", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const h = failing({ sink, lastPublishOk: true });
+      await h.service.publishPending();
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it("a successful sweep says nothing", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const h = makeHarness({ pages: [[snapshot(1)]], sink });
+      await h.service.publishPending();
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("a sweep where the Academy rejects invoices counts as failing too, with the not-accepted message", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const h = makeHarness({ pages: [[snapshot(1)]], sink, reply: (invoices) => ({ results: invoices.map((i) => ({ erpInvoiceId: i.erpInvoiceId, outcome: "REJECTED", reason: "no such student" })) }) });
+      await h.service.publishPending();
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect((sink.emit.mock.calls[0] as unknown as [{ params: { reason: string } }])[0].params.reason).toMatch(/not accepted/);
+    });
+
+    it("a successful one-student publish after an event is not recorded and says nothing, even right after a failure", async () => {
+      const sink = { emit: jest.fn(async () => 1) };
+      const h = makeHarness({ pages: [[snapshot(1)]], sink, lastPublishOk: false });
+      await h.service.publishPending({ studentId: "s1" } as never);
+      expect(sink.emit).not.toHaveBeenCalled();
     });
   });
 

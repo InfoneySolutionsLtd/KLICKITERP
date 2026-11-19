@@ -1,7 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, EntityManager } from "typeorm";
 import { runInTransaction } from "../../../shared/database/tx";
+import { formatAmount } from "../../../shared/notifications/format-amount";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { NotFoundException } from "../../../shared/exceptions/not-found.exception";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { Money } from "../../../shared/money/money";
@@ -90,6 +92,8 @@ export class ChequesService {
     private readonly academicCalendarService: AcademicCalendarService,
     private readonly settingsService: SettingsService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    /** Tells accounts a cheque bounced (the bell). Absent in a process without the inbox: nothing is sent, nothing breaks. */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async clear(chequeId: string): Promise<PayChequeEntity> {
@@ -137,7 +141,20 @@ export class ChequesService {
       cheque.bounceFeeApplied = true;
     }
 
-    return this.chequeRepository.save(cheque, em);
+    const saved = await this.chequeRepository.save(cheque, em);
+    // In the same transaction as the reversal: it exists exactly when the bounce does. The person who did it is not told.
+    await this.notifications?.emit(
+      {
+        code: "CHEQUE_BOUNCED",
+        params: { chequeNo: cheque.chequeNo, amount: formatAmount(split.amount.toDecimalString()), payer: cheque.drawer },
+        link: "/payments/cheques",
+        entityType: "pay_cheque",
+        entityId: cheque.id,
+        excludeUserIds: [actorId],
+      },
+      em,
+    );
+    return saved;
   }
 
   async findByIdOrFail(id: string): Promise<PayChequeEntity> {

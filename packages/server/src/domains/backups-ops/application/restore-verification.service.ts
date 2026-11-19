@@ -1,9 +1,10 @@
 import { promises as fs } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 import { decryptBuffer } from "../../../shared/crypto/aes-gcm.util";
 import { AppConfigService } from "../../../shared/config/app-config.service";
+import { NOTIFICATION_SINK, type NotificationSink } from "../../../shared/notifications/notification-sink.port";
 import { ValidationException } from "../../../shared/exceptions/validation.exception";
 import { BkpRestoreRunEntity } from "../domain/bkp-restore-run.entity";
 import { BkpBackupRunEntity } from "../domain/bkp-backup-run.entity";
@@ -66,6 +67,8 @@ export class RestoreVerificationService {
     private readonly backupStorageClient: BackupStorageClient,
     private readonly offsiteS3Adapter: OffsiteS3Adapter,
     private readonly config: AppConfigService,
+    /** Tells the people who verify restores that a check failed (the bell, FR-BKP-003). */
+    @Optional() @Inject(NOTIFICATION_SINK) private readonly notifications?: NotificationSink,
   ) {}
 
   async verifyBackup(backupRunId: string, targetConnectionConfig: PgConnectionConfig, actorId: string | null): Promise<BkpRestoreRunEntity> {
@@ -116,16 +119,31 @@ export class RestoreVerificationService {
             .join("; ")}`;
       restoreRun.finishedAt = new Date();
       restoreRun.updatedBy = actorId;
-      return await this.restoreRunRepository.save(restoreRun);
+      const saved = await this.restoreRunRepository.save(restoreRun);
+      if (saved.status === "FAILED") await this.tellRestoreFailed(saved, backupRunId, actorId);
+      return saved;
     } catch (error) {
       restoreRun.status = "FAILED";
       restoreRun.notes = `Restore verification failed: ${(error as Error).message}`;
       restoreRun.finishedAt = new Date();
       restoreRun.updatedBy = actorId;
-      return await this.restoreRunRepository.save(restoreRun);
+      const saved = await this.restoreRunRepository.save(restoreRun);
+      await this.tellRestoreFailed(saved, backupRunId, actorId);
+      return saved;
     } finally {
       await fs.rm(workDir, { recursive: true, force: true }).catch(() => undefined);
     }
+  }
+
+  private async tellRestoreFailed(restoreRun: BkpRestoreRunEntity, backupRunId: string, actorId: string | null): Promise<void> {
+    await this.notifications?.emit({
+      code: "RESTORE_CHECK_FAILED",
+      params: { reason: (restoreRun.notes ?? "").slice(0, 200) },
+      link: `/ops/backups/${backupRunId}`,
+      entityType: "bkp_restore_run",
+      entityId: restoreRun.id,
+      excludeUserIds: actorId ? [actorId] : [],
+    });
   }
 
   /** Fetches the encrypted archive back from whichever destination succeeded, preferring LOCAL (no network) over MINIO over OFFSITE_S3. */

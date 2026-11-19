@@ -205,6 +205,59 @@ describe("BulkBillingService", () => {
     expect(result.skipped.map((s) => s.studentId)).toEqual(["s3"]);
   });
 
+  describe("tells whoever started the run how it went (the bell)", () => {
+    function withSink() {
+      const sink = { emit: jest.fn(async () => 1) };
+      const svc = new BulkBillingService(
+        dataSource,
+        studentRepository as never,
+        invoiceRepository as never,
+        invoiceLineRepository as never,
+        feeStructureLineRepository as never,
+        feeCategoryRepository as never,
+        feeStructuresService as never,
+        academicCalendarService as never,
+        invoicingService as never,
+        sink as never,
+      );
+      return { sink, svc };
+    }
+
+    it("raises BULK_BILLING_DONE for the initiator ONLY, with the created / skipped / failed counts and the term", async () => {
+      studentRepository.list.mockResolvedValue([[{ id: "s1" }, { id: "s2" }, { id: "s3" }], 3]);
+      invoiceRepository.findMostRecentNonVoidByStudentAndTerm.mockImplementation(async (studentId: string) => (studentId === "s3" ? null : { id: `prior-${studentId}`, number: `INV-${studentId}` }));
+      invoiceLineRepository.listByInvoice.mockImplementation(async (invoiceId: string) => [makeInvoiceLine({ feeCategoryId: invoiceId === "prior-s2" ? "cat-missing" : "cat-tuition" })]);
+      const { sink, svc } = withSink();
+
+      await svc.bulkGenerate("term-2", {}, "initiator-1");
+
+      expect(sink.emit).toHaveBeenCalledTimes(1);
+      expect(sink.emit).toHaveBeenCalledWith({
+        code: "BULK_BILLING_DONE",
+        params: { term: TARGET_TERM.name, created: 1, skipped: 1, failed: 1 },
+        link: "/billing/bulk-billing",
+        entityType: "set_term",
+        entityId: "term-2",
+        userIds: ["initiator-1"],
+      });
+    });
+
+    it("a request refused up front (no earlier term) tells nobody anything", async () => {
+      academicCalendarService.findTermByIdOrFail.mockResolvedValue({ ...TARGET_TERM, seq: 1 });
+      academicCalendarService.findTermByYearAndSeq.mockResolvedValue(null);
+      const { sink, svc } = withSink();
+      await expect(svc.bulkGenerate("term-2", {}, "initiator-1")).rejects.toBeInstanceOf(NotFoundException);
+      expect(sink.emit).not.toHaveBeenCalled();
+    });
+
+    it("an empty run is still reported (0 created, 0 skipped, 0 failed) so the person knows it finished", async () => {
+      studentRepository.list.mockResolvedValue([[], 0]);
+      const { sink, svc } = withSink();
+      await svc.bulkGenerate("term-2", {}, "initiator-1");
+      expect((sink.emit.mock.calls[0] as unknown as [{ params: object }])[0].params).toEqual({ term: TARGET_TERM.name, created: 0, skipped: 0, failed: 0 });
+    });
+  });
+
   it("target term seq=1 (no possible predecessor) rejects the whole request up front — no student ever touched", async () => {
     academicCalendarService.findTermByIdOrFail.mockResolvedValue({ ...TARGET_TERM, seq: 1 });
     academicCalendarService.findTermByYearAndSeq.mockResolvedValue(null);
