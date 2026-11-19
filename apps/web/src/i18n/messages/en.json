@@ -1,6 +1,7 @@
 {
   "academySync": {
     "parentInvoicing": {
+      "goToPublish": "Go to “Invoices in the parent portal”",
       "actor": {
         "title": "Record parent invoices under this user",
         "hint": "Nobody at the school presses a button when a parent generates an invoice, and every invoice records who created it. Choose a user for that, ideally a service account rather than a real staff member.",
@@ -49,6 +50,7 @@
     },
     "publish": {
       "receipts": {
+        "openBranding": "Open Branding → Documents",
         "incompleteTitle": "Receipts are missing some of this school's details:",
         "blockedTitle": "Receipts cannot be issued as PDFs yet:",
         "issue": {
@@ -9019,6 +9021,147 @@
     }
   },
   "license": {
+    "setupGuide": {
+      "title": "Setup guide",
+      "subtitle": "Follow these steps in order to set up everything on this page. Every step has a button that takes you to where it is done.",
+      "allDone": "Everything is set up. You can come back here at any time to check.",
+      "progress": "{done} of {total} steps done",
+      "required": "{done} of {total} needed to show invoices to parents",
+      "nextStep": "Next: {step}",
+      "guideMe": "Guide me",
+      "showSteps": "Show steps",
+      "hideSteps": "Hide steps",
+      "optional": "Optional",
+      "group": {
+        "SHOW_INVOICES": "Show invoices to parents",
+        "RECEIPTS_AND_PAYMENTS": "Receipts and payments",
+        "PARENT_INVOICES": "Let parents customise invoices"
+      },
+      "state": {
+        "DONE": "Done",
+        "TODO": "To do",
+        "ATTENTION": "Needs attention",
+        "LOCKED": "Locked"
+      },
+      "locked": {
+        "needs": "Needs {steps} first."
+      },
+      "actions": {
+        "openCard": "Go to this step",
+        "openBranding": "Open Branding",
+        "openIntegrations": "Open Integrations",
+        "openAcademicCalendar": "Open Academic calendar",
+        "openFeeStructures": "Open Fee structures",
+        "openTransportRoutes": "Open Transport routes",
+        "chooseCashier": "Choose the cashier",
+        "doFirst": "Do “{step}” first"
+      },
+      "wizard": {
+        "title": "Guide me",
+        "stepOf": "Step {n} of {total}",
+        "nothingLeft": "Nothing left to do",
+        "allDone": "Everything is set up. There is nothing left to do here.",
+        "back": "Back",
+        "next": "Next",
+        "close": "Close"
+      },
+      "cashier": {
+        "title": "Record M-Pesa receipts under this user",
+        "hint": "When a parent pays from the portal nobody at the school takes the payment, and every receipt records who took it. Choose a user for that, ideally a service account rather than a real staff member.",
+        "inactive": "{name} is no longer an active user, so parent payments can't be receipted. Pick another user.",
+        "unknownUser": "The saved user",
+        "loadingUsers": "Loading users…",
+        "pickPlaceholder": "Choose a user",
+        "searchUsers": "Search users",
+        "noUsers": "No users found.",
+        "cannotLoadUsers": "Couldn't load the list of users (you may not have permission to see users).",
+        "save": "Use this user",
+        "saving": "Saving…",
+        "manageUsers": "Create or manage users",
+        "saved": "M-Pesa cashier saved"
+      },
+      "steps": {
+        "CONNECT": {
+          "title": "Connect to Klickit Academy",
+          "why": "Links this ERP to your school on Klickit Academy with your school code. Everything else depends on it.",
+          "done": "Connected to Klickit Academy.",
+          "detail": {
+            "NOT_CONNECTED": "Enter your school code, then the one-time code Klickit Academy sends you."
+          }
+        },
+        "IMPORT_STUDENTS": {
+          "title": "Import your students",
+          "why": "Brings your students and their parents from Klickit Academy into the ERP, so invoices and payments use the same children.",
+          "done": "Students are imported and linked.",
+          "detail": {
+            "NOT_IMPORTED": "Run a preview, check what it will do, then confirm the first import.",
+            "NO_STUDENTS_LINKED": "The import was confirmed but no students are linked. Check the preview and run the sync again."
+          }
+        },
+        "REACH_ERP": {
+          "title": "Let the parent portal reach this ERP",
+          "why": "When a parent pays or downloads a receipt, Klickit Academy has to call this ERP. Give it this ERP's public address and test it.",
+          "done": "Klickit Academy can reach this ERP.",
+          "detail": {
+            "NOT_REGISTERED": "Enter this ERP's public API address and register it.",
+            "NOT_TESTED": "The address is registered but has not been tested. Press Test connection.",
+            "TEST_FAILED": "The last test failed. Check the address, that this ERP can be reached from the internet and that the server clock is correct, then test again."
+          }
+        },
+        "PUBLISH_INVOICES": {
+          "title": "Show invoices in the parent portal",
+          "why": "Parents see their children's invoices in the Klickit Academy parent portal.",
+          "done": "Invoices are being shown in the parent portal.",
+          "detail": {
+            "NOT_ON": "Switch on “Show invoices in the parent portal”.",
+            "PUBLISH_FAILED": "The last send to Klickit Academy failed. Open the card to see why.",
+            "SOME_REFUSED": "Some invoices were not accepted, usually because a learner is not linked. Open the card to see which."
+          }
+        },
+        "RECEIPTS": {
+          "title": "Receipts with your logo and letterhead",
+          "why": "Every receipt a parent downloads carries your school's logo, letterhead and a QR code that proves it is genuine.",
+          "done": "Receipts carry your logo, letterhead and a QR code.",
+          "detail": {
+            "NO_BRANDING": "Add a logo or letterhead text under Branding → Documents. Receipt PDFs are not issued until at least one is set.",
+            "NO_LOGO": "Add your school's logo under Branding → Documents.",
+            "NO_LETTERHEAD": "Add letterhead text under Branding → Documents.",
+            "QR_ADDRESS_NOT_PUBLIC": "The QR code on receipts points at an address a parent cannot open. Ask your administrator to set WEB_APP_URL on the server to this school's public web address.",
+            "CANNOT_CHECK": "The receipt setup could not be checked just now. Open Branding to look.",
+            "INCOMPLETE": "Something is still missing from the receipt setup. Open Branding to look."
+          }
+        },
+        "PAYMENTS": {
+          "title": "Let parents pay by M-Pesa",
+          "why": "Parents can pay their children's invoices from the portal. The money goes to your own M-Pesa account and is recorded here.",
+          "done": "Parents can pay by M-Pesa.",
+          "detail": {
+            "NOTHING_SET": "Set up M-Pesa under Settings → Integrations, and choose the user the receipts are recorded under.",
+            "NO_PROVIDER": "Set up M-Pesa under Settings → Integrations.",
+            "NO_CASHIER": "Choose the user the receipts of parent payments are recorded under."
+          }
+        },
+        "FEE_OPTIONS": {
+          "title": "Fee items parents can choose",
+          "why": "Parents can add the fee items you mark as optional, and a transport route. That needs a current term and at least one optional item or an active route.",
+          "done": "There is something for parents to choose.",
+          "detail": {
+            "NO_OPEN_TERM": "There is no current academic year with a term that has not ended. Set one up under Settings → Academic calendar.",
+            "NO_OPTIONAL_ITEMS": "Mark some fee items as optional on the published fee structure, or add a transport route."
+          }
+        },
+        "PARENT_INVOICING": {
+          "title": "Let parents customise and generate their invoices",
+          "why": "Parents pick optional items and transport for their own child, confirm, and the invoice appears here and in their portal.",
+          "done": "Parents can customise and generate their own invoices.",
+          "detail": {
+            "NOT_ON": "Switch on “Let parents customise and generate their own fee invoices”.",
+            "NOT_ON_NO_INVOICE_USER": "Choose the user parent invoices are recorded under, then switch it on.",
+            "NO_INVOICE_USER": "It is switched on but no user is chosen, so parents are told the school has not finished setting it up. Choose the user."
+          }
+        }
+      }
+    },
     "pageTitle": "License",
     "pageSubtitle": "Current license state, the school-visible API call log, and update notices from Infoney.",
     "status": {

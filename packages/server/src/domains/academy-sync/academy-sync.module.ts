@@ -9,12 +9,14 @@ import { AcademyInboundController } from "./api/academy-inbound.controller";
 import { AcademyInboundGuard } from "./api/academy-inbound.guard";
 import { AcademyLinkController } from "./api/academy-link.controller";
 import { AcademyParentInvoicingController } from "./api/academy-parent-invoicing.controller";
+import { AcademySetupGuideController } from "./api/academy-setup-guide.controller";
 import { AcademyPublishController } from "./api/academy-publish.controller";
 import { AcademySyncController } from "./api/academy-sync.controller";
 import { AcademyLinkService } from "./application/academy-link.service";
 import { AcademyParentInvoiceService } from "./application/academy-parent-invoice.service";
 import { AcademyParentInvoicingSettingsService } from "./application/academy-parent-invoicing-settings.service";
 import { AcademyPaymentRequestService } from "./application/academy-payment-request.service";
+import { AcademySetupGuideService } from "./application/academy-setup-guide.service";
 import { AcademyReceiptService } from "./application/academy-receipt.service";
 import { AcademyPublishService } from "./application/academy-publish.service";
 import { AcademySyncService } from "./application/academy-sync.service";
@@ -33,6 +35,7 @@ import { AcadInboundLinkRepository } from "./infrastructure/acad-inbound-link.re
 import { AcadParentInvoiceRequestRepository } from "./infrastructure/acad-parent-invoice-request.repository";
 import { AcadPaymentRequestRepository } from "./infrastructure/acad-payment-request.repository";
 import { AcademyReceiptRepository } from "./infrastructure/academy-receipt.repository";
+import { AcademySetupFactsRepository } from "./infrastructure/academy-setup-facts.repository";
 import { AcadStudentMapRepository } from "./infrastructure/acad-student-map.repository";
 import { AcadSyncRunRepository } from "./infrastructure/acad-sync-run.repository";
 import { AcadSyncStateRepository } from "./infrastructure/acad-sync-state.repository";
@@ -77,6 +80,7 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
     AcademyLinkController,
     AcademyPublishController,
     AcademyParentInvoicingController,
+    AcademySetupGuideController,
     AcademyInboundController,
   ],
   providers: [
@@ -101,6 +105,8 @@ import { AcademySyncClient } from "./infrastructure/academy-sync.client";
     AcadParentInvoiceRequestRepository,
     AcademyParentInvoiceService,
     AcademyParentInvoicingSettingsService,
+    AcademySetupFactsRepository,
+    AcademySetupGuideService,
   ],
   exports: [AcademySyncService, AcademyPublishService],
 })

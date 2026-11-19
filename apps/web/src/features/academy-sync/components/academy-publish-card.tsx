@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,11 @@ function AcademyPublishCard({ status }: { status: AcademyPublishStatusDto }) {
                 ))}
               </ul>
               <span className="mt-1 block text-xs">{t("receipts.hint")}</span>
+              {(status.receiptSetup.issues as string[]).some((issue) => issue === "NO_LOGO" || issue === "NO_LETTERHEAD") && (
+                <Link href="/branding" className="mt-1 inline-block text-xs text-primary hover:underline">
+                  {t("receipts.openBranding")}
+                </Link>
+              )}
             </AlertDescription>
           </Alert>
         )}
