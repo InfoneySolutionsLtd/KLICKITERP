@@ -12,7 +12,12 @@ jest.mock("../../../shared/database/tx", () => ({ runInTransaction: async (_ds: 
 const REQ = "11111111-1111-4111-8111-111111111111";
 const ACADEMY_STUDENT = "ac-student-1";
 const TERM = "t0000000-0000-4000-8000-000000000001";
+/** A term of the current year that is NOT the one marked current (an earlier one). */
 const PAST_TERM = "t0000000-0000-4000-8000-000000000009";
+/** A later term of the current year, not yet current. */
+const NEXT_TERM = "t0000000-0000-4000-8000-000000000002";
+/** A term of another academic year. */
+const OTHER_YEAR_TERM = "t0000000-0000-4000-8000-000000000008";
 const TUITION = "c0000000-0000-4000-8000-000000000001";
 const MILK = "c0000000-0000-4000-8000-000000000003";
 const LUNCH = "c0000000-0000-4000-8000-000000000004";
@@ -41,7 +46,12 @@ interface Over {
   generateError?: Error;
   transportError?: Error;
   notifyError?: Error;
+  /** When the term the school marked current ends (default: far in the future). It may be in the past: the marking is what counts. */
   termEnds?: string;
+  /** The academic year marked current; `null` = none marked. Default: "year-1". */
+  currentYear?: { id: string } | null;
+  /** The term marked current; `null` = none marked. Default: TERM, in "year-1". */
+  currentTerm?: { id: string; name: string; academicYearId: string } | null;
 }
 
 function harness(over: Over = {}) {
@@ -75,12 +85,14 @@ function harness(over: Over = {}) {
     })),
   };
   const settings = { getTyped: jest.fn(async (key: string) => (over.actor === undefined ? (key.startsWith("academy.") ? ACTOR : null) : over.actor)) };
+  // The Academic calendar page: one current year and one current term (the school's own marking). Anything else on the
+  // calendar (an earlier term, a later one) is never asked for, so a service that read it would fail these tests loudly.
   const calendar = {
-    getCurrentYear: jest.fn(async () => ({ id: "year-1" })),
-    listTerms: jest.fn(async () => [
-      { id: PAST_TERM, name: "Term 3 2025", seq: 3, isCurrent: false, startsOn: "2025-09-01", endsOn: "2025-11-30" },
-      { id: TERM, name: "Term 1 2026", seq: 1, isCurrent: true, startsOn: "2026-01-05", endsOn: over.termEnds ?? "2099-04-10" },
-    ]),
+    getCurrentYear: jest.fn(async () => (over.currentYear === undefined ? { id: "year-1" } : over.currentYear)),
+    getCurrentTerm: jest.fn(async () => {
+      const term = over.currentTerm === undefined ? { id: TERM, name: "Term 1 2026", academicYearId: "year-1" } : over.currentTerm;
+      return term ? { ...term, seq: 1, isCurrent: true, startsOn: "2026-01-05", endsOn: over.termEnds ?? "2099-04-10" } : null;
+    }),
   };
   const feeStructures = { findApplicableFor: jest.fn(async () => ({ id: "structure-1" })) };
   const structureLines = {
@@ -137,7 +149,7 @@ function harness(over: Over = {}) {
     publishService as any,
     {} as any,
   );
-  return { service, repository, stateRepository, settings, invoicing, transport, notifyService, publishService, optionalItems, calls };
+  return { service, repository, stateRepository, settings, calendar, invoicing, transport, notifyService, publishService, optionalItems, calls };
 }
 
 const input = (over: Record<string, unknown> = {}) => ({ requestId: REQ, academyStudentId: ACADEMY_STUDENT, termId: TERM, optionalCategoryIds: [], routeId: null, parentName: "Grace Otieno", ...over }) as any;
@@ -161,17 +173,49 @@ describe("AcademyParentInvoiceService.options", () => {
     expect(view.message).toMatch(/not finished setting this up/i);
   });
 
-  it("offers, for the current term only (terms already over are not listed), the mandatory lines, optional items and routes with the SCHOOL's amounts", async () => {
+  it("offers, for the term marked current on the Academic calendar only, the mandatory lines, optional items and routes with the SCHOOL's amounts", async () => {
     const h = harness();
     const view = await h.service.options(ACADEMY_STUDENT);
 
     expect(view.available).toBe(true);
     expect(view.terms.map((t) => t.termId)).toEqual([TERM]);
+    expect(view.terms[0].isCurrent).toBe(true);
+    // It reads the school's marking (current year + current term); it never goes through the calendar's other terms.
+    expect(h.calendar.getCurrentYear).toHaveBeenCalled();
+    expect(h.calendar.getCurrentTerm).toHaveBeenCalled();
+    expect(h.calendar).not.toHaveProperty("listTerms");
     const term = view.terms[0];
     expect(term.mode).toBe("FULL");
     expect(term.included).toEqual([{ categoryId: TUITION, name: "Tuition", amount: "20000.0000", dueDate: "2026-02-15" }]);
     expect(term.optional.map((o) => [o.name, o.amount])).toEqual([["Milk", "1500.0000"], ["Lunch", "4000.0000"]]);
     expect(term.transportRoutes).toEqual([{ routeId: BUS, name: "Route A", amount: "5000.0000" }]); // the inactive route is never offered
+  });
+
+  it("still offers the current term after its end date has passed: the school's marking counts until the school moves the term on", async () => {
+    const h = harness({ termEnds: "2020-01-01" });
+    const view = await h.service.options(ACADEMY_STUDENT);
+    expect(view.available).toBe(true);
+    expect(view.terms.map((t) => t.termId)).toEqual([TERM]);
+  });
+
+  it("offers nothing when the school has not marked a current academic year", async () => {
+    const view = await harness({ currentYear: null }).service.options(ACADEMY_STUDENT);
+    expect(view.available).toBe(true);
+    expect(view.terms).toEqual([]);
+  });
+
+  it("offers nothing when the school has not marked a current term", async () => {
+    expect((await harness({ currentTerm: null }).service.options(ACADEMY_STUDENT)).terms).toEqual([]);
+  });
+
+  it("offers nothing when the term marked current belongs to a different year than the one marked current", async () => {
+    const h = harness({ currentTerm: { id: OTHER_YEAR_TERM, name: "Term 2 2025", academicYearId: "year-0" } });
+    expect((await h.service.options(ACADEMY_STUDENT)).terms).toEqual([]);
+  });
+
+  it("follows the school when it moves the current term on: the new term is offered, the old one is not", async () => {
+    const h = harness({ currentTerm: { id: NEXT_TERM, name: "Term 2 2026", academicYearId: "year-1" } });
+    expect((await h.service.options(ACADEMY_STUDENT)).terms.map((t) => t.termId)).toEqual([NEXT_TERM]);
   });
 
   it("is a TOP_UP when the school already billed the term, and then offers only what is not billed", async () => {
@@ -279,8 +323,28 @@ describe("AcademyParentInvoiceService.create — what is refused, and that nothi
   it("NOT_READY without a system user", () => refused({ actor: null }, {}, "NOT_READY"));
   it("STUDENT_NOT_LINKED for a learner this ERP does not know", () => refused({ student: null }, {}, "STUDENT_NOT_LINKED"));
   it("STUDENT_NOT_LINKED for a learner who is not active", () => refused({ student: { studentId: "s", admissionNo: "A", fullName: "X", status: "ALUMNI" } }, {}, "STUDENT_NOT_LINKED"));
-  it("TERM_NOT_AVAILABLE for a term that is over", () => refused({}, { termId: PAST_TERM }, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE for an earlier term of the current year (not the one marked current)", () => refused({}, { termId: PAST_TERM }, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE for a later term of the current year (not current yet)", () => refused({}, { termId: NEXT_TERM }, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE for a term of another academic year", () => refused({}, { termId: OTHER_YEAR_TERM }, "TERM_NOT_AVAILABLE"));
   it("TERM_NOT_AVAILABLE for a term that does not exist", () => refused({}, { termId: "t0000000-0000-4000-8000-0000000000ff" }, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE when the school has not marked a current academic year, even for the term it used to be", () => refused({ currentYear: null }, {}, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE when the school has not marked a current term", () => refused({ currentTerm: null }, {}, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE when the term marked current is not in the current year", () =>
+    refused({ currentTerm: { id: TERM, name: "Term 1 2026", academicYearId: "year-0" } }, {}, "TERM_NOT_AVAILABLE"));
+  it("TERM_NOT_AVAILABLE when the school moved the current term on after the parent opened the page", () =>
+    refused({ currentTerm: { id: NEXT_TERM, name: "Term 2 2026", academicYearId: "year-1" } }, { termId: TERM }, "TERM_NOT_AVAILABLE"));
+
+  it("words the term refusal for a parent: only the school's current term", async () => {
+    const h = await refused({}, { termId: PAST_TERM }, "TERM_NOT_AVAILABLE");
+    expect(h.calls.refused[0].message).toMatch(/current term/i);
+  });
+
+  it("still accepts the term marked current after its end date has passed", async () => {
+    const h = harness({ termEnds: "2020-01-01" });
+    const view = await h.service.create(input());
+    expect(view.status).toBe("CREATED");
+    expect(h.calls.generated).toHaveLength(1);
+  });
   it("ITEM_NOT_OFFERED for a MANDATORY category (a parent can only pick optional items)", () => refused({}, { optionalCategoryIds: [TUITION] }, "ITEM_NOT_OFFERED"));
   it("ITEM_NOT_OFFERED for a category that is not on the structure", () => refused({}, { optionalCategoryIds: ["c0000000-0000-4000-8000-0000000000ff"] }, "ITEM_NOT_OFFERED"));
   it("ITEM_NOT_OFFERED for an optional item already billed", () => refused({ liveStructureInvoice: true, billed: [TUITION, MILK] }, { optionalCategoryIds: [MILK] }, "ITEM_NOT_OFFERED"));

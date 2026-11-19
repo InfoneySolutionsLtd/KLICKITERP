@@ -9,7 +9,7 @@ const ALL_DONE: SetupFacts = {
   publish: { enabled: true, lastPublishOk: true, rejected: 0 },
   receipts: { canIssue: true, complete: true, issues: [] },
   payments: { providerConfigured: true, cashierConfigured: true },
-  feeOptions: { hasOpenTerm: true, optionalItemLines: 2, activeRoutes: 1 },
+  feeOptions: { hasCurrentTerm: true, optionalItemLines: 2, activeRoutes: 1 },
   parentInvoicing: { enabled: true, invoiceUserConfigured: true },
 };
 
@@ -21,7 +21,7 @@ const NOTHING: SetupFacts = {
   publish: { enabled: false, lastPublishOk: null, rejected: 0 },
   receipts: { canIssue: false, complete: false, issues: ["NO_LOGO", "NO_LETTERHEAD", "QR_ADDRESS_NOT_PUBLIC"] },
   payments: { providerConfigured: false, cashierConfigured: false },
-  feeOptions: { hasOpenTerm: false, optionalItemLines: 0, activeRoutes: 0 },
+  feeOptions: { hasCurrentTerm: false, optionalItemLines: 0, activeRoutes: 0 },
   parentInvoicing: { enabled: false, invoiceUserConfigured: false },
 };
 
@@ -60,7 +60,7 @@ describe("a fresh install: only the first step can be started", () => {
   });
 
   it("the step that needs nothing (fee options) is never locked, even before connecting", () => {
-    expect(stateOf(guide, "FEE_OPTIONS")).toBe("TODO:NO_OPEN_TERM");
+    expect(stateOf(guide, "FEE_OPTIONS")).toBe("TODO:NO_CURRENT_TERM");
   });
 
   it("the next step is Connect, and nothing is counted done", () => {
@@ -130,10 +130,10 @@ describe("each step's own states", () => {
   });
 
   it("FEE_OPTIONS: needs an open term; then something for a parent to choose (an optional fee item OR an active transport route)", () => {
-    expect(stateOf(guideOf({ feeOptions: { hasOpenTerm: false, optionalItemLines: 5, activeRoutes: 5 } }), "FEE_OPTIONS")).toBe("TODO:NO_OPEN_TERM");
-    expect(stateOf(guideOf({ feeOptions: { hasOpenTerm: true, optionalItemLines: 0, activeRoutes: 0 } }), "FEE_OPTIONS")).toBe("TODO:NO_OPTIONAL_ITEMS");
-    expect(stateOf(guideOf({ feeOptions: { hasOpenTerm: true, optionalItemLines: 1, activeRoutes: 0 } }), "FEE_OPTIONS")).toBe("DONE");
-    expect(stateOf(guideOf({ feeOptions: { hasOpenTerm: true, optionalItemLines: 0, activeRoutes: 1 } }), "FEE_OPTIONS")).toBe("DONE");
+    expect(stateOf(guideOf({ feeOptions: { hasCurrentTerm: false, optionalItemLines: 5, activeRoutes: 5 } }), "FEE_OPTIONS")).toBe("TODO:NO_CURRENT_TERM");
+    expect(stateOf(guideOf({ feeOptions: { hasCurrentTerm: true, optionalItemLines: 0, activeRoutes: 0 } }), "FEE_OPTIONS")).toBe("TODO:NO_OPTIONAL_ITEMS");
+    expect(stateOf(guideOf({ feeOptions: { hasCurrentTerm: true, optionalItemLines: 1, activeRoutes: 0 } }), "FEE_OPTIONS")).toBe("DONE");
+    expect(stateOf(guideOf({ feeOptions: { hasCurrentTerm: true, optionalItemLines: 0, activeRoutes: 1 } }), "FEE_OPTIONS")).toBe("DONE");
   });
 
   it("PARENT_INVOICING: off -> to do (noting a missing invoice user); on without an invoice user -> needs attention; on with one -> done", () => {
@@ -193,7 +193,7 @@ describe("the next step", () => {
   });
 
   it("with only optional steps left, the next one is the first of those", () => {
-    const guide = guideOf({ feeOptions: { hasOpenTerm: false, optionalItemLines: 0, activeRoutes: 0 }, payments: { providerConfigured: false, cashierConfigured: false } });
+    const guide = guideOf({ feeOptions: { hasCurrentTerm: false, optionalItemLines: 0, activeRoutes: 0 }, payments: { providerConfigured: false, cashierConfigured: false } });
     expect(guide.requiredDone).toBe(guide.requiredTotal);
     expect(guide.nextStepKey).toBe("PAYMENTS");
   });
@@ -207,7 +207,7 @@ describe("the counts", () => {
   });
 
   it("an optional step done does not count as a required one", () => {
-    const guide = guideOf({ feeOptions: { hasOpenTerm: true, optionalItemLines: 1, activeRoutes: 0 } }, NOTHING);
+    const guide = guideOf({ feeOptions: { hasCurrentTerm: true, optionalItemLines: 1, activeRoutes: 0 } }, NOTHING);
     expect(guide).toMatchObject({ doneCount: 1, requiredDone: 0 });
   });
 });

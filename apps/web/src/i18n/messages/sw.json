@@ -30,7 +30,7 @@
         "on": "Imewashwa",
         "needsSetup": "Inahitaji mipangilio"
       },
-      "rules": "Wazazi wanaweza kubadilisha tu yale uliyoyaweka kuwa ya hiari katika muundo wa ada, na kuchagua njia ya usafiri. Bei hutoka kila mara kwenye muundo wako wa ada na njia zako, kamwe si kwa mzazi. Kabla ya kutengeneza ankara, mzazi lazima athibitishe, baada ya kuhesabu kwa muda mfupi. Mzazi hawezi kufuta ankara: ni wewe tu unayeweza kuibatilisha.",
+      "rules": "Wazazi wanaweza kubadilisha tu yale uliyoyaweka kuwa ya hiari katika muundo wa ada, na kuchagua njia ya usafiri. Bei hutoka kila mara kwenye muundo wako wa ada na njia zako, kamwe si kwa mzazi. Mzazi anaweza kutengeneza ankara ya mwaka wa masomo na muhula wa sasa pekee, vilivyowekwa chini ya Mipangilio → Kalenda ya masomo. Kabla ya kutengeneza ankara, mzazi lazima athibitishe, baada ya kuhesabu kwa muda mfupi. Mzazi hawezi kufuta ankara: ni wewe tu unayeweza kuibatilisha.",
       "switchLabel": "Ruhusu wazazi kurekebisha na kutengeneza ankara zao za ada",
       "switchHint": "Imezimwa kwa chaguo-msingi. Mzazi anapotengeneza ankara, huchapishwa mara moja, huonekana chini ya Bili → Ankara, hutumwa kwenye tovuti ya wazazi ili aweze kuilipa, na watu walio hapa chini wanaarifiwa.",
       "notifyTitle": "Nani anaarifiwa mzazi anapotengeneza ankara",
@@ -9146,7 +9146,7 @@
           "why": "Wazazi wanaweza kuongeza ada ulizoziweka kuwa za hiari, na njia ya usafiri. Hilo linahitaji muhula wa sasa na angalau ada moja ya hiari au njia hai.",
           "done": "Kuna kitu cha wazazi kuchagua.",
           "detail": {
-            "NO_OPEN_TERM": "Hakuna mwaka wa masomo wa sasa wenye muhula ambao haujaisha. Weka mmoja chini ya Mipangilio → Kalenda ya masomo.",
+            "NO_CURRENT_TERM": "Hakuna mwaka wa masomo wala muhula wa sasa. Viweke kama vya sasa chini ya Mipangilio → Kalenda ya masomo: mzazi anaweza kutengewa ankara ya muhula wa sasa wa shule pekee.",
             "NO_OPTIONAL_ITEMS": "Weka alama baadhi ya ada kuwa za hiari kwenye muundo wa ada uliochapishwa, au ongeza njia ya usafiri."
           }
         },

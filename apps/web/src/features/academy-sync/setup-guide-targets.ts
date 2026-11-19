@@ -79,7 +79,7 @@ export function stepActions(step: StepForActions, payments: PaymentsFacts): Step
       return actions;
     }
     case "FEE_OPTIONS":
-      return step.detail === "NO_OPEN_TERM"
+      return step.detail === "NO_CURRENT_TERM"
         ? [{ labelKey: "openAcademicCalendar", target: { href: "/settings/academic-calendar" } }]
         : [
             { labelKey: "openFeeStructures", target: { href: "/billing/fee-structures" } },

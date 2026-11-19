@@ -30,7 +30,7 @@
         "on": "On",
         "needsSetup": "Needs setup"
       },
-      "rules": "Parents can only change what you marked as optional in the fee structure, and pick a transport route. Prices always come from your fee structure and routes, never from the parent. Before an invoice is generated the parent must confirm, after a short countdown. A parent cannot delete an invoice: only you can void it.",
+      "rules": "Parents can only change what you marked as optional in the fee structure, and pick a transport route. Prices always come from your fee structure and routes, never from the parent. A parent can only generate an invoice for the current academic year and term marked under Settings → Academic calendar. Before an invoice is generated the parent must confirm, after a short countdown. A parent cannot delete an invoice: only you can void it.",
       "switchLabel": "Let parents customise and generate their own fee invoices",
       "switchHint": "Off by default. When a parent generates an invoice it is posted straight away, appears under Billing → Invoices, is sent to the parent portal so they can pay it, and the people below are notified.",
       "notifyTitle": "Who is notified when a parent generates an invoice",
@@ -9146,7 +9146,7 @@
           "why": "Parents can add the fee items you mark as optional, and a transport route. That needs a current term and at least one optional item or an active route.",
           "done": "There is something for parents to choose.",
           "detail": {
-            "NO_OPEN_TERM": "There is no current academic year with a term that has not ended. Set one up under Settings → Academic calendar.",
+            "NO_CURRENT_TERM": "There is no current academic year and term. Mark them as current under Settings → Academic calendar: parents can only be invoiced for the school's current term.",
             "NO_OPTIONAL_ITEMS": "Mark some fee items as optional on the published fee structure, or add a transport route."
           }
         },

@@ -30,7 +30,7 @@
         "on": "Activé",
         "needsSetup": "À configurer"
       },
-      "rules": "Les parents ne peuvent modifier que ce que vous avez marqué comme optionnel dans la grille tarifaire, et choisir un itinéraire de transport. Les prix proviennent toujours de votre grille tarifaire et de vos itinéraires, jamais du parent. Avant de générer une facture, le parent doit confirmer, après un court compte à rebours. Un parent ne peut pas supprimer une facture : seule l'école peut l'annuler.",
+      "rules": "Les parents ne peuvent modifier que ce que vous avez marqué comme optionnel dans la grille tarifaire, et choisir un itinéraire de transport. Les prix proviennent toujours de votre grille tarifaire et de vos itinéraires, jamais du parent. Un parent ne peut générer une facture que pour l'année académique et le trimestre en cours, définis sous Paramètres → Calendrier académique. Avant de générer une facture, le parent doit confirmer, après un court compte à rebours. Un parent ne peut pas supprimer une facture : seule l'école peut l'annuler.",
       "switchLabel": "Laisser les parents personnaliser et générer leurs propres factures de frais",
       "switchHint": "Désactivé par défaut. Lorsqu'un parent génère une facture, elle est comptabilisée immédiatement, apparaît dans Facturation → Factures, est envoyée au portail parents pour qu'il puisse la payer, et les personnes ci-dessous sont averties.",
       "notifyTitle": "Qui est averti lorsqu'un parent génère une facture",
@@ -9146,7 +9146,7 @@
           "why": "Les parents peuvent ajouter les frais que vous marquez comme facultatifs, et un itinéraire de transport. Il faut un trimestre en cours et au moins un frais facultatif ou un itinéraire actif.",
           "done": "Il y a quelque chose à choisir pour les parents.",
           "detail": {
-            "NO_OPEN_TERM": "Il n'y a pas d'année académique en cours avec un trimestre non terminé. Créez-en une sous Paramètres → Calendrier académique.",
+            "NO_CURRENT_TERM": "Il n'y a pas d'année académique ni de trimestre en cours. Marquez-les comme « en cours » sous Paramètres → Calendrier académique : un parent ne peut être facturé que pour le trimestre en cours de l'école.",
             "NO_OPTIONAL_ITEMS": "Marquez certains frais comme facultatifs dans la grille tarifaire publiée, ou ajoutez un itinéraire de transport."
           }
         },
