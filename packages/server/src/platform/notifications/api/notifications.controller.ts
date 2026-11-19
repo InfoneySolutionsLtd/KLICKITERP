@@ -1,10 +1,14 @@
-import { Controller, Get, Param, Post, Query, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Query, Req, Sse } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import type { Observable } from "rxjs";
 import { AuthenticationException } from "../../../shared/exceptions/authentication.exception";
+import { NotificationBusService, type NotificationStreamEvent } from "../application/notification-bus.service";
+import { NotificationPreferencesService } from "../application/notification-preferences.service";
 import { NotifyService } from "../application/notify.service";
 import { NtfNotificationEntity } from "../domain/ntf-notification.entity";
 import { ListNotificationsQueryDto } from "./dto/list-notifications-query.dto";
 import { ListNotificationsResponseDto, NotificationResponseDto, UnreadCountResponseDto } from "./dto/notification-response.dto";
+import { NotificationPreferencesResponseDto, UpdateNotificationPreferenceDto } from "./dto/notification-settings.dto";
 import { AuthenticatedRequest } from "./request-context";
 
 function toView(entity: NtfNotificationEntity): NotificationResponseDto {
@@ -25,12 +29,17 @@ const DEFAULT_PAGE_SIZE = 20;
  * Always scoped to the caller's own `req.user.sub` — no `@RequirePermission`
  * anywhere here, the same "just needs to be authenticated" shape
  * `POST /auth/password/change` already has, since this is a personal inbox,
- * never a cross-user admin view.
+ * never a cross-user admin view. (The school's per-event settings are the
+ * separate, permission-gated `NotificationSettingsController`.)
  */
 @ApiTags("notifications")
 @Controller("notifications")
 export class NotificationsController {
-  constructor(private readonly notify: NotifyService) {}
+  constructor(
+    private readonly notify: NotifyService,
+    private readonly preferences: NotificationPreferencesService,
+    private readonly bus: NotificationBusService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: "List the caller's own notifications, newest first, paginated" })
@@ -39,7 +48,7 @@ export class NotificationsController {
     const userId = requireUserId(req);
     const page = query.page ?? DEFAULT_PAGE;
     const pageSize = query.pageSize ?? DEFAULT_PAGE_SIZE;
-    const [items, total] = await this.notify.listForUser(userId, { page, pageSize });
+    const [items, total] = await this.notify.listForUser(userId, { page, pageSize, unreadOnly: query.unreadOnly });
     return {
       items: items.map(toView),
       meta: { total, page, pageSize, pageCount: pageSize > 0 ? Math.ceil(total / pageSize) : 0 },
@@ -54,6 +63,38 @@ export class NotificationsController {
     return { count: await this.notify.countUnread(userId) };
   }
 
+  @Sse("stream")
+  @ApiOperation({
+    summary:
+      "Server-sent events for the caller's bell: `hello` when connected, `heartbeat` while quiet, `ping` when a notification arrived (ask the list again). Closed after about 14 minutes; reconnect with a fresh token.",
+  })
+  stream(@Req() req: AuthenticatedRequest): Observable<NotificationStreamEvent> {
+    return this.bus.stream(requireUserId(req));
+  }
+
+  @Get("preferences")
+  @ApiOperation({ summary: "The caller's own notification categories and whether each is on (essential ones are always on)" })
+  @ApiResponse({ status: 200, type: NotificationPreferencesResponseDto })
+  async getPreferences(@Req() req: AuthenticatedRequest): Promise<NotificationPreferencesResponseDto> {
+    return { items: await this.preferences.list(requireUserId(req)) };
+  }
+
+  @Put("preferences")
+  @ApiOperation({ summary: "Switch one of the caller's own notification categories on or off (essential ones cannot be switched off)" })
+  @ApiResponse({ status: 200, type: NotificationPreferencesResponseDto })
+  async setPreference(@Body() dto: UpdateNotificationPreferenceDto, @Req() req: AuthenticatedRequest): Promise<NotificationPreferencesResponseDto> {
+    return { items: await this.preferences.set(requireUserId(req), dto.category, dto.isEnabled) };
+  }
+
+  @Post("read-all")
+  @ApiOperation({ summary: "Mark all of the caller's own notifications read" })
+  @ApiResponse({ status: 201 })
+  async markAllRead(@Req() req: AuthenticatedRequest): Promise<{ marked: true }> {
+    const userId = requireUserId(req);
+    await this.notify.markAllRead(userId);
+    return { marked: true };
+  }
+
   @Post(":id/read")
   @ApiOperation({ summary: "Mark one of the caller's own notifications read (silently no-ops if not theirs or already read)" })
   @ApiResponse({ status: 201 })
@@ -63,12 +104,12 @@ export class NotificationsController {
     return { marked: true };
   }
 
-  @Post("read-all")
-  @ApiOperation({ summary: "Mark all of the caller's own notifications read" })
+  @Post(":id/unread")
+  @ApiOperation({ summary: "Mark one of the caller's own notifications unread again (silently no-ops if not theirs or already unread)" })
   @ApiResponse({ status: 201 })
-  async markAllRead(@Req() req: AuthenticatedRequest): Promise<{ marked: true }> {
+  async markUnread(@Param("id") id: string, @Req() req: AuthenticatedRequest): Promise<{ marked: true }> {
     const userId = requireUserId(req);
-    await this.notify.markAllRead(userId);
+    await this.notify.markUnread(id, userId);
     return { marked: true };
   }
 }

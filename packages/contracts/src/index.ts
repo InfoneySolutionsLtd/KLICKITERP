@@ -201,6 +201,7 @@ export * from "./platform/files/signed-url-response.schema";
 export * from "./platform/files/upload-file-fields.schema";
 export * from "./platform/notifications/list-notifications-query.schema";
 export * from "./platform/notifications/notification-response.schema";
+export * from "./platform/notifications/notification-settings.schema";
 export * from "./platform/settings/create-academic-year.schema";
 export * from "./platform/settings/create-custom-field.schema";
 export * from "./platform/settings/create-integration-config.schema";

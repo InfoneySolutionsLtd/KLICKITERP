@@ -12,6 +12,7 @@ import { z } from "zod";
 
 export const ListNotificationsQueryDtoSchema = z.object({
     page: z.number().min(1).int().optional(),
-    pageSize: z.number().min(1).int().optional(),
+    pageSize: z.number().max(100).min(1).int().optional(),
+    unreadOnly: z.boolean().optional(),
 });
 export type ListNotificationsQueryDto = z.infer<typeof ListNotificationsQueryDtoSchema>;

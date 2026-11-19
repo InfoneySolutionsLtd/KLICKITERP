@@ -3,20 +3,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type ListNotificationsParams,
+  getNotificationPreferences,
+  getNotificationSettings,
   getUnreadCount,
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  markNotificationUnread,
+  setNotificationPreference,
+  updateNotificationSetting,
 } from "../api/notifications.api";
 
-const KEY = ["notifications"] as const;
+export const NOTIFICATIONS_KEY = ["notifications"] as const;
+const KEY = NOTIFICATIONS_KEY;
 
 /**
- * `refetchInterval: 60_000` — this app's first-ever polling. No websocket/
- * SSE infrastructure exists anywhere in this codebase (confirmed while
- * researching this feature); a 60s poll on this one cheap, indexed
- * COUNT-only endpoint is the realistic "live" option for a bell badge
- * without building real-time infrastructure from scratch.
+ * `refetchInterval: 60_000` — the FALLBACK. New notifications normally arrive within a second or two through the live
+ * stream (`useNotificationStream`), which only tells this query to ask again; this poll on one cheap, indexed COUNT-only
+ * endpoint keeps the badge right when the stream is unavailable (a proxy that buffers, a dropped connection, a hidden tab).
  */
 export function useUnreadCount() {
   return useQuery({
@@ -42,11 +46,54 @@ export function useMarkNotificationRead() {
   });
 }
 
+export function useMarkNotificationUnread() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { toast: false },
+    mutationFn: markNotificationUnread,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
 export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     meta: { toast: false },
     mutationFn: markAllNotificationsRead,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+// ---- the person's own preferences ---------------------------------------------------------------------------------
+
+export function useNotificationPreferences() {
+  return useQuery({ queryKey: [...KEY, "preferences"] as const, queryFn: getNotificationPreferences });
+}
+
+export function useSetNotificationPreference() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successKey: "notifications.preferences.toast.saved" },
+    mutationFn: setNotificationPreference,
+    onSuccess: (data) => queryClient.setQueryData([...KEY, "preferences"], data),
+  });
+}
+
+// ---- the school's settings per event (admin) -----------------------------------------------------------------------
+
+/** Not retried: a 403 (no permission to look) simply renders as "not allowed". */
+export function useNotificationSettings() {
+  return useQuery({ queryKey: [...KEY, "settings"] as const, queryFn: getNotificationSettings, retry: false });
+}
+
+export function useUpdateNotificationSetting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successKey: "notifications.settings.toast.saved" },
+    mutationFn: (input: { eventCode: string; isEnabled?: boolean; roleIds?: string[] }) => {
+      const { eventCode, ...body } = input;
+      return updateNotificationSetting(eventCode, body);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...KEY, "settings"] }),
   });
 }

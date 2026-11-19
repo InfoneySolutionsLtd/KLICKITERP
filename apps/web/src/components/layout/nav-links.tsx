@@ -918,6 +918,7 @@ const NAV_ITEMS: NavItem[] = [
       { href: "/communications/messages", labelKey: "commsMessages" },
       { href: "/communications/optouts", labelKey: "commsOptouts" },
       { href: "/communications/trigger-bindings", labelKey: "commsTriggerBindings" },
+      { href: "/communications/notification-settings", labelKey: "commsNotificationSettings" },
     ],
   },
   // Phase 6 Slice 13 Part 2 — Identity/Access's first nav entry (`platform/

@@ -41,6 +41,8 @@ import { ApprActionEntity } from "../platform/approvals/domain/appr-action.entit
 import { ApprDelegationEntity } from "../platform/approvals/domain/appr-delegation.entity";
 import { DocvRecordEntity } from "../platform/document-verification/domain/docv-record.entity";
 import { NtfNotificationEntity } from "../platform/notifications/domain/ntf-notification.entity";
+import { NtfEventSettingEntity } from "../platform/notifications/domain/ntf-event-setting.entity";
+import { NtfUserPreferenceEntity } from "../platform/notifications/domain/ntf-user-preference.entity";
 import { GlAccountEntity } from "../accounting/domain/gl-account.entity";
 import { GlFiscalYearEntity } from "../accounting/domain/gl-fiscal-year.entity";
 import { GlPeriodEntity } from "../accounting/domain/gl-period.entity";
@@ -261,6 +263,9 @@ export const AppDataSource = new DataSource({
     // `DocvRecordEntity` above is: end of the platform-module block, before
     // accounting-core, rather than alphabetically.
     NtfNotificationEntity,
+    // Migration `0271`: the school's per-event on/off and each person's per-category preference.
+    NtfEventSettingEntity,
+    NtfUserPreferenceEntity,
     GlAccountEntity,
     GlFiscalYearEntity,
     GlPeriodEntity,

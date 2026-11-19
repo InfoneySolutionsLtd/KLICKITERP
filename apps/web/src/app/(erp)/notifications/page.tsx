@@ -7,12 +7,17 @@ import type { NotificationResponseDto } from "@klickit/contracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QueryBoundary } from "@/components/patterns/query-boundary";
-import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from "@/features/notifications/hooks/use-notifications";
+import { NotificationContent, ReadToggle } from "@/features/notifications/components/notification-parts";
+import { NotificationPreferencesCard } from "@/features/notifications/components/notification-preferences-card";
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useMarkNotificationUnread,
+  useNotifications,
+} from "@/features/notifications/hooks/use-notifications";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE_STEP = 20;
-
-const LOCALIZED_TYPES = new Set(["APPROVAL_PENDING", "APPROVAL_APPROVED", "APPROVAL_REJECTED", "APPROVAL_RETURNED"]);
 
 /**
  * Full paginated history, reached only via the topbar bell's "View all"
@@ -20,23 +25,28 @@ const LOCALIZED_TYPES = new Set(["APPROVAL_PENDING", "APPROVAL_APPROVED", "APPRO
  * destination" precedent `/my-devices` already established (reached from
  * the user menu instead of the sidebar). "Load more" grows a local
  * `pageSize` rather than true page-replace navigation — simplest fit for an
- * activity feed, matching this page's own `loadMore` i18n key.
+ * activity feed, matching this page's own `loadMore` i18n key. "All / Unread"
+ * filters on the server (`unreadOnly`), and the person's own notification
+ * preferences (which categories reach their bell) sit below the list.
  */
 export default function NotificationsPage() {
   const t = useTranslations("notifications");
   const router = useRouter();
   const [pageSize, setPageSize] = React.useState(PAGE_SIZE_STEP);
-  const query = useNotifications({ page: 1, pageSize });
+  const [unreadOnly, setUnreadOnly] = React.useState(false);
+  const query = useNotifications({ page: 1, pageSize, unreadOnly });
   const markRead = useMarkNotificationRead();
+  const markUnread = useMarkNotificationUnread();
   const markAllRead = useMarkAllNotificationsRead();
-
-  function titleFor(notification: NotificationResponseDto): string {
-    return LOCALIZED_TYPES.has(notification.type) ? t(`types.${notification.type}.title` as Parameters<typeof t>[0]) : notification.title;
-  }
 
   function handleItemClick(notification: NotificationResponseDto) {
     if (!notification.readAt) markRead.mutate(notification.id);
     if (notification.link) router.push(notification.link);
+  }
+
+  function handleToggle(notification: NotificationResponseDto) {
+    if (notification.readAt) markUnread.mutate(notification.id);
+    else markRead.mutate(notification.id);
   }
 
   return (
@@ -52,31 +62,43 @@ export default function NotificationsPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
           <CardTitle className="text-base text-foreground">{t("pageTitle")}</CardTitle>
+          <div role="group" aria-label={t("pageTitle")} className="inline-flex rounded-lg border border-border p-0.5">
+            {([false, true] as const).map((onlyUnread) => (
+              <Button
+                key={String(onlyUnread)}
+                type="button"
+                size="sm"
+                variant={unreadOnly === onlyUnread ? "default" : "ghost"}
+                aria-pressed={unreadOnly === onlyUnread}
+                className="h-7 px-3 text-xs"
+                onClick={() => {
+                  setUnreadOnly(onlyUnread);
+                  setPageSize(PAGE_SIZE_STEP);
+                }}
+              >
+                {onlyUnread ? t("filter.unread") : t("filter.all")}
+              </Button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent>
-          <QueryBoundary query={query} isEmpty={(d) => d.items.length === 0}>
-            {(data) => (
+          {/* Nothing at all gets the standard empty state; "no unread" is a good thing and says so in its own words. */}
+          <QueryBoundary query={query} isEmpty={(d) => d.items.length === 0 && !unreadOnly}>
+            {(data) =>
+              data.items.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">{t("emptyUnread")}</p>
+              ) : (
               <div className="space-y-4">
                 <div className="divide-y divide-border">
                   {data.items.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleItemClick(item)}
-                      className={cn(
-                        "flex w-full flex-col items-start gap-1 px-2 py-3 text-left transition-colors hover:bg-muted",
-                        !item.readAt && "bg-tint-primary",
-                      )}
-                    >
-                      <div className="flex w-full items-center gap-2">
-                        {!item.readAt && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" />}
-                        <span className="text-sm font-medium text-foreground">{titleFor(item)}</span>
-                      </div>
-                      {item.body && <p className="pl-3.5 text-sm text-muted-foreground">{item.body}</p>}
-                      <p className="pl-3.5 text-xs text-muted-foreground/70">{new Date(item.createdAt).toLocaleString()}</p>
-                    </button>
+                    <div key={item.id} className={cn("flex items-start gap-1 px-2 py-3 transition-colors hover:bg-muted", !item.readAt && "bg-tint-primary")}>
+                      <button type="button" onClick={() => handleItemClick(item)} className="min-w-0 flex-1 text-left">
+                        <NotificationContent notification={item} timeLabel={new Date(item.createdAt).toLocaleString()} bodyClassName="text-sm" />
+                      </button>
+                      <ReadToggle notification={item} onToggle={handleToggle} disabled={markRead.isPending || markUnread.isPending} />
+                    </div>
                   ))}
                 </div>
                 {data.items.length < data.meta.total && (
@@ -87,10 +109,13 @@ export default function NotificationsPage() {
                   </div>
                 )}
               </div>
-            )}
+              )
+            }
           </QueryBoundary>
         </CardContent>
       </Card>
+
+      <NotificationPreferencesCard />
     </div>
   );
 }
