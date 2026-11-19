@@ -1,6 +1,7 @@
 {
   "academySync": {
     "parentInvoicing": {
+      "goToPublish": "Aller à « Factures dans le portail parents »",
       "actor": {
         "title": "Enregistrer les factures des parents sous cet utilisateur",
         "hint": "Personne à l'école n'appuie sur un bouton lorsqu'un parent génère une facture, et chaque facture enregistre son auteur. Choisissez un utilisateur pour cela, de préférence un compte de service plutôt qu'un membre du personnel.",
@@ -49,6 +50,7 @@
     },
     "publish": {
       "receipts": {
+        "openBranding": "Ouvrir Image de marque → Documents",
         "incompleteTitle": "Il manque des informations de l'école sur les reçus :",
         "blockedTitle": "Les reçus ne peuvent pas encore être émis en PDF :",
         "issue": {
@@ -9019,6 +9021,147 @@
     }
   },
   "license": {
+    "setupGuide": {
+      "title": "Guide de configuration",
+      "subtitle": "Suivez ces étapes dans l'ordre pour tout configurer sur cette page. Chaque étape a un bouton qui vous mène à l'endroit où elle se fait.",
+      "allDone": "Tout est configuré. Vous pouvez revenir ici à tout moment pour vérifier.",
+      "progress": "{done} étapes sur {total} terminées",
+      "required": "{done} sur {total} nécessaires pour afficher les factures aux parents",
+      "nextStep": "Suivant : {step}",
+      "guideMe": "Guidez-moi",
+      "showSteps": "Afficher les étapes",
+      "hideSteps": "Masquer les étapes",
+      "optional": "Facultatif",
+      "group": {
+        "SHOW_INVOICES": "Afficher les factures aux parents",
+        "RECEIPTS_AND_PAYMENTS": "Reçus et paiements",
+        "PARENT_INVOICES": "Laisser les parents personnaliser les factures"
+      },
+      "state": {
+        "DONE": "Terminé",
+        "TODO": "À faire",
+        "ATTENTION": "À vérifier",
+        "LOCKED": "Verrouillé"
+      },
+      "locked": {
+        "needs": "Nécessite d'abord : {steps}."
+      },
+      "actions": {
+        "openCard": "Aller à cette étape",
+        "openBranding": "Ouvrir Image de marque",
+        "openIntegrations": "Ouvrir Intégrations",
+        "openAcademicCalendar": "Ouvrir Calendrier académique",
+        "openFeeStructures": "Ouvrir Grilles tarifaires",
+        "openTransportRoutes": "Ouvrir Itinéraires de transport",
+        "chooseCashier": "Choisir le caissier",
+        "doFirst": "Faire d'abord « {step} »"
+      },
+      "wizard": {
+        "title": "Guidez-moi",
+        "stepOf": "Étape {n} sur {total}",
+        "nothingLeft": "Plus rien à faire",
+        "allDone": "Tout est configuré. Il n'y a plus rien à faire ici.",
+        "back": "Précédent",
+        "next": "Suivant",
+        "close": "Fermer"
+      },
+      "cashier": {
+        "title": "Enregistrer les reçus M-Pesa sous cet utilisateur",
+        "hint": "Quand un parent paie depuis le portail, personne à l'école n'encaisse le paiement, et chaque reçu enregistre qui l'a encaissé. Choisissez un utilisateur pour cela, de préférence un compte de service plutôt qu'un membre du personnel.",
+        "inactive": "{name} n'est plus un utilisateur actif ; les paiements des parents ne peuvent donc pas être enregistrés. Choisissez un autre utilisateur.",
+        "unknownUser": "L'utilisateur enregistré",
+        "loadingUsers": "Chargement des utilisateurs…",
+        "pickPlaceholder": "Choisir un utilisateur",
+        "searchUsers": "Rechercher des utilisateurs",
+        "noUsers": "Aucun utilisateur trouvé.",
+        "cannotLoadUsers": "Impossible de charger la liste des utilisateurs (vous n'avez peut-être pas l'autorisation de les voir).",
+        "save": "Utiliser cet utilisateur",
+        "saving": "Enregistrement…",
+        "manageUsers": "Créer ou gérer les utilisateurs",
+        "saved": "Caissier M-Pesa enregistré"
+      },
+      "steps": {
+        "CONNECT": {
+          "title": "Se connecter à Klickit Academy",
+          "why": "Relie cet ERP à votre école sur Klickit Academy grâce à votre code d'école. Tout le reste en dépend.",
+          "done": "Connecté à Klickit Academy.",
+          "detail": {
+            "NOT_CONNECTED": "Saisissez votre code d'école, puis le code à usage unique envoyé par Klickit Academy."
+          }
+        },
+        "IMPORT_STUDENTS": {
+          "title": "Importer vos élèves",
+          "why": "Fait venir vos élèves et leurs parents de Klickit Academy dans l'ERP, pour que les factures et les paiements concernent les mêmes enfants.",
+          "done": "Les élèves sont importés et liés.",
+          "detail": {
+            "NOT_IMPORTED": "Lancez un aperçu, vérifiez ce qu'il fera, puis confirmez le premier import.",
+            "NO_STUDENTS_LINKED": "L'import a été confirmé mais aucun élève n'est lié. Vérifiez l'aperçu et relancez la synchronisation."
+          }
+        },
+        "REACH_ERP": {
+          "title": "Permettre au portail parents d'atteindre cet ERP",
+          "why": "Quand un parent paie ou télécharge un reçu, Klickit Academy doit appeler cet ERP. Donnez-lui l'adresse publique de cet ERP et testez-la.",
+          "done": "Klickit Academy peut atteindre cet ERP.",
+          "detail": {
+            "NOT_REGISTERED": "Saisissez l'adresse publique de l'API de cet ERP et enregistrez-la.",
+            "NOT_TESTED": "L'adresse est enregistrée mais n'a pas été testée. Appuyez sur Tester la connexion.",
+            "TEST_FAILED": "Le dernier test a échoué. Vérifiez l'adresse, que cet ERP est joignable depuis Internet et que l'horloge du serveur est correcte, puis testez à nouveau."
+          }
+        },
+        "PUBLISH_INVOICES": {
+          "title": "Afficher les factures dans le portail parents",
+          "why": "Les parents voient les factures de leurs enfants dans le portail parents de Klickit Academy.",
+          "done": "Les factures sont affichées dans le portail parents.",
+          "detail": {
+            "NOT_ON": "Activez « Afficher les factures dans le portail parents ».",
+            "PUBLISH_FAILED": "Le dernier envoi vers Klickit Academy a échoué. Ouvrez la carte pour voir pourquoi.",
+            "SOME_REFUSED": "Certaines factures n'ont pas été acceptées, souvent parce qu'un élève n'est pas lié. Ouvrez la carte pour voir lesquelles."
+          }
+        },
+        "RECEIPTS": {
+          "title": "Reçus avec votre logo et votre en-tête",
+          "why": "Chaque reçu téléchargé par un parent porte le logo et l'en-tête de votre école et un code QR qui prouve son authenticité.",
+          "done": "Les reçus portent votre logo, votre en-tête et un code QR.",
+          "detail": {
+            "NO_BRANDING": "Ajoutez un logo ou un texte d'en-tête sous Image de marque → Documents. Les reçus PDF ne sont pas émis tant qu'aucun n'est défini.",
+            "NO_LOGO": "Ajoutez le logo de votre école sous Image de marque → Documents.",
+            "NO_LETTERHEAD": "Ajoutez un texte d'en-tête sous Image de marque → Documents.",
+            "QR_ADDRESS_NOT_PUBLIC": "Le code QR des reçus pointe vers une adresse qu'un parent ne peut pas ouvrir. Demandez à votre administrateur de définir WEB_APP_URL sur le serveur avec l'adresse web publique de cette école.",
+            "CANNOT_CHECK": "La configuration des reçus n'a pas pu être vérifiée pour l'instant. Ouvrez Image de marque pour regarder.",
+            "INCOMPLETE": "Il manque encore quelque chose dans la configuration des reçus. Ouvrez Image de marque pour regarder."
+          }
+        },
+        "PAYMENTS": {
+          "title": "Permettre aux parents de payer par M-Pesa",
+          "why": "Les parents peuvent payer les factures de leurs enfants depuis le portail. L'argent va sur votre propre compte M-Pesa et est enregistré ici.",
+          "done": "Les parents peuvent payer par M-Pesa.",
+          "detail": {
+            "NOTHING_SET": "Configurez M-Pesa sous Paramètres → Intégrations, et choisissez l'utilisateur sous lequel les reçus sont enregistrés.",
+            "NO_PROVIDER": "Configurez M-Pesa sous Paramètres → Intégrations.",
+            "NO_CASHIER": "Choisissez l'utilisateur sous lequel les reçus des paiements des parents sont enregistrés."
+          }
+        },
+        "FEE_OPTIONS": {
+          "title": "Frais que les parents peuvent choisir",
+          "why": "Les parents peuvent ajouter les frais que vous marquez comme facultatifs, et un itinéraire de transport. Il faut un trimestre en cours et au moins un frais facultatif ou un itinéraire actif.",
+          "done": "Il y a quelque chose à choisir pour les parents.",
+          "detail": {
+            "NO_OPEN_TERM": "Il n'y a pas d'année académique en cours avec un trimestre non terminé. Créez-en une sous Paramètres → Calendrier académique.",
+            "NO_OPTIONAL_ITEMS": "Marquez certains frais comme facultatifs dans la grille tarifaire publiée, ou ajoutez un itinéraire de transport."
+          }
+        },
+        "PARENT_INVOICING": {
+          "title": "Laisser les parents personnaliser et générer leurs factures",
+          "why": "Les parents choisissent des frais facultatifs et le transport pour leur enfant, confirment, et la facture apparaît ici et dans leur portail.",
+          "done": "Les parents peuvent personnaliser et générer leurs propres factures.",
+          "detail": {
+            "NOT_ON": "Activez « Laisser les parents personnaliser et générer leurs propres factures de frais ».",
+            "NOT_ON_NO_INVOICE_USER": "Choisissez l'utilisateur sous lequel les factures des parents sont enregistrées, puis activez la fonction.",
+            "NO_INVOICE_USER": "La fonction est activée mais aucun utilisateur n'est choisi ; les parents apprennent donc que l'école n'a pas fini la configuration. Choisissez l'utilisateur."
+          }
+        }
+      }
+    },
     "pageTitle": "Licence",
     "pageSubtitle": "État actuel de la licence, journal des appels API visible par l'établissement, et avis de mise à jour d'Infoney.",
     "status": {

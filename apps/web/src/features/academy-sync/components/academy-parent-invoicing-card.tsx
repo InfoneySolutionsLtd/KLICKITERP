@@ -16,6 +16,7 @@ import { useRoles } from "@/features/roles/hooks/use-roles";
 import { useUsers } from "@/features/users/hooks/use-users";
 import type { AcademyParentInvoicingStatusDto } from "../api/academy-parent-invoicing.api";
 import { useAcademyParentInvoicing, useSetAcademyParentInvoicing } from "../hooks/use-academy-parent-invoicing";
+import { SECTION_IDS, scrollToSection } from "../setup-guide-targets";
 
 function sameIds(a: string[], b: string[]): boolean {
   return a.length === b.length && [...a].sort().every((id, index) => id === [...b].sort()[index]);
@@ -146,8 +147,15 @@ function AcademyParentInvoicingCard({ status }: { status: AcademyParentInvoicing
             <AlertDescription>
               <span className="font-medium">{t("issuesTitle")}</span>
               <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
-                {status.issues.map((issue) => (
-                  <li key={issue}>{t(`issue.${issue}`)}</li>
+                {issues.map((issue) => (
+                  <li key={issue}>
+                    {t(`issue.${issue}` as "issue.NOT_CONNECTED")}
+                    {issue === "PUBLISHING_OFF" && (
+                      <Button type="button" variant="link" size="sm" className="ml-2 h-auto p-0 text-xs" onClick={() => scrollToSection(SECTION_IDS.PUBLISH_INVOICES)}>
+                        {t("goToPublish")}
+                      </Button>
+                    )}
+                  </li>
                 ))}
               </ul>
             </AlertDescription>

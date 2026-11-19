@@ -1,6 +1,7 @@
 {
   "academySync": {
     "parentInvoicing": {
+      "goToPublish": "Nenda kwa “Ankara kwenye tovuti ya wazazi”",
       "actor": {
         "title": "Rekodi ankara za wazazi chini ya mtumiaji huyu",
         "hint": "Hakuna mtu shuleni anayebonyeza kitufe mzazi anapotengeneza ankara, na kila ankara hurekodi aliyeitengeneza. Chagua mtumiaji kwa ajili hiyo, ikiwezekana akaunti ya huduma badala ya mfanyakazi halisi.",
@@ -49,6 +50,7 @@
     },
     "publish": {
       "receipts": {
+        "openBranding": "Fungua Chapa → Nyaraka",
         "incompleteTitle": "Risiti hazina baadhi ya taarifa za shule hii:",
         "blockedTitle": "Risiti bado haziwezi kutolewa kama PDF:",
         "issue": {
@@ -9019,6 +9021,147 @@
     }
   },
   "license": {
+    "setupGuide": {
+      "title": "Mwongozo wa mipangilio",
+      "subtitle": "Fuata hatua hizi kwa mpangilio ili kuweka kila kitu kwenye ukurasa huu. Kila hatua ina kitufe kinachokupeleka mahali inapofanyiwa.",
+      "allDone": "Kila kitu kimewekwa. Unaweza kurudi hapa wakati wowote kukagua.",
+      "progress": "Hatua {done} kati ya {total} zimekamilika",
+      "required": "{done} kati ya {total} zinazohitajika kuonyesha ankara kwa wazazi",
+      "nextStep": "Inayofuata: {step}",
+      "guideMe": "Niongoze",
+      "showSteps": "Onyesha hatua",
+      "hideSteps": "Ficha hatua",
+      "optional": "Hiari",
+      "group": {
+        "SHOW_INVOICES": "Onyesha ankara kwa wazazi",
+        "RECEIPTS_AND_PAYMENTS": "Risiti na malipo",
+        "PARENT_INVOICES": "Ruhusu wazazi kurekebisha ankara"
+      },
+      "state": {
+        "DONE": "Imekamilika",
+        "TODO": "Ya kufanya",
+        "ATTENTION": "Inahitaji uangalizi",
+        "LOCKED": "Imefungwa"
+      },
+      "locked": {
+        "needs": "Inahitaji {steps} kwanza."
+      },
+      "actions": {
+        "openCard": "Nenda kwenye hatua hii",
+        "openBranding": "Fungua Chapa",
+        "openIntegrations": "Fungua Miunganisho",
+        "openAcademicCalendar": "Fungua Kalenda ya masomo",
+        "openFeeStructures": "Fungua Miundo ya ada",
+        "openTransportRoutes": "Fungua Njia za usafiri",
+        "chooseCashier": "Chagua mtunza fedha",
+        "doFirst": "Fanya “{step}” kwanza"
+      },
+      "wizard": {
+        "title": "Niongoze",
+        "stepOf": "Hatua {n} kati ya {total}",
+        "nothingLeft": "Hakuna kilichobaki",
+        "allDone": "Kila kitu kimewekwa. Hakuna kilichobaki cha kufanya hapa.",
+        "back": "Rudi",
+        "next": "Endelea",
+        "close": "Funga"
+      },
+      "cashier": {
+        "title": "Rekodi risiti za M-Pesa chini ya mtumiaji huyu",
+        "hint": "Mzazi anapolipa kutoka kwenye tovuti, hakuna mtu shuleni anayepokea malipo, na kila risiti hurekodi aliyepokea. Chagua mtumiaji kwa ajili hiyo, ikiwezekana akaunti ya huduma badala ya mfanyakazi halisi.",
+        "inactive": "{name} si mtumiaji hai tena, kwa hivyo malipo ya wazazi hayawezi kutolewa risiti. Chagua mtumiaji mwingine.",
+        "unknownUser": "Mtumiaji aliyehifadhiwa",
+        "loadingUsers": "Inapakia watumiaji…",
+        "pickPlaceholder": "Chagua mtumiaji",
+        "searchUsers": "Tafuta watumiaji",
+        "noUsers": "Hakuna watumiaji waliopatikana.",
+        "cannotLoadUsers": "Imeshindwa kupakia orodha ya watumiaji (huenda huna ruhusa ya kuwaona watumiaji).",
+        "save": "Tumia mtumiaji huyu",
+        "saving": "Inahifadhi…",
+        "manageUsers": "Unda au simamia watumiaji",
+        "saved": "Mtunza fedha wa M-Pesa amehifadhiwa"
+      },
+      "steps": {
+        "CONNECT": {
+          "title": "Unganisha na Klickit Academy",
+          "why": "Huunganisha ERP hii na shule yako kwenye Klickit Academy kwa msimbo wa shule yako. Kila kitu kingine kinategemea hili.",
+          "done": "Imeunganishwa na Klickit Academy.",
+          "detail": {
+            "NOT_CONNECTED": "Weka msimbo wa shule yako, kisha msimbo wa mara moja unaotumwa na Klickit Academy."
+          }
+        },
+        "IMPORT_STUDENTS": {
+          "title": "Leta wanafunzi wako",
+          "why": "Huleta wanafunzi wako na wazazi wao kutoka Klickit Academy hadi kwenye ERP, ili ankara na malipo yatumie watoto wale wale.",
+          "done": "Wanafunzi wameletwa na kuunganishwa.",
+          "detail": {
+            "NOT_IMPORTED": "Endesha onyesho la awali, kagua litakachofanya, kisha thibitisha uletaji wa kwanza.",
+            "NO_STUDENTS_LINKED": "Uletaji ulithibitishwa lakini hakuna mwanafunzi aliyeunganishwa. Kagua onyesho la awali na uendeshe usawazishaji tena."
+          }
+        },
+        "REACH_ERP": {
+          "title": "Ruhusu tovuti ya wazazi kufikia ERP hii",
+          "why": "Mzazi anapolipa au kupakua risiti, Klickit Academy lazima iite ERP hii. Ipe anwani ya umma ya ERP hii na uijaribu.",
+          "done": "Klickit Academy inaweza kufikia ERP hii.",
+          "detail": {
+            "NOT_REGISTERED": "Weka anwani ya umma ya API ya ERP hii na uisajili.",
+            "NOT_TESTED": "Anwani imesajiliwa lakini haijajaribiwa. Bonyeza Jaribu muunganisho.",
+            "TEST_FAILED": "Jaribio la mwisho lilishindwa. Kagua anwani, kwamba ERP hii inaweza kufikiwa kutoka mtandaoni na kwamba saa ya seva ni sahihi, kisha ujaribu tena."
+          }
+        },
+        "PUBLISH_INVOICES": {
+          "title": "Onyesha ankara kwenye tovuti ya wazazi",
+          "why": "Wazazi huona ankara za watoto wao kwenye tovuti ya wazazi ya Klickit Academy.",
+          "done": "Ankara zinaonyeshwa kwenye tovuti ya wazazi.",
+          "detail": {
+            "NOT_ON": "Washa “Onyesha ankara kwenye tovuti ya wazazi”.",
+            "PUBLISH_FAILED": "Utumaji wa mwisho kwa Klickit Academy ulishindwa. Fungua kadi kuona sababu.",
+            "SOME_REFUSED": "Baadhi ya ankara hazikukubaliwa, mara nyingi kwa sababu mwanafunzi hajaunganishwa. Fungua kadi kuona zipi."
+          }
+        },
+        "RECEIPTS": {
+          "title": "Risiti zenye nembo na kichwa cha barua cha shule",
+          "why": "Kila risiti anayopakua mzazi ina nembo ya shule yako, kichwa cha barua na msimbo wa QR unaothibitisha ni halisi.",
+          "done": "Risiti zina nembo yako, kichwa cha barua na msimbo wa QR.",
+          "detail": {
+            "NO_BRANDING": "Ongeza nembo au maandishi ya kichwa cha barua chini ya Chapa → Nyaraka. Risiti za PDF hazitolewi hadi angalau kimoja kiwekwe.",
+            "NO_LOGO": "Ongeza nembo ya shule yako chini ya Chapa → Nyaraka.",
+            "NO_LETTERHEAD": "Ongeza maandishi ya kichwa cha barua chini ya Chapa → Nyaraka.",
+            "QR_ADDRESS_NOT_PUBLIC": "Msimbo wa QR kwenye risiti unaelekeza anwani ambayo mzazi hawezi kuifungua. Mwombe msimamizi wako aweke WEB_APP_URL kwenye seva kuwa anwani ya umma ya wavuti ya shule hii.",
+            "CANNOT_CHECK": "Mipangilio ya risiti haikuweza kukaguliwa sasa hivi. Fungua Chapa kuangalia.",
+            "INCOMPLETE": "Bado kuna kitu kinachokosekana kwenye mipangilio ya risiti. Fungua Chapa kuangalia."
+          }
+        },
+        "PAYMENTS": {
+          "title": "Ruhusu wazazi kulipa kwa M-Pesa",
+          "why": "Wazazi wanaweza kulipa ankara za watoto wao kutoka kwenye tovuti. Pesa huenda kwenye akaunti yako ya M-Pesa na hurekodiwa hapa.",
+          "done": "Wazazi wanaweza kulipa kwa M-Pesa.",
+          "detail": {
+            "NOTHING_SET": "Weka M-Pesa chini ya Mipangilio → Miunganisho, na uchague mtumiaji ambaye risiti zitarekodiwa chini yake.",
+            "NO_PROVIDER": "Weka M-Pesa chini ya Mipangilio → Miunganisho.",
+            "NO_CASHIER": "Chagua mtumiaji ambaye risiti za malipo ya wazazi zitarekodiwa chini yake."
+          }
+        },
+        "FEE_OPTIONS": {
+          "title": "Ada ambazo wazazi wanaweza kuchagua",
+          "why": "Wazazi wanaweza kuongeza ada ulizoziweka kuwa za hiari, na njia ya usafiri. Hilo linahitaji muhula wa sasa na angalau ada moja ya hiari au njia hai.",
+          "done": "Kuna kitu cha wazazi kuchagua.",
+          "detail": {
+            "NO_OPEN_TERM": "Hakuna mwaka wa masomo wa sasa wenye muhula ambao haujaisha. Weka mmoja chini ya Mipangilio → Kalenda ya masomo.",
+            "NO_OPTIONAL_ITEMS": "Weka alama baadhi ya ada kuwa za hiari kwenye muundo wa ada uliochapishwa, au ongeza njia ya usafiri."
+          }
+        },
+        "PARENT_INVOICING": {
+          "title": "Ruhusu wazazi kurekebisha na kutengeneza ankara zao",
+          "why": "Wazazi huchagua ada za hiari na usafiri kwa mtoto wao, huthibitisha, na ankara huonekana hapa na kwenye tovuti yao.",
+          "done": "Wazazi wanaweza kurekebisha na kutengeneza ankara zao wenyewe.",
+          "detail": {
+            "NOT_ON": "Washa “Ruhusu wazazi kurekebisha na kutengeneza ankara zao za ada”.",
+            "NOT_ON_NO_INVOICE_USER": "Chagua mtumiaji ambaye ankara za wazazi zitarekodiwa chini yake, kisha uiwashe.",
+            "NO_INVOICE_USER": "Imewashwa lakini hakuna mtumiaji aliyechaguliwa, kwa hivyo wazazi huambiwa shule haijamaliza kuiweka. Chagua mtumiaji."
+          }
+        }
+      }
+    },
     "pageTitle": "Leseni",
     "pageSubtitle": "Hali ya sasa ya leseni, kumbukumbu ya miito ya API inayoonekana kwa shule, na arifa za masasisho kutoka Infoney.",
     "status": {
