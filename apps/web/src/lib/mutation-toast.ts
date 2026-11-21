@@ -93,6 +93,13 @@ export function errorToastFor(error: unknown, meta: MutationToastMeta | undefine
   if (isNetworkFailure(error)) return { variant: "error", messageKey: "toast.error.network" };
 
   if (error instanceof ApiError) {
+    // The Klickit Academy could not do what this ERP asked of it. The server words the reason for the admin (the Academy's own
+    // message, or why it could not be reached), and a 503 here is not an ERP fault, so say it instead of "something went wrong
+    // on our side". Checked before the status rules below: an Academy 401 (a rejected key) is not this person's session.
+    if (error.code === "ACADEMY_GATEWAY_ERROR" && error.message.trim()) {
+      return { variant: "error", messageKey: "toast.error.academy", values: { details: error.message.trim() } };
+    }
+
     const plain = error.message.trim().toLowerCase();
     // A 401/403 that carries a real explanation ("Current password is incorrect", a separation-of-duties
     // message) is shown as written; only the bare framework wording is swapped for the localized line.

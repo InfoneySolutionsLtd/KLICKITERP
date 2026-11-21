@@ -221,6 +221,7 @@
       "sessionExpired": "Kipindi chako kimeisha. Tafadhali ingia tena.",
       "permission": "Huna ruhusa ya kufanya hivyo.",
       "server": "Hitilafu imetokea upande wetu. Tafadhali jaribu tena.",
+      "academy": "Klickit Academy haikuweza kukamilisha hilo: {details}",
       "validation": "Tafadhali angalia fomu: {details}",
       "generic": "Hitilafu imetokea. Tafadhali jaribu tena."
     }
