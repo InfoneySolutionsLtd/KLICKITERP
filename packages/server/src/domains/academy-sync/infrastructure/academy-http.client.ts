@@ -2,7 +2,11 @@ import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { Injectable, Logger } from "@nestjs/common";
 import { AppConfigService } from "../../../shared/config/app-config.service";
-import { AcademyGatewayException } from "../../../shared/exceptions/academy-gateway.exception";
+import {
+  academyNetworkErrorDetail,
+  AcademyGatewayException,
+  describeAcademyNetworkError,
+} from "../../../shared/exceptions/academy-gateway.exception";
 
 const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -77,7 +81,9 @@ export class AcademyHttpClient {
       try {
         raw = await this.rawRequest(method, path, apiKey, body);
       } catch (networkError) {
-        lastError = new AcademyGatewayException(this.describeNetworkError(networkError), null);
+        // The admin sees `lastError.message` in the browser, so it is plain words; Node's own text (hosts, addresses) stays in the log.
+        lastError = new AcademyGatewayException(describeAcademyNetworkError(networkError), null);
+        this.logger.warn(`${method} ${path.split("?")[0]} got no answer from the Academy: ${academyNetworkErrorDetail(networkError)}`);
         if (this.shouldRetry(null, attempt, maxAttempts)) {
           await this.backoffAndLog(attempt, lastError.message);
           continue;
@@ -128,14 +134,6 @@ export class AcademyHttpClient {
   /** Extracted so tests can skip the real wait while still asserting the schedule. */
   protected sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  private describeNetworkError(error: unknown): string {
-    const err = error as NodeJS.ErrnoException;
-    if (err.message && err.message.length > 0) {
-      return err.message;
-    }
-    return err.code ? `Academy Gateway unreachable (${err.code})` : "Academy Gateway unreachable";
   }
 
   private safeParseBody(body: string): unknown {

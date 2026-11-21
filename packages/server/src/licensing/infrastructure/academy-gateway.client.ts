@@ -2,7 +2,11 @@ import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { Injectable, Logger } from "@nestjs/common";
 import { AppConfigService } from "../../shared/config/app-config.service";
-import { AcademyGatewayException } from "../../shared/exceptions/academy-gateway.exception";
+import {
+  academyNetworkErrorDetail,
+  AcademyGatewayException,
+  describeAcademyNetworkError,
+} from "../../shared/exceptions/academy-gateway.exception";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -139,7 +143,9 @@ export class AcademyGatewayClient {
       try {
         raw = await this.rawRequest(method, path, body, extraHeaders);
       } catch (networkError) {
-        lastError = new AcademyGatewayException(this.describeNetworkError(networkError), null);
+        // The admin sees `lastError.message` in the browser, so it is plain words; Node's own text (hosts, addresses) stays in the log.
+        lastError = new AcademyGatewayException(describeAcademyNetworkError(networkError), null);
+        this.logger.warn(`${method} ${path.split("?")[0]} got no answer from the Academy: ${academyNetworkErrorDetail(networkError)}`);
         if (this.shouldRetry(null, attempt, maxAttempts)) {
           await this.backoffAndLog(attempt, lastError.message);
           continue;
@@ -200,26 +206,6 @@ export class AcademyGatewayClient {
   /** Extracted so tests can stub out the real wait while still asserting the backoff schedule (`sleep` call args). */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  /**
-   * Node's own connection-level errors (confirmed live, this environment:
-   * `ECONNREFUSED` against an unreachable `ACADEMY_GATEWAY_URL`) can carry a
-   * genuinely EMPTY `.message` while `.code` is populated — a real, previously-
-   * unseen gap that made every "Academy Gateway unreachable" failure surface
-   * as a blank error message end to end (API response, log line). Falls back
-   * to `.code`, then a generic description, so the exception is always
-   * informative.
-   */
-  private describeNetworkError(error: unknown): string {
-    const err = error as NodeJS.ErrnoException;
-    if (err.message && err.message.length > 0) {
-      return err.message;
-    }
-    if (err.code) {
-      return `Academy Gateway unreachable (${err.code})`;
-    }
-    return "Academy Gateway unreachable";
   }
 
   private safeParseBody(body: string): unknown {

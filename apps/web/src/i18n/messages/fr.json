@@ -221,6 +221,7 @@
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
       "permission": "Vous n'avez pas la permission d'effectuer cette action.",
       "server": "Un problème est survenu de notre côté. Veuillez réessayer.",
+      "academy": "Klickit Academy n’a pas pu terminer cette action : {details}",
       "validation": "Veuillez vérifier le formulaire : {details}",
       "generic": "Une erreur s'est produite. Veuillez réessayer."
     }

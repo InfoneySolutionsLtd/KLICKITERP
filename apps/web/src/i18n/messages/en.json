@@ -221,6 +221,7 @@
       "sessionExpired": "Your session has expired. Please sign in again.",
       "permission": "You don't have permission to do that.",
       "server": "Something went wrong on our side. Please try again.",
+      "academy": "The Klickit Academy could not complete that: {details}",
       "validation": "Please check the form: {details}",
       "generic": "Something went wrong. Please try again."
     }

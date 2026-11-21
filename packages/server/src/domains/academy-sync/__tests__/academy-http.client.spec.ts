@@ -123,8 +123,12 @@ describe("AcademyHttpClient", () => {
 
   it("retries a connection failure and reports it", async () => {
     const dead = new FastClient({ academyGatewayUrl: "http://127.0.0.1:1" } as never);
-    await expect(dead.get("k", "/x")).rejects.toBeInstanceOf(AcademyGatewayException);
+    const error = await dead.get("k", "/x").catch((e: AcademyGatewayException) => e);
+    expect(error).toBeInstanceOf(AcademyGatewayException);
     expect(dead.waits).toEqual([1000, 2000, 4000, 8000]);
+    // What the admin reads in the browser: plain words about the Academy, not Node's text with the address in it.
+    expect((error as AcademyGatewayException).message).toMatch(/^The Klickit Academy/);
+    expect((error as AcademyGatewayException).message).not.toContain("127.0.0.1");
   });
 
   it("never puts the key in a thrown error", async () => {
